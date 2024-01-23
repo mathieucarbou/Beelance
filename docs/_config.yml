@@ -1,0 +1,9 @@
+# bundle exec jekyll serve --host=0.0.0.0
+
+title: Beelance
+description: "Autonomous and remotely connected weight scale for beehives 🐝"
+logo: "/assets/images/logo.png"
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  
