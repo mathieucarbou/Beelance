@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Beelance Configuration</title>
+</head>
+
+<body>
+  <img src="/logo">
+  <h1>Beelance Configuration</h1>
+  <table border="1" cellpadding="5px">
+    <tr>
+      <td>
+        <form id="restart-form">
+          <button type="submit">Restart</button>
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form id="backup-form" method="get" action="/api/config/backup" target="_blank">
+          <button type="submit">Backup</button>
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form id="restore-form">
+          <input id="restore-form-file" type="file" accept=".txt" />
+          <button type="submit">Restore</button>
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form id="reset-form">
+          <button type="submit">Reset</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+
+  <table id="config-table" border="1" cellpadding="5px">
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </table>
+</body>
+
+<style>
+  table#config-table td:nth-child(2) {
+    text-align: center;
+  }
+
+  table#config-table th:nth-child(2) {
+    text-align: center;
+  }
+</style>
+
+<script>
+  const supportedConfig = {
+    Management: "TITLE",
+    debug_enable: ["Debug mode enabled ?", "switch"],
+    sleep_enable: ["Sleep after sending data ?", "switch"],
+
+    Network: "TITLE",
+    hostname: ["Hostname", "string"],
+    admin_pwd: ["Admin password", "password"],
+    wifi_ssid: ["WiFi SSID", "string"],
+    wifi_pwd: ["WiFi password", "password"],
+    wifi_timeout: [
+      "WiFi connection timeout in seconds (before starting Captive Portal)",
+      "uint",
+    ],
+    portal_timeout: [
+      "Captive Portal timeout in seconds (before restarting)",
+      "uint",
+    ],
+    ap_mode_enable: ["Access Point mode enabled ?", "switch"],
+
+    System: "TITLE",
+    sys_tmp_enable: ["System temperature sensor enabled ?", "switch"],
+    sys_tmp_pin: ["System temperature sensor GPIO pin", "pin"],
+
+    Beelance: "TITLE",
+    bh_name: ["Beehive name", "string"],
+    send_delay: ["Send interval in seconds", "uint"],
+  };
+
+  async function onInputChange(event) {
+    console.log(event);
+    const key = event.target.getAttribute("id");
+    const formData = new FormData();
+    formData.append(key, event.target.type === "checkbox" ? event.target.checked : event.target.value);
+    await fetch("/api/config", {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  function addInputNumber(cell, key, value, min, max) {
+    const input = document.createElement("input");
+    input.setAttribute("id", key);
+    input.setAttribute("type", "number");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("min", "" + min);
+    input.setAttribute("max", "" + max);
+    input.setAttribute("step", "1");
+    input.setAttribute("value", value);
+    cell.appendChild(input);
+    input.addEventListener("change", onInputChange);
+  }
+
+  const typeHandlers = {
+    switch: function (cell, key, value, options) {
+      const input = document.createElement("input");
+      input.setAttribute("id", key);
+      input.setAttribute("type", "checkbox");
+      if (value === "true") {
+        input.setAttribute("checked", "checked");
+      }
+      cell.appendChild(input);
+      input.addEventListener("change", onInputChange);
+    },
+    pin: function (cell, key, value, options) {
+      addInputNumber(cell, key, value, 0, 255);
+    },
+    uint: function (cell, key, value, options) {
+      addInputNumber(cell, key, value, 0, 9999);
+    },
+    percent: function (cell, key, value, options) {
+      addInputNumber(cell, key, value, 0, 100);
+    },
+    string: function (cell, key, value, options) {
+      const input = document.createElement("input");
+      input.setAttribute("id", key);
+      input.setAttribute("type", "text");
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("value", value);
+      cell.appendChild(input);
+      input.addEventListener("change", onInputChange);
+    },
+    password: function (cell, key, value, options) {
+      const input = document.createElement("input");
+      input.setAttribute("id", key);
+      input.setAttribute("type", "password");
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("value", value);
+      cell.appendChild(input);
+      input.addEventListener("change", onInputChange);
+    },
+    time: function (cell, key, value, options) {
+      const input = document.createElement("input");
+      input.setAttribute("id", key);
+      input.setAttribute("type", "time");
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("value", value);
+      cell.appendChild(input);
+      input.addEventListener("change", onInputChange);
+    },
+    tz: function (cell, key, value, options, timezones) {
+      const select = document.createElement("select");
+      select.setAttribute("id", key);
+      timezones.forEach((t) => {
+        const option = document.createElement("option");
+        option.setAttribute("value", t);
+        option.innerHTML = t;
+        if (t === value)
+          option.setAttribute("selected", "selected");
+        select.appendChild(option);
+      });
+      cell.appendChild(select);
+      select.addEventListener("change", onInputChange);
+    },
+    select: function (cell, key, value, options) {
+      const select = document.createElement("select");
+      select.setAttribute("id", key);
+      options.split(',').map((v) => {
+        const option = document.createElement("option");
+        option.setAttribute("value", v);
+        option.innerHTML = v;
+        if (v === value)
+          option.setAttribute("selected", "selected");
+        select.appendChild(option);
+      });
+      cell.appendChild(select);
+      select.addEventListener("change", onInputChange);
+    },
+  };
+
+  async function init() {
+    document
+      .getElementById("restore-form")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        const input = document.getElementById("restore-form-file");
+        if (input.files && input.files.length == 1) {
+          const formData = new FormData();
+          formData.append("file", input.files[0]);
+          fetch("/api/config/restore", {
+            method: "POST",
+            body: formData,
+          }).then((res) => {
+            setTimeout(function () {
+              window.location.reload();
+            }, 2000);
+          });
+        }
+      });
+
+    document
+      .getElementById("restart-form")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        fetch("/api/system/restart", { method: "POST" }).then((res) => {
+          setTimeout(function () {
+            window.location.reload();
+          }, 2000);
+        });
+      });
+
+
+    document
+      .getElementById("reset-form")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        fetch("/api/system/reset", { method: "POST" }).then((res) => {
+          setTimeout(function () {
+            window.location.reload();
+          }, 2000);
+        });
+      });
+
+    Promise.all(
+      ["/api/config"].map((u) =>
+        fetch(u).then((resp) => resp.json())
+      )
+    )
+      .then((json) => {
+        console.log(json);
+        const config = json[0];
+        const timezones = json[1];
+        const table = document.getElementById("config-table");
+        for (const k in config) {
+          if (supportedConfig[k] == undefined) {
+            console.error("Unsupported config key", k);
+          }
+        }
+        for (const k in supportedConfig) {
+          const row = table.insertRow(-1);
+          if (supportedConfig[k] === "TITLE") {
+            const cell = row.insertCell(0);
+            cell.innerHTML = "<strong>" + k + "</strong>";
+            cell.setAttribute("colspan", "3");
+          } else {
+            row.insertCell(0).innerHTML = k;
+            if (config[k] == undefined) {
+              row.insertCell(1).innerHTML = "<strong>DEPRECATED</strong>";
+            } else if (typeHandlers[supportedConfig[k][1]]) {
+              typeHandlers[supportedConfig[k][1]](
+                row.insertCell(1),
+                k,
+                config[k],
+                supportedConfig[k][2],
+                timezones
+              );
+            } else {
+              row.insertCell(1).innerHTML = config[k];
+            }
+            row.insertCell(2).innerHTML = supportedConfig[k][0];
+          }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  window.addEventListener("DOMContentLoaded", init, false);
+</script>
+
+</html>
