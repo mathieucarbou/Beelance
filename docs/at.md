@@ -14,6 +14,7 @@ AT+COPS=?
 
 # Lets connect to SFR LTE-M
 
+AT+CMNB=2
 AT+COPS=1,2,"20810",7
 AT+CGDCONT=1,"IP","onomondo"
 AT+CNCFG=0,1,"onomondo"

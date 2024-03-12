@@ -9,14 +9,20 @@
 #include "soc/soc.h"
 #endif
 
+#ifdef XPOWERS_CHIP_AXP2101
+#include <XPowersLib.h>
+XPowersPMU pmu;
+#endif
+
 #define TAG "BEELANCE"
 
-Mycila::TaskManager loopTaskManager("loopTask", 16);
-
 AsyncWebServer webServer(80);
-
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 
+StreamDebugger serialAT(SerialAT);
+TinyGsm modem(serialAT);
+
+Mycila::TaskManager loopTaskManager("loopTask", 16);
 Mycila::TemperatureSensor systemTemperatureSensor;
 
 // setup
@@ -26,13 +32,8 @@ void setup() {
 #endif
 
   Serial.begin(BEELANCE_SERIAL_BAUDRATE);
-#if ARDUINO_USB_CDC_ON_BOOT
-  Serial.setTxTimeoutMs(0);
-  delay(100);
-#else
   while (!Serial)
     yield();
-#endif
 
   // logger
   Mycila::Logger.getOutputs().reserve(2);
@@ -44,11 +45,6 @@ void setup() {
 
   // load config and initialize
   Beelance::Beelance.begin();
-
-  // start logging
-  configureDebugTask.forceRun();
-  WebSerial.begin(&webServer, "/console", BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
-  Mycila::Logger.forwardTo(&WebSerial);
 
   Mycila::Logger.info(TAG, "Starting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
 
@@ -62,4 +58,8 @@ void setup() {
 
 void loop() {
   loopTaskManager.loop();
+
+  // TODO : remove and call api instead
+  while (serialAT.available())
+    serialAT.read();
 }

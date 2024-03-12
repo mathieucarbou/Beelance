@@ -15,25 +15,32 @@
 #include <MycilaTaskManager.h>
 #include <MycilaTaskMonitor.h>
 #include <MycilaTemperatureSensor.h>
-#include <MycilaTaskManager.h>
-#include <MycilaTemperatureSensor.h>
 
 #include <BeelanceClass.h>
 #include <BeelanceMacros.h>
 
 #include <ESPAsyncWebServer.h>
 #include <ESPDash.h>
+#include <StreamDebugger.h>
+#include <TinyGsmClient.h>
 #include <WebSerialLite.h>
+
+#ifdef XPOWERS_CHIP_AXP2101
+#include <XPowersLib.h>
+extern XPowersPMU pmu;
+#endif
 
 extern AsyncWebServer webServer;
 extern ESPDash dashboard;
+extern StreamDebugger serialAT;
+extern TinyGsm modem;
 
 extern Mycila::TemperatureSensor systemTemperatureSensor;
-
 extern Mycila::TaskManager loopTaskManager;
 
 extern Mycila::Task espConnectTask;
-extern Mycila::Task otaPrepareTask;;
+extern Mycila::Task forwardSerialATTask;
+extern Mycila::Task otaPrepareTask;
 extern Mycila::Task profileTask;
 extern Mycila::Task resetTask;
 extern Mycila::Task restartTask;

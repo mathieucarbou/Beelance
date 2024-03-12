@@ -5,6 +5,7 @@
 #include <BeelanceWebsite.h>
 
 #include <ElegantOTA.h>
+#include <WebSerialLite.h>
 
 #define TAG "WEBSITE"
 
@@ -65,6 +66,16 @@ void Beelance::WebsiteClass::init() {
     restartTask.resume();
   });
   ElegantOTA.begin(&webServer, BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD).c_str());
+
+  // web console
+
+  WebSerial.begin(&webServer, "/console", BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+  WebSerial.onMessage([](AsyncWebSocketClient*, const String& msg) {
+    if (msg.startsWith("AT+")) {
+      modem.sendAT(msg.substring(2));
+    }
+  });
+  Mycila::Logger.forwardTo(&WebSerial);
 
   // app stats
 

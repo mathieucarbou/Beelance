@@ -16,6 +16,8 @@ namespace Beelance {
         _initEventHandlers();
         _initWebsite();
         _initREST();
+        _initPMU();
+        _initModem();
       }
 
       void updateWebsite();
@@ -30,6 +32,8 @@ namespace Beelance {
       void _initEventHandlers();
       void _initWebsite();
       void _initREST();
+      void _initPMU();
+      void _initModem();
   };
 
   extern BeelanceClass Beelance;

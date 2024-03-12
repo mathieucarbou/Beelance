@@ -36,4 +36,7 @@ void Beelance::BeelanceClass::_initConfig() {
   Mycila::Config.configure(KEY_SLEEP_ENABLE, BEELANCE_BOOL(BEELANCE_SLEEP_ENABLE));
   Mycila::Config.configure(KEY_SEND_INTERVAL, String(BEELANCE_SEND_INTERVAL));
   Mycila::Config.configure(KEY_BEEHIVE_NAME, hostname);
+
+  // init logging
+  configureDebugTask.forceRun();
 }

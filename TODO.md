@@ -3,6 +3,7 @@
 - Config:
   - APN
   - system Clock: AT+CCLK
+  - diagnostic AT: CFUN, AT+CPIN, SMSTATE, etc
 
 - LTE-M / NB-IOT
 
@@ -21,7 +22,8 @@
   - https://github.com/lewisxhe/XPowersLib
   - https://github.com/Xinyuan-LilyGO/LilyGo-T-SIM7080G/issues/13
 
-- POWER
+- POWER / BATTERY
 
   - https://github.com/lewisxhe/XPowersLib
   - https://github.com/danilopinotti/Battery18650Stats
+  - MinimalPowersExample

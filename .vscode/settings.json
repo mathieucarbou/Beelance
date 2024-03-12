@@ -7,5 +7,10 @@
     "Beelance"
   ],
   "scm.defaultViewMode": "tree",
-  "cmake.configureOnOpen": false
+  "cmake.configureOnOpen": false,
+  "files.associations": {
+    "*.cps": "javascript",
+    "*.config": "cpp",
+    "*.tpp": "cpp"
+  }
 }

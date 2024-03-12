@@ -21,6 +21,7 @@ Mycila::Task espConnectTask("ESPConnect.loop()", [](void* params) { ESPConnect.l
 Mycila::Task stackMonitorTask("TaskMonitor.log()", [](void* params) { Mycila::TaskMonitor.log(); });
 Mycila::Task profilerTask("TaskManager.log()", [](void* params) { loopTaskManager.log(); });
 Mycila::Task websiteTask("Beelance.updateWebsite()", [](void* params) { Beelance::Beelance.updateWebsite(); });
+Mycila::Task forwardSerialATTask("forwardSerialAT", [](void* params) { while (Serial.available()) serialAT.write(Serial.read()); });
 
 // Beelance tasks
 
@@ -120,7 +121,9 @@ void Beelance::BeelanceClass::_initTasks() {
   websiteTask.setManager(&loopTaskManager);
   websiteTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   websiteTask.setInterval(1 * Mycila::TaskDuration::SECONDS);
-  // websiteTask.setCallback(LOG_EXEC_TIME);
+
+  forwardSerialATTask.setType(Mycila::TaskType::FOREVER);
+  forwardSerialATTask.setManager(&loopTaskManager);
 
   stackMonitorTask.setType(Mycila::TaskType::FOREVER);
   stackMonitorTask.setManager(&loopTaskManager);
@@ -139,7 +142,7 @@ void Beelance::BeelanceClass::_initTasks() {
 
   sendTask.setType(Mycila::TaskType::FOREVER);
   sendTask.setManager(&loopTaskManager);
-  // TODO: sendTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
+  // TODO: check connectivity sendTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   sendTask.setInterval(Mycila::Config.get(KEY_SEND_INTERVAL).toInt() * Mycila::TaskDuration::SECONDS);
   sendTask.setCallback(LOG_EXEC_TIME);
 
