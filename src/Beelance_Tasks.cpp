@@ -21,9 +21,7 @@ Mycila::Task espConnectTask("ESPConnect.loop()", [](void* params) { ESPConnect.l
 Mycila::Task stackMonitorTask("TaskMonitor.log()", [](void* params) { Mycila::TaskMonitor.log(); });
 Mycila::Task profilerTask("TaskManager.log()", [](void* params) { loopTaskManager.log(); });
 Mycila::Task websiteTask("Beelance.updateWebsite()", [](void* params) { Beelance::Beelance.updateWebsite(); });
-Mycila::Task modemTask("Modem.loop()", [](void* params) { Mycila::Modem.loop(); });
-Mycila::Task modemSyncTimeTask("Modem.syncTime()", [](void* params) { Mycila::Modem.syncTime(); });
-Mycila::Task modemSyncGPSTask("Modem.syncGPS()", [](void* params) { Mycila::Modem.syncGPS(); });
+Mycila::Task modemLoopTask("Modem.loop()", [](void* params) { Mycila::Modem.loop(); });
 Mycila::Task sendTask("Beelance.sendMeasurements()", [](void* params) { Beelance::Beelance.sendMeasurements(); });
 
 Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
@@ -33,7 +31,7 @@ Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
     while (Serial.available())
       msg += static_cast<char>(Serial.read());
     if (msg.startsWith("AT+")) {
-      Mycila::Modem.sendAT(msg.substring(2));
+      Mycila::Modem.enqueueAT(msg);
     }
   }
 });
@@ -57,10 +55,9 @@ Mycila::Task resetTask("resetTask", [](void* params) {
 });
 
 Mycila::Task startModemTask("startModemTask", [](void* params) {
-  // apn
-  Mycila::Modem.setAPN(Mycila::Config.get(KEY_MODEM_APN));
-  // pin
   Mycila::Modem.setPIN(Mycila::Config.get(KEY_MODEM_PIN));
+  Mycila::Modem.setAPN(Mycila::Config.get(KEY_MODEM_APN));
+  Mycila::Modem.setGpsSyncTimeout(Mycila::Config.get(KEY_MODEM_GPS_SYNC_TIMEOUT).toInt());
   // mode
   String tech = Mycila::Config.get(KEY_MODEM_MODE);
   if (tech == "LTE-M") {
@@ -73,7 +70,7 @@ Mycila::Task startModemTask("startModemTask", [](void* params) {
   // bands
   Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, Mycila::Config.get(KEY_MODEM_BANDS_LTE_M));
   Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, Mycila::Config.get(KEY_MODEM_BANDS_NB_IOT));
-
+  // start modem
   if (Mycila::Modem.getState() == Mycila::ModemState::MODEM_OFF) {
     Mycila::Logger.info(TAG, "Enable Modem...");
     Mycila::Modem.begin();
@@ -235,17 +232,8 @@ void Beelance::BeelanceClass::_initTasks() {
   serialDebugATTask.setType(Mycila::TaskType::FOREVER);
   serialDebugATTask.setManager(&modemTaskManager);
 
-  modemTask.setType(Mycila::TaskType::FOREVER);
-  modemTask.setManager(&modemTaskManager);
-
-  modemSyncTimeTask.setType(Mycila::TaskType::FOREVER);
-  modemSyncTimeTask.setManager(&modemTaskManager);
-  modemSyncTimeTask.setInterval(5 * Mycila::TaskDuration::SECONDS);
-  modemSyncTimeTask.setEnabledWhen([]() { return !Mycila::Modem.isTimeSynced(); });
-
-  modemSyncGPSTask.setType(Mycila::TaskType::FOREVER);
-  modemSyncGPSTask.setManager(&modemTaskManager);
-  modemSyncGPSTask.setInterval(10 * Mycila::TaskDuration::SECONDS);
+  modemLoopTask.setType(Mycila::TaskType::FOREVER);
+  modemLoopTask.setManager(&modemTaskManager);
 
 #ifdef MYCILA_TASK_MANAGER_DEBUG
   configureDebugTask.setDebugWhen(DEBUG_ENABLED);

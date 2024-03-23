@@ -71,9 +71,8 @@ void Beelance::WebsiteClass::init() {
 
   WebSerial.begin(&webServer, "/console", BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
   WebSerial.onMessage([](AsyncWebSocketClient*, const String& msg) {
-    if (msg.startsWith("AT+")) {
-      Mycila::Modem.sendAT(msg.substring(2));
-    }
+    if (msg.startsWith("AT+"))
+      Mycila::Modem.enqueueAT(msg);
   });
   Mycila::Logger.forwardTo(&WebSerial);
 
@@ -97,7 +96,7 @@ void Beelance::WebsiteClass::init() {
 
   _restart.attachCallback([=](uint32_t value) {
     restartTask.resume();
-    _restart.update(true);
+    _restart.update(!restartTask.isPaused());
     dashboard.refreshCard(&_restart);
   });
 
@@ -108,7 +107,7 @@ void Beelance::WebsiteClass::init() {
   });
 
   _scanOps.attachCallback([=](uint32_t value) {
-    if (value && Mycila::Modem.getState() >= Mycila::ModemState::MODEM_CONNECTING) {
+    if (value && Mycila::Modem.isReady()) {
       Mycila::Modem.scanForOperators();
     }
     _scanOps.update(Mycila::Modem.getState() == Mycila::ModemState::MODEM_SEARCHING);

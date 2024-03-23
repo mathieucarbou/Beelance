@@ -22,16 +22,12 @@
 #define MYCILA_MODEM_TX_PIN TX1
 #endif
 
+#ifndef MYCILA_MODEM_GPS_SYNC_TIMEOUT
+#define MYCILA_MODEM_GPS_SYNC_TIMEOUT 70
+#endif
+
 #ifndef MYCILA_MODEM_PWR_PIN
 #error "MYCILA_MODEM_PWR_PIN not defined"
-#endif
-
-#ifndef MYCILA_MODEM_REGISTER_TIMEOUT
-#define MYCILA_MODEM_REGISTER_TIMEOUT 30000U
-#endif
-
-#ifndef MYCILA_MODEM_SEARCH_TIMEOUT
-#define MYCILA_MODEM_SEARCH_TIMEOUT 60000U
 #endif
 
 namespace Mycila {
@@ -40,10 +36,11 @@ namespace Mycila {
     MODEM_ERROR = 0,
     MODEM_OFF,
     MODEM_STARTING,
-    MODEM_REGISTERING,
+    MODEM_WAIT_REGISTRATION,
     MODEM_SEARCHING,
+    MODEM_WAIT_GPS,
     MODEM_CONNECTING,
-    MODEM_CONNECTED,
+    MODEM_READY,
   } ModemState;
 
   typedef enum {
@@ -57,10 +54,23 @@ namespace Mycila {
     MODEM_OPERATOR_AVAILABLE = 1,
     MODEM_OPERATOR_CURRENT = 2,
     MODEM_OPERATOR_FORBIDDEN = 3,
-  } ModemOperatorStatus;
+  } ModemOperatorState;
+
+  typedef enum {
+    MODEM_TIME_OFF = 1,
+    MODEM_TIME_SYNCING = 2,
+    MODEM_TIME_SYNCED = 3,
+  } ModemTimeState;
+
+  typedef enum {
+    MODEM_GPS_OFF = 0,
+    MODEM_GPS_SYNCING = 1,
+    MODEM_GPS_SYNCED = 2,
+    MODEM_GPS_TIMEOUT = 3,
+  } ModemGPSState;
 
   typedef struct {
-      ModemOperatorStatus status;
+      ModemOperatorState state;
       String name;  // operator name
       String code;  // operator code
       uint8_t mode; // technology access mode
@@ -81,15 +91,17 @@ namespace Mycila {
       void begin();
       void loop();
 
-      bool isConnected() const { return _state == MODEM_CONNECTED && !_localIP.isEmpty(); }
-      bool isGPSSynced() const { return _gpsSynced; }
-      bool isTimeSynced() const { return _timeSynced; }
+      bool isReady() const { return _state == MODEM_READY; }
+      bool isGPSSynced() const { return _gpsState == ModemGPSState::MODEM_GPS_SYNCED; }
+      bool isTimeSynced() const { return _timeState == ModemTimeState::MODEM_TIME_SYNCED; }
 
       const ModemGPSData& getGPSData() const { return _gpsData; }
       const ModemOperatorSearchResult* getCandidate() const { return _candidate; }
       TinyGsm* getModem() { return &_modem; }
       ModemMode getMode() const { return _mode; }
       ModemState getState() const { return _state; }
+      ModemTimeState getTimeState() const { return _timeState; }
+      ModemGPSState getGPSState() const { return _gpsState; }
       std::vector<ModemOperatorSearchResult> getDiscoveredOperators() const { return _operators; }
 
       String getAPN() const { return _apn; }
@@ -102,22 +114,24 @@ namespace Mycila {
       String getModel() const { return _model; }
       String getOperator() const { return _operator; }
       String getPIN() const { return _pin; }
+      // 0-100%
+      uint8_t getSignalQuality() const { return _signal; }
 
       void setAPN(const String& apn) { _apn = apn; }
       void setBands(ModemMode mode, const String& bands) { _bands[mode] = bands; }
       void setDebug(bool debug);
       void setPIN(const String& pin) { _pin = pin; }
       void setPreferredMode(ModemMode mode) { _mode = mode; }
+      void setGpsSyncTimeout(uint32_t timeoutSec) { _gpsSyncTimeout = timeoutSec; }
 
-      template <typename... Args>
-      void sendAT(Args... cmd) { _modem.sendAT(cmd...); }
+      void enqueueAT(const String& cmd) { _commands.push_back(cmd); }
+      void scanForOperators() { _state = MODEM_SEARCHING; }
 
-      bool clearFPLMN();
-      bool syncTime();
-      bool syncGPS();
-      bool registerWithOperatorCode(const String& code, uint8_t mode);
-      bool deregisterFromOperator();
-      void scanForOperators();
+      // Returns ESP_OK or ESP_ERR_TIMEOUT if connection times out
+      int sendTCP(const String& host, uint16_t port, const String& payload, const uint16_t timeoutSec = 10);
+
+      // Returns ESP_OK or ESP_ERR_TIMEOUT if connection times out
+      int httpPOST(const String& url, const String& payload, const uint16_t timeoutSec = 10);
 
     private:
       // model and streams
@@ -131,8 +145,9 @@ namespace Mycila {
 
     private:
       // GPS and Time
-      bool _gpsSynced = false;
-      bool _timeSynced = false;
+      ModemTimeState _timeState = MODEM_TIME_OFF;
+      ModemGPSState _gpsState = MODEM_GPS_OFF;
+      uint32_t _gpsSyncStartTime = 0;
       ModemGPSData _gpsData;
 
     private:
@@ -143,12 +158,14 @@ namespace Mycila {
       String _localIP;
       String _model;
       String _operator;
+      uint8_t _signal;
 
     private:
       // Modem settings
       ModemMode _mode = MODEM_MODE_AUTO;
       String _apn;
       String _pin;
+      uint32_t _gpsSyncTimeout = MYCILA_MODEM_GPS_SYNC_TIMEOUT;
       std::map<ModemMode, String> _bands = {
         {MODEM_MODE_LTE_M, "1,2,3,4,5,8,12,13,14,18,19,20,25,26,2 7,28,66,85"},
         {MODEM_MODE_NB_IOT, "1,2,3,4,5,8,12,13,18,19,20,25,26,28,6 6,71,85"},
@@ -156,15 +173,18 @@ namespace Mycila {
 
     private:
       // Operator search and registration
-      int _candidateIndex = 0;
+      int _candidateIndex = -1;
+      int _registrationCheckCount = 7;
+      uint32_t _registrationCheckLastTime = 0;
       ModemOperatorSearchResult* _candidate = nullptr;
       std::vector<ModemOperatorSearchResult> _operators;
-      uint32_t _since = 0;
 
     private:
       // state machine
       ModemState _state = MODEM_OFF;
       String _error;
+      uint32_t _lastRefreshTime = 0;
+      std::vector<String> _commands;
 
     private:
       // utilities
@@ -172,17 +192,6 @@ namespace Mycila {
       void _onWrite(const uint8_t* buffer, size_t size);
       void _readDrop();
       void _setMode(uint8_t mode);
-
-    private:
-      // handle modem state machine
-      void _start();
-      void _register();
-      void _search();
-      void _connect();
-      void _loopStarting();
-      void _loopRegistering();
-      void _loopSearching();
-      void _loopConnecting();
   };
 
   extern ModemClass Modem;

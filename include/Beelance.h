@@ -54,6 +54,5 @@ extern Mycila::Task configureTaskMonitorTask;
 
 extern Mycila::Task startModemTask;
 extern Mycila::Task serialDebugATTask;
-extern Mycila::Task modemTask;
-extern Mycila::Task modemSyncTimeTask;
+extern Mycila::Task modemLoopTask;
 extern Mycila::Task modemSyncGPSTask;

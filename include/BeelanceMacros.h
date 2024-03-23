@@ -31,6 +31,7 @@
 #define KEY_MODEM_MODE              "modem_mode"
 #define KEY_MODEM_BANDS_LTE_M       "bands_ltem"
 #define KEY_MODEM_BANDS_NB_IOT      "bands_nbiot"
+#define KEY_MODEM_GPS_SYNC_TIMEOUT  "gps_timeout"
 #define KEY_TIMEZONE_INFO           "tz_info"
 #define KEY_SEND_URL                "send_url"
 

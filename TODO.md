@@ -1,10 +1,11 @@
 # Todo list
 
-- CONNECTOR / SEND JSON
+- watchdog
+  - modem pas ready pour 2 minutes
 
 - mode nuit / jour
 
-- auto update (see HttpsOTAUpgrade.ino)
+- niveau batterie
 
 - HX711
 

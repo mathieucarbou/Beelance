@@ -27,7 +27,7 @@ AT+CNCFG=0,1,"onomondo"
 # > AT+CGDCONT=1,"IP","TM"
 # > AT+CNCFG=0,1,"TM"
 
-# Check registration status
+# Check registration state
 
 AT+CEREG?
 +CEREG: 0,5
@@ -42,7 +42,7 @@ AT+CNACT=0,1
 AT+CNACT?
 +CNACT: 0,1,"100.83.225.165"
 
-AT+SNPDPID=0
+AT+SNPDPID=1
 AT+SNPING4="8.8.8.8",2,16,5000
 ```
 

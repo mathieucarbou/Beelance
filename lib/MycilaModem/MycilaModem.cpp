@@ -4,13 +4,11 @@
  */
 #include <MycilaModem.h>
 
+#include <ArduinoHttpClient.h>
 #include <MycilaLogger.h>
 
 #if defined(TINY_GSM_MODEM_A7670) && defined(MYCILA_GPS_RX_PIN) && defined(MYCILA_GPS_TX_PIN)
-#define MYCILA_GPS_SHIELD 1
-#endif
-
-#ifdef MYCILA_GPS_SHIELD
+#define TINY_GSM_MODEM_A7670G 1
 #include <TinyGPS++.h>
 TinyGPSPlus tinyGPS;
 #endif
@@ -22,31 +20,340 @@ Mycila::ModemClass::ModemClass() : _spy(MYCILA_MODEM_SERIAL), _modem(_spy) {}
 void Mycila::ModemClass::begin() {
   if (_state != MODEM_OFF)
     return;
-  _start();
+
+  Mycila::Logger.info(TAG, "Starting modem...");
+
+#ifdef TINY_GSM_MODEM_A7670
+  // Set modem reset pin ,reset modem
+  pinMode(MYCILA_MODEM_RST_PIN, OUTPUT);
+  digitalWrite(MYCILA_MODEM_RST_PIN, !MYCILA_MODEM_RST_PIN);
+  delay(100);
+  digitalWrite(MYCILA_MODEM_RST_PIN, MYCILA_MODEM_RST_PIN);
+  delay(2600);
+  digitalWrite(MYCILA_MODEM_RST_PIN, !MYCILA_MODEM_RST_PIN);
+#endif
+
+  // Turn on modem
+  pinMode(MYCILA_MODEM_PWR_PIN, OUTPUT);
+  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
+  delay(100);
+  digitalWrite(MYCILA_MODEM_PWR_PIN, HIGH);
+  delay(100);
+  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
+
+  // Set modem baud
+  MYCILA_MODEM_SERIAL.begin(115200, SERIAL_8N1, MYCILA_MODEM_RX_PIN, MYCILA_MODEM_TX_PIN);
+
+#ifdef TINY_GSM_MODEM_A7670G
+  Mycila::Logger.info(TAG, "Starting GPS...");
+  Serial2.setRxBufferSize(1024);
+  Serial2.begin(9600, SERIAL_8N1, MYCILA_GPS_RX_PIN, MYCILA_GPS_TX_PIN);
+#endif
+
+  _state = MODEM_STARTING;
 }
 
 void Mycila::ModemClass::loop() {
-  _readDrop();
-  switch (_state) {
-    case MODEM_OFF:
-      return;
-    case MODEM_STARTING:
-      _loopStarting();
-      break;
-    case MODEM_REGISTERING:
-      _loopRegistering();
-      break;
-    case MODEM_SEARCHING:
-      _loopSearching();
-      break;
-    case MODEM_CONNECTING:
-      _loopConnecting();
-      break;
-    case MODEM_CONNECTED: {
-      break;
+  bool refreshInfo = false;
+
+  if (_state == MODEM_STARTING) {
+    Mycila::Logger.info(TAG, "Init SIM...");
+
+    if (_modem.init(_pin.c_str())) {
+      Mycila::Logger.info(TAG, "SIM Ready!");
+      _error = emptyString;
+
+#ifdef TINY_GSM_MODEM_SIM7080
+      // 2 Automatic
+      _modem.setNetworkMode(2);
+
+      // NB-IoT bands
+      String nbiotBands = "+CBANDCFG=\"NB-IOT\",";
+      nbiotBands += _bands[MODEM_MODE_NB_IOT];
+      _modem.sendAT(nbiotBands.c_str());
+      _modem.waitResponse();
+
+      // LTE-M bands
+      String ltemBands = "+CBANDCFG=\"CAT-M\",";
+      ltemBands += _bands[MODEM_MODE_LTE_M];
+      _modem.sendAT(ltemBands.c_str());
+      _modem.waitResponse();
+
+      // APN
+      _modem.sendAT("+CNCFG=0,1,\"", _apn, "\"");
+      _modem.waitResponse();
+#endif
+
+      // APN
+      _modem.sendAT("+CGDCONT=1,\"IP\",\"", _apn, "\"");
+      _modem.waitResponse();
+
+      // go to registration
+      _setMode(_mode);
+      _state = MODEM_WAIT_REGISTRATION;
+
+    } else {
+      switch (_modem.getSimStatus()) {
+        case SIM_ERROR:
+          _error = "SIM not detected";
+          break;
+        case SIM_READY:
+          _error = "SIM Ready";
+          break;
+        case SIM_LOCKED:
+          _error = "SIM PIN required";
+          break;
+        case SIM_ANTITHEFT_LOCKED:
+          _error = "SIM Locked";
+          break;
+        default:
+          _error = "SIM Error";
+          break;
+      }
+      Mycila::Logger.error(TAG, "Init SIM Error: %s", _error.c_str());
+      _state = MODEM_ERROR;
     }
-    default:
-      break;
+
+    refreshInfo = true;
+  }
+
+  if (_state == MODEM_WAIT_REGISTRATION && millis() - _registrationCheckLastTime >= 2000) {
+    Mycila::Logger.info(TAG, "Check registration...");
+    _registrationCheckCount--;
+
+    if (_modem.isNetworkConnected()) {
+      Mycila::Logger.info(TAG, "Registered!");
+
+      Mycila::Logger.info(TAG, "Sync GPS...");
+#ifdef TINY_GSM_MODEM_SIM7080
+      _modem.enableGPS(); // GPS is incompatible with networking
+#endif
+      _gpsSyncStartTime = millis();
+      _state = MODEM_WAIT_GPS;
+      if (_gpsState != MODEM_GPS_SYNCED)
+        _gpsState = MODEM_GPS_SYNCING;
+
+    } else if (_registrationCheckCount <= 0) {
+      if (!_candidate) {
+        Mycila::Logger.warn(TAG, "Timeout registering with any operator");
+        _state = MODEM_SEARCHING;
+
+      } else {
+        Mycila::Logger.warn(TAG, "Timeout registering with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+
+        while (true) {
+          _candidateIndex++;
+          _candidate = _candidateIndex < _operators.size() ? &_operators[_candidateIndex] : nullptr;
+
+          if (!_candidate) {
+            Mycila::Logger.warn(TAG, "No more operator to try");
+            _state = MODEM_SEARCHING;
+            break;
+          }
+
+          Mycila::Logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
+          _setMode(_candidate->mode);
+          _modem.sendAT("+COPS=1,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
+
+          if (_modem.waitResponse(60000) == 1) {
+            Mycila::Logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+            _registrationCheckCount = 7;
+            _state = MODEM_WAIT_REGISTRATION;
+            break;
+
+          } else {
+            Mycila::Logger.warn(TAG, "Failed to associate with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+          }
+        }
+      }
+    } else {
+      Mycila::Logger.info(TAG, "Not registered yet.");
+    }
+
+    _registrationCheckLastTime = millis();
+    refreshInfo = true;
+  }
+
+  if (_state == MODEM_SEARCHING) {
+    Mycila::Logger.info(TAG, "Searching for operators...");
+
+    // de-register
+    _modem.sendAT("+COPS=2");
+    _modem.waitResponse();
+    _operator = emptyString;
+
+    // https://help.onomondo.com/en/how-to-clear-the-fplmn-list
+    // Query state: AT+CRSM=176,28539,0,0,12AT+CRSM=176,28539,0,0,12
+    _modem.sendAT("+CRSM=214,28539,0,0,12,\"FFFFFFFFFFFFFFFFFFFFFFFF\"");
+    _modem.waitResponse(2000L, "+CRSM:");
+
+    _setMode(_mode);
+    _modem.sendAT("+COPS=?");
+
+    _operators.clear();
+    _candidateIndex = -1;
+    _candidate = nullptr;
+
+    _spy.setTimeout(70000);
+    if (_spy.readStringUntil(':').endsWith("+COPS")) {
+      _spy.setTimeout(1000);
+      while (!_spy.readStringUntil('(').isEmpty()) {
+        ModemOperatorSearchResult op;
+        op.state = static_cast<ModemOperatorState>(_spy.parseInt());
+        _spy.readStringUntil('"');
+        op.name = _spy.readStringUntil('"');
+        op.name.trim();
+        _spy.readStringUntil('"');
+        _spy.readStringUntil('"');
+        _spy.readStringUntil('"');
+        op.code = _spy.readStringUntil('"');
+        op.code.trim();
+        _spy.readStringUntil(',');
+        op.mode = _spy.parseInt();
+
+        if (!op.name.isEmpty()) {
+          if (op.state == MODEM_OPERATOR_FORBIDDEN) {
+            Mycila::Logger.warn(TAG, "Skipping forbidden operator %s (%d)", op.name.c_str(), op.mode);
+          } else {
+            Mycila::Logger.info(TAG, "Found operator %s (%d) code=%s, state=%d", op.name.c_str(), op.mode, op.code.c_str(), op.state);
+            _operators.push_back(op);
+          }
+        }
+      }
+      _readDrop();
+
+      for (_candidateIndex = 0; _candidateIndex < _operators.size(); _candidateIndex++) {
+        _candidate = &_operators[_candidateIndex];
+
+        Mycila::Logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
+
+        _setMode(_candidate->mode);
+        _modem.sendAT("+COPS=1,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
+
+        if (_modem.waitResponse(60000) == 1) {
+          Mycila::Logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+          _registrationCheckCount = 7;
+          _state = MODEM_WAIT_REGISTRATION;
+          break;
+
+        } else {
+          Mycila::Logger.warn(TAG, "Failed to associate with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+        }
+      }
+    } else {
+      // search again after
+    }
+
+    refreshInfo = true;
+  }
+
+  if (_state == MODEM_WAIT_GPS) {
+    if (refreshInfo || millis() - _lastRefreshTime >= 2000) {
+      Mycila::Logger.info(TAG, "Check for GPS Sync...");
+#ifdef TINY_GSM_MODEM_A7670G
+      if (Serial2.available()) {
+        while (Serial2.available()) {
+          int c = Serial2.read();
+          if (tinyGPS.encode(c)) {
+            bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
+            if (valid) {
+              _gpsData.latitude = tinyGPS.location.lat();
+              _gpsData.longitude = tinyGPS.location.lng();
+              _gpsData.altitude = tinyGPS.altitude.meters();
+              _gpsData.accuracy = tinyGPS.hdop.hdop();
+              _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
+              _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
+              _gpsData.time.tm_mday = tinyGPS.date.day();
+              _gpsData.time.tm_hour = tinyGPS.time.hour();
+              _gpsData.time.tm_min = tinyGPS.time.minute();
+              _gpsData.time.tm_sec = tinyGPS.time.second();
+              _gpsState = MODEM_GPS_SYNCED;
+            }
+          }
+        }
+      }
+#endif
+#ifdef TINY_GSM_MODEM_SIM7080
+      uint8_t status = 0;
+      if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec)) {
+        _gpsData.time.tm_year -= 1900;
+        _gpsData.time.tm_mon -= 1;
+        _gpsState = MODEM_GPS_SYNCED;
+      }
+#endif
+      if (_gpsState == MODEM_GPS_SYNCED) {
+        Mycila::Logger.info(TAG, "GPS Synced!");
+        _state = MODEM_CONNECTING;
+        refreshInfo = true;
+      } else if (millis() - _gpsSyncStartTime >= _gpsSyncTimeout * 1000) {
+        Mycila::Logger.error(TAG, "GPS Sync timeout!");
+        _gpsState = MODEM_GPS_TIMEOUT;
+        _state = MODEM_CONNECTING;
+      } else {
+        _lastRefreshTime = millis();
+      }
+    }
+  }
+
+  if (_state == MODEM_CONNECTING) {
+    Mycila::Logger.info(TAG, "Activate DATA...");
+#ifdef TINY_GSM_MODEM_A7670
+    _modem.gprsConnect(_apn.c_str());
+#endif
+#ifdef TINY_GSM_MODEM_SIM7080
+    _modem.disableGPS(); // GPS is incompatible with networking
+    _modem.setNetworkActive();
+#endif
+    _modem.waitForNetwork();
+    _state = MODEM_READY;
+    refreshInfo = true;
+  }
+
+  // refresh modem info
+  if (refreshInfo || millis() - _lastRefreshTime >= (_timeState == ModemTimeState::MODEM_TIME_SYNCED ? 60000 : 2000)) {
+    if (_state > MODEM_STARTING && _timeState == ModemTimeState::MODEM_TIME_OFF)
+      _timeState = ModemTimeState::MODEM_TIME_SYNCING;
+
+    // time
+    struct tm t = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    if (_timeState == ModemTimeState::MODEM_TIME_SYNCING && !_modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL).startsWith("80/01/06") && _modem.getNetworkTime(&t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, nullptr)) {
+      t.tm_year -= 1900;
+      t.tm_mon -= 1;
+      struct timeval now = {mktime(&t), 0};
+      settimeofday(&now, nullptr);
+      tzset();
+      _timeState = ModemTimeState::MODEM_TIME_SYNCED;
+    }
+
+    // signal quality
+    int16_t sq = _modem.getSignalQuality();
+    _signal = sq >= 0 && sq <= 31 ? map(sq, 0, 31, 0, 100) : 0;
+
+    _localIP = _modem.getLocalIP();
+    _imei = _modem.getIMEI();
+    _iccid = _modem.getSimCCID();
+    _model = _modem.getModemName();
+    _imsi = _modem.getIMSI();
+    _operator = _modem.getOperator();
+
+    _lastRefreshTime = millis();
+  }
+
+  // execute queued AT commands
+  if (_commands.size()) {
+    for (size_t i = 0; i < _commands.size(); i++) {
+      Mycila::Logger.info(TAG, "Execute command: %s", _commands[i].c_str());
+      if (_commands[i].startsWith("AT+"))
+        _modem.sendAT(_commands[i].substring(2).c_str());
+      else
+        _modem.sendAT(_commands[i].c_str());
+      delay(5000);
+      while (!_spy.available()) {
+        delay(5000);
+      }
+      _readDrop();
+    }
+    _commands.clear();
   }
 }
 
@@ -67,111 +374,145 @@ void Mycila::ModemClass::setDebug(bool debug) {
   }
 }
 
-bool Mycila::ModemClass::clearFPLMN() {
-  // https://help.onomondo.com/en/how-to-clear-the-fplmn-list
-  // Query status: AT+CRSM=176,28539,0,0,12AT+CRSM=176,28539,0,0,12
-  _modem.sendAT("AT+CRSM=214,28539,0,0,12,\"FFFFFFFFFFFFFFFFFFFFFFFF\"");
-  return _modem.waitResponse(1000L, "+CRSM:") == 1;
-}
-
-bool Mycila::ModemClass::syncTime() {
-  if (_state < MODEM_CONNECTING)
-    return false;
-  if (_modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL).startsWith("80/01/06"))
-    return false;
-  Mycila::Logger.debug(TAG, "Sync Time...");
-  struct tm t = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-  if (_modem.getNetworkTime(&t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, nullptr)) {
-    t.tm_year -= 1900;
-    t.tm_mon -= 1;
-    struct timeval now = {mktime(&t), 0};
-    settimeofday(&now, nullptr);
-    tzset();
-    _timeSynced = true;
-    return true;
+int Mycila::ModemClass::sendTCP(const String& host, uint16_t port, const String& payload, const uint16_t timeoutSec) {
+  TinyGsmClient client(_modem);
+  client.setTimeout(timeoutSec * 1000);
+  int code = ESP_ERR_TIMEOUT;
+  if (client.connect(host.c_str(), port, timeoutSec)) {
+    client.print(payload);
+    client.flush();
+    client.stop();
+    code = ESP_OK;
   }
-  return false;
+  return code;
 }
 
-#ifdef MYCILA_GPS_SHIELD
-bool Mycila::ModemClass::syncGPS() {
-  if (_state < MODEM_CONNECTING)
-    return false;
-  if (!Serial2.available())
-    return false;
-  Mycila::Logger.debug(TAG, "Sync GPS...");
-  while (Serial2.available()) {
-    int c = Serial2.read();
-    if (tinyGPS.encode(c)) {
-      bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
-      if (valid) {
-        _gpsData.latitude = tinyGPS.location.lat();
-        _gpsData.longitude = tinyGPS.location.lng();
-        _gpsData.altitude = tinyGPS.altitude.meters();
-        _gpsData.accuracy = tinyGPS.hdop.hdop();
-        _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
-        _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
-        _gpsData.time.tm_mday = tinyGPS.date.day();
-        _gpsData.time.tm_hour = tinyGPS.time.hour();
-        _gpsData.time.tm_min = tinyGPS.time.minute();
-        _gpsData.time.tm_sec = tinyGPS.time.second();
-        _gpsSynced = true;
-        return true;
-      }
+#ifdef TINY_GSM_MODEM_A7670
+int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const uint16_t timeoutSec) {
+  if (url.isEmpty() || payload.isEmpty())
+    return ESP_ERR_INVALID_ARG;
+
+  if (!_modem.https_begin())
+    return ESP_ERR_INVALID_STATE;
+
+  if (!_modem.https_set_url(url.c_str()))
+    return ESP_ERR_INVALID_ARG;
+
+  _modem.https_set_timeout(timeoutSec, timeoutSec, timeoutSec);
+  _modem.https_set_content_type("application/json");
+  _modem.https_post(payload.c_str());
+
+  return ESP_OK;
+}
+#endif
+
+#ifdef TINY_GSM_MODEM_SIM7080
+int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const uint16_t timeoutSec) {
+  if (url.isEmpty() || payload.isEmpty())
+    return ESP_ERR_INVALID_ARG;
+
+  if (!_modem.isNetworkConnected())
+    return ESP_ERR_INVALID_STATE;
+
+  enum URLParseState { PROTOCOL,
+                       SEPERATOR,
+                       HOST,
+                       PORT,
+                       PATH } state = PROTOCOL;
+  String protocol;
+  String host;
+  String port;
+  String path = "/";
+
+  for (int i = 0; i < url.length(); i++) {
+    switch (state) {
+      case URLParseState::PROTOCOL:
+        if (url[i] == ':')
+          state = URLParseState::SEPERATOR;
+        else
+          protocol += url[i];
+        break;
+      case URLParseState::SEPERATOR:
+        if (url[i] != '/') {
+          state = HOST;
+          host += url[i];
+        }
+        break;
+      case URLParseState::HOST:
+        if (url[i] == ':')
+          state = PORT;
+        else if (url[i] == '/')
+          state = PATH;
+        else
+          host += url[i];
+        break;
+      case URLParseState::PORT:
+        if (url[i] == '/')
+          state = PATH;
+        else
+          port += url[i];
+        break;
+      case URLParseState::PATH:
+        path += url[i];
+        break;
+      default:
+        assert(false);
+        break;
     }
   }
-  return false;
-}
-#else
-bool Mycila::ModemClass::syncGPS() {
-  if (_state < MODEM_CONNECTING)
-    return false;
-  Mycila::Logger.debug(TAG, "Sync GPS...");
-  uint8_t status = 0;
-  if (_modem.getGPS(&status,
-                    &_gpsData.latitude,
-                    &_gpsData.longitude,
-                    nullptr,
-                    &_gpsData.altitude,
-                    nullptr,
-                    nullptr,
-                    &_gpsData.accuracy,
-                    &_gpsData.time.tm_year,
-                    &_gpsData.time.tm_mon,
-                    &_gpsData.time.tm_mday,
-                    &_gpsData.time.tm_hour,
-                    &_gpsData.time.tm_min,
-                    &_gpsData.time.tm_sec)) {
-    _gpsData.time.tm_year -= 1900;
-    _gpsData.time.tm_mon -= 1;
-    _gpsSynced = true;
-    return true;
+
+  protocol.toLowerCase();
+
+  if (host.isEmpty() || (protocol != "http" && protocol != "https"))
+    return ESP_ERR_INVALID_ARG;
+
+  int ret = HTTP_SUCCESS;
+
+  if (protocol == "https") {
+    const uint16_t httpsPort = port.isEmpty() ? 443 : port.toInt();
+    TinyGsmClientSecure client(_modem);
+    client.setTimeout(timeoutSec * 1000);
+    if (client.connect(host.c_str(), httpsPort, timeoutSec)) {
+      HttpClient http(client, host, httpsPort);
+      http.setTimeout(timeoutSec * 1000);
+      ret = http.post(path, "application/json", payload);
+      http.stop();
+    } else {
+      ret = HTTP_ERROR_CONNECTION_FAILED;
+    }
+
+  } else if (protocol == "http") {
+    const uint16_t httpPort = port.isEmpty() ? 80 : port.toInt();
+    TinyGsmClient client(_modem);
+    client.setTimeout(timeoutSec * 1000);
+    if (client.connect(host.c_str(), httpPort, timeoutSec)) {
+      HttpClient http(client, host, httpPort);
+      http.setTimeout(timeoutSec * 1000);
+      ret = http.post(path, "application/json", payload);
+      http.stop();
+    } else {
+      ret = HTTP_ERROR_CONNECTION_FAILED;
+    }
+
+  } else {
+    assert(false);
   }
-  return false;
-}
-#endif // MYCILA_GPS_SHIELD
 
-bool Mycila::ModemClass::registerWithOperatorCode(const String& code, uint8_t mode) {
-  Mycila::Logger.debug(TAG, "Manually register to %s,%d", code.c_str(), mode);
-  _setMode(mode);
-  _modem.sendAT("+COPS=1,2,\"", code.c_str(), "\",", mode);
-  return _modem.waitResponse(MYCILA_MODEM_REGISTER_TIMEOUT) == 1;
+  switch (ret) {
+    case HTTP_SUCCESS:
+      return ESP_OK;
+    case HTTP_ERROR_TIMED_OUT:
+      return ESP_ERR_TIMEOUT;
+    case HTTP_ERROR_CONNECTION_FAILED:
+      return ESP_ERR_INVALID_STATE;
+    case HTTP_ERROR_INVALID_RESPONSE:
+      return ESP_ERR_INVALID_RESPONSE;
+    default:
+      // HTTP_ERROR_API
+      return ESP_FAIL;
+  }
 }
-
-bool Mycila::ModemClass::deregisterFromOperator() {
-  Mycila::Logger.debug(TAG, "Deregister from operator...");
-  _modem.sendAT("+COPS=2");
-  _modem.waitResponse();
-  _operator = _modem.getOperator();
-  return _operator.isEmpty();
-}
-
-void Mycila::ModemClass::scanForOperators() {
-  Mycila::Logger.debug(TAG, "Scan for operators...");
-  clearFPLMN();
-  deregisterFromOperator();
-  _search();
-}
+#endif
 
 void Mycila::ModemClass::_onRead(const uint8_t* buffer, size_t size) {
   if (size) {
@@ -216,219 +557,6 @@ void Mycila::ModemClass::_setMode(uint8_t mode) {
       break;
   }
 #endif
-}
-
-void Mycila::ModemClass::_start() {
-  Mycila::Logger.debug(TAG, "Starting modem...");
-
-  _gpsSynced = false;
-  _timeSynced = false;
-
-#ifdef TINY_GSM_MODEM_A7670
-  // Set modem reset pin ,reset modem
-  pinMode(MYCILA_MODEM_RST_PIN, OUTPUT);
-  digitalWrite(MYCILA_MODEM_RST_PIN, !MYCILA_MODEM_RST_PIN);
-  delay(100);
-  digitalWrite(MYCILA_MODEM_RST_PIN, MYCILA_MODEM_RST_PIN);
-  delay(2600);
-  digitalWrite(MYCILA_MODEM_RST_PIN, !MYCILA_MODEM_RST_PIN);
-#endif
-
-  // Turn on modem
-  pinMode(MYCILA_MODEM_PWR_PIN, OUTPUT);
-  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
-  delay(100);
-  digitalWrite(MYCILA_MODEM_PWR_PIN, HIGH);
-  delay(100);
-  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
-
-  // Set modem baud
-  MYCILA_MODEM_SERIAL.begin(115200, SERIAL_8N1, MYCILA_MODEM_RX_PIN, MYCILA_MODEM_TX_PIN);
-
-  _state = MODEM_STARTING;
-}
-
-void Mycila::ModemClass::_register() {
-  Mycila::Logger.debug(TAG, "Register to network...");
-
-// optimizations for SIM7080
-#ifdef TINY_GSM_MODEM_SIM7080
-  _modem.setNetworkMode(2);
-
-  _setMode(_mode);
-
-  // NB-IoT bands
-  String nbiotBands = "+CBANDCFG=\"NB-IOT\",";
-  nbiotBands += _bands[MODEM_MODE_NB_IOT];
-  _modem.sendAT(nbiotBands.c_str());
-  _modem.waitResponse();
-
-  // LTE-M bands
-  String ltemBands = "+CBANDCFG=\"CAT-M\",";
-  ltemBands += _bands[MODEM_MODE_LTE_M];
-  _modem.sendAT(ltemBands.c_str());
-  _modem.waitResponse();
-
-  // band scan
-  _modem.sendAT("+CNBS=3");
-  _modem.waitResponse();
-#endif
-
-  // APN
-  _modem.sendAT("+CGDCONT=1,\"IP\",\"", _apn, "\"");
-  _modem.waitResponse();
-  _modem.sendAT("+CNCFG=0,1,\"", _apn, "\"");
-  _modem.waitResponse();
-
-  // grab modem info
-  _imei = _modem.getIMEI();
-  _iccid = _modem.getSimCCID();
-  _model = _modem.getModemName();
-
-  _since = millis();
-  _state = MODEM_REGISTERING;
-}
-
-void Mycila::ModemClass::_search() {
-  Mycila::Logger.debug(TAG, "Search for networks...");
-  _candidate = nullptr;
-  _candidateIndex = -1;
-  _operators.clear();
-  _state = MODEM_SEARCHING;
-}
-
-void Mycila::ModemClass::_connect() {
-  Mycila::Logger.debug(TAG, "Connecting...");
-
-  _imsi = _modem.getIMSI();
-  _operator = _modem.getOperator();
-
-#ifdef MYCILA_GPS_SHIELD
-  Mycila::Logger.debug(TAG, "Starting GPS...");
-  Serial2.begin(9600, SERIAL_8N1, MYCILA_GPS_RX_PIN, MYCILA_GPS_TX_PIN);
-  Serial2.setRxBufferSize(1024);
-#else
-  _modem.enableGPS();
-#endif
-
-  _state = MODEM_CONNECTING;
-}
-
-void Mycila::ModemClass::_loopStarting() {
-  Mycila::Logger.debug(TAG, "Init SIM...");
-  if (_modem.init(_pin.c_str())) {
-    Mycila::Logger.debug(TAG, "SIM Ready");
-    _readDrop();
-    _error = emptyString;
-    _register();
-  }
-}
-
-void Mycila::ModemClass::_loopRegistering() {
-  // find if we have an operator to test
-  if (!_candidate && _candidateIndex >= 0 && _candidateIndex < _operators.size()) {
-    while (_candidateIndex >= 0 && _candidateIndex < _operators.size()) {
-      if (_operators[_candidateIndex].status == MODEM_OPERATOR_FORBIDDEN) {
-        Mycila::Logger.debug(TAG, "Skipping forbidden operator: %s", _operators[_candidateIndex].name.c_str());
-        _candidateIndex++;
-      } else {
-        break;
-      }
-    }
-    _candidate = _candidateIndex >= 0 && _candidateIndex < _operators.size() ? &_operators[_candidateIndex] : nullptr;
-
-    // try to register to the candidate
-    if (_candidate) {
-      if (registerWithOperatorCode(_candidate->code, _candidate->mode)) {
-        // reset registration timeout for this candidate
-        _since = millis();
-
-      } else {
-        Mycila::Logger.debug(TAG, "Failed to register to %s", _candidate->name.c_str());
-        _candidate = nullptr;
-        _candidateIndex++; // prepare next candidate
-        return;
-      }
-    }
-  }
-
-  // check for registration timeout
-  if (millis() - _since >= MYCILA_MODEM_REGISTER_TIMEOUT) {
-    Mycila::Logger.debug(TAG, "Timeout registering to any operator");
-    if (_candidate) {
-      Mycila::Logger.debug(TAG, "Try next operator");
-      _candidate = nullptr;
-      _candidateIndex++;
-    } else {
-      Mycila::Logger.debug(TAG, "Not registered to any operator: searching again...");
-      _search();
-    }
-    return;
-  }
-
-  // test registration
-  if (!_modem.isNetworkConnected()) {
-    // check again in 1 second
-    delay(1000);
-    return;
-  }
-
-  _connect();
-}
-
-void Mycila::ModemClass::_loopSearching() {
-  Mycila::Logger.debug(TAG, "Search for networks...");
-
-  _setMode(_mode);
-  _modem.sendAT("+COPS=?");
-
-  if (_modem.waitResponse(MYCILA_MODEM_SEARCH_TIMEOUT, "+COPS:") != 1) {
-    // search again
-    return;
-  }
-
-  while (!_spy.readStringUntil('(').isEmpty()) {
-    ModemOperatorSearchResult op;
-    op.status = static_cast<ModemOperatorStatus>(_spy.parseInt());
-    _spy.readStringUntil('"');
-    op.name = _spy.readStringUntil('"');
-    _spy.readStringUntil('"');
-    _spy.readStringUntil('"');
-    _spy.readStringUntil('"');
-    op.code = _spy.readStringUntil('"');
-    _spy.readStringUntil(',');
-    op.mode = _spy.parseInt();
-    if (!op.name.isEmpty())
-      _operators.push_back(op);
-  }
-
-  _readDrop();
-
-  for (const ModemOperatorSearchResult& op : _operators) {
-    Mycila::Logger.debug(TAG, "Found operator: %s (%s) - stat=%d, mode=%d", op.name.c_str(), op.code.c_str(), op.status, op.mode);
-  }
-
-  _candidateIndex = _operators.size() > 0 ? 0 : -1;
-  _register();
-}
-
-void Mycila::ModemClass::_loopConnecting() {
-  Mycila::Logger.debug(TAG, "Activate Networking...");
-
-#ifdef TINY_GSM_MODEM_SIM7080
-  _modem.setNetworkActive();
-#endif
-
-#ifdef TINY_GSM_MODEM_A7670
-  _modem.gprsConnect(_apn.c_str());
-#endif
-
-  _localIP = _modem.getLocalIP();
-
-  if (_localIP.isEmpty())
-    return;
-
-  _state = MODEM_CONNECTED;
 }
 
 namespace Mycila {

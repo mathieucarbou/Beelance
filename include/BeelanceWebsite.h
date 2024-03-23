@@ -54,10 +54,10 @@ namespace Beelance {
       Card _nextSend = Card(&dashboard, GENERIC_CARD, "Next Update", "s");
       Card _uptime = Card(&dashboard, GENERIC_CARD, "Uptime", "s");
 
-      Card _pmuStatus = Card(&dashboard, STATUS_CARD, "PMU");
       Card _modemAPN = Card(&dashboard, STATUS_CARD, "APN");
-      Card _modemStatus = Card(&dashboard, STATUS_CARD, "Modem");
+      Card _modemState = Card(&dashboard, STATUS_CARD, "Modem");
       Card _modemOperator = Card(&dashboard, STATUS_CARD, "Operator");
+      Card _modemSignal = Card(&dashboard, PROGRESS_CARD, "Signal Quality", "%", 0, 100);
 
       Card _time = Card(&dashboard, STATUS_CARD, "Time");
       Card _latitude = Card(&dashboard, STATUS_CARD, "Latitude");

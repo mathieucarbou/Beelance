@@ -21,40 +21,67 @@ void Beelance::BeelanceClass::updateWebsite() {
 }
 
 bool Beelance::BeelanceClass::sendMeasurements() {
-  if (!Mycila::Modem.isConnected()) {
-    Mycila::Logger.error(TAG, "Unable to send measurements: modem not connected");
+  if (!Mycila::Modem.isReady()) {
+    Mycila::Logger.error(TAG, "Unable to send measurements: modem not ready");
     return false;
   }
 
-  if (!Mycila::Config.get(KEY_SEND_URL).isEmpty()) {
-    // TODO: http post
-    return true;
-
-  } else if (Mycila::Modem.getAPN() == "onomondo") {
-    Mycila::Logger.info(TAG, "Sending measurements using Onomondo Connector...");
-
-    TinyGsmClient client(*Mycila::Modem.getModem(), 0);
-    client.setTimeout(10000);
-    if (client.connect("1.2.3.4", 4321, 10)) {
-      JsonDocument doc;
-      String buffer;
-      buffer.reserve(512);
-      toJson(doc.to<JsonObject>());
-      serializeJson(doc, buffer);
-      client.print(buffer);
-      client.flush();
-      client.stop();
-      return true;
-
-    } else {
-      Mycila::Logger.error(TAG, "Unable to send measurements: unable to connect to Onomondo Platform");
-      return false;
-    }
-
-  } else {
+  if (Mycila::Config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
     Mycila::Logger.error(TAG, "Unable to send measurements: no URL defined");
     return false;
   }
+
+  JsonDocument doc;
+  String payload;
+  payload.reserve(512);
+  toJson(doc.to<JsonObject>());
+  serializeJson(doc, payload);
+
+  if (!Mycila::Config.get(KEY_SEND_URL).isEmpty()) {
+    const String url = Mycila::Config.get(KEY_SEND_URL);
+    Mycila::Logger.info(TAG, "Sending measurements to %s...", url.c_str());
+    switch (Mycila::Modem.httpPOST(url, payload)) {
+      case ESP_OK:
+        return true;
+      case ESP_ERR_INVALID_ARG:
+        Mycila::Logger.error(TAG, "Unable to send measurements: invalid URL %s", url.c_str());
+        return false;
+      case ESP_ERR_TIMEOUT:
+        Mycila::Logger.error(TAG, "Unable to send measurements: timeout connecting to %s", url.c_str());
+        return false;
+      case ESP_ERR_INVALID_STATE:
+        Mycila::Logger.error(TAG, "Unable to send measurements: unable to connect");
+        return false;
+      case ESP_ERR_INVALID_RESPONSE:
+        Mycila::Logger.error(TAG, "Unable to send measurements: invalid response from server");
+        return false;
+      default:
+        Mycila::Logger.error(TAG, "Unable to send measurements: unknown error");
+        return false;
+    }
+  }
+
+  if (Mycila::Modem.getAPN() == "onomondo") {
+    Mycila::Logger.info(TAG, "Sending measurements using Onomondo Connector...");
+    switch (Mycila::Modem.sendTCP("1.2.3.4", 1234, payload)) {
+      case ESP_OK:
+        return true;
+      case ESP_ERR_TIMEOUT:
+        Mycila::Logger.error(TAG, "Unable to send measurements: timeout connecting to Onomondo Platform");
+        return false;
+      case ESP_ERR_INVALID_STATE:
+        Mycila::Logger.error(TAG, "Unable to send measurements: unable to connect");
+        return false;
+      case ESP_ERR_INVALID_RESPONSE:
+        Mycila::Logger.error(TAG, "Unable to send measurements: invalid response from server");
+        return false;
+      default:
+        Mycila::Logger.error(TAG, "Unable to send measurements: unknown error");
+        return false;
+    }
+  }
+
+  assert(false); // Should never happen
 }
 
 void Beelance::BeelanceClass::toJson(const JsonObject& root) {

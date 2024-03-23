@@ -15,7 +15,7 @@ AsyncWebServer webServer(80);
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 
 Mycila::TaskManager loopTaskManager("loopTask", 15);
-Mycila::TaskManager modemTaskManager("modemTask", 6);
+Mycila::TaskManager modemTaskManager("modemTask", 4);
 Mycila::TemperatureSensor systemTemperatureSensor;
 
 // setup

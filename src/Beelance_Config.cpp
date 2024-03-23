@@ -25,6 +25,7 @@ void Beelance::BeelanceClass::_initConfig() {
   Mycila::Config.configure(KEY_MODEM_APN);
   Mycila::Config.configure(KEY_MODEM_BANDS_LTE_M, "1,3,8,20,28");
   Mycila::Config.configure(KEY_MODEM_BANDS_NB_IOT, "3,8,20");
+  Mycila::Config.configure(KEY_MODEM_GPS_SYNC_TIMEOUT, String(MYCILA_MODEM_GPS_SYNC_TIMEOUT));
   Mycila::Config.configure(KEY_MODEM_MODE, "AUTO");
   Mycila::Config.configure(KEY_MODEM_PIN);
   Mycila::Config.configure(KEY_NO_SLEEP_ENABLE, "true");
