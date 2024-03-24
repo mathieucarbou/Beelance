@@ -153,7 +153,7 @@ void Mycila::ModemClass::loop() {
 
           Mycila::Logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
           _setMode(_candidate->mode);
-          _modem.sendAT("+COPS=1,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
+          _modem.sendAT("+COPS=0,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
 
           if (_modem.waitResponse(60000) == 1) {
             Mycila::Logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
@@ -228,7 +228,7 @@ void Mycila::ModemClass::loop() {
         Mycila::Logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
 
         _setMode(_candidate->mode);
-        _modem.sendAT("+COPS=1,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
+        _modem.sendAT("+COPS=0,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
 
         if (_modem.waitResponse(60000) == 1) {
           Mycila::Logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
