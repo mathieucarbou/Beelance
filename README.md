@@ -72,15 +72,13 @@ Where:
 
 You need to choose if you go with:
 
-1. A IoT / M2M SIM card (with LILYGO® T-SIM7080G S3)
-
-   - Pros: cheaper if you have several beehives
-   - Cons: requires to get SIM card from the right IoT / M2M provider
-
-2. A normal 4G SIM card from a traditional mobile operator (with LILYGO® T-A7670G R2 with GPS)
-
-   - Pros: easier (i.e. in France a cheap Free Mobile SIM card could work)
-   - Cons: won't scale with many beehives, and can be more expensive
+- A IoT / M2M SIM card (with `LILYGO® T-SIM7080G S3 with GPS`)
+  - Cheaper if you have several beehives
+  - Better coverage: LTE-M and NB-IoT are special optimized bandwidth for IoT devices
+  - Requires to get SIM card from the right IoT / M2M provider
+- A normal 4G SIM card from a traditional mobile operator (with `LILYGO® T-A7670G R2 with GPS`)
+  - Easier to setup (i.e. in France a cheap Free Mobile SIM card could work)
+  - Won't scale with many beehives, and can be more expensive
 
 Here is a matrix of tested LTE-M / NB-IOT provider for France and boards:
 
@@ -94,7 +92,7 @@ Here is a matrix of tested LTE-M / NB-IOT provider for France and boards:
 It has been tested extensively during development and works very well with the `T-SIM7080G S3` board.
 Onomondo also has accessible pricing, very good technical support, and provides connectors, a way to optimize the traffic in order to reduce cost even more.
 This is the way to go if you have several beehives.
-Beelance supports Onomondo connectors: you can add a connector to capture TCP traffic on port 1234 and send the received JSON payload to your server.
+**Beelance supports Onomondo connectors**, which is a way to considerably reduce costly data traffic and decouple the device from the website collecting the data.
 
 **[Things Mobile](https://www.thingsmobile.com)** has been tested during development and works well with the `T-SIM7080G S3` board.
 Things Mobile should should cost around 1-2 euros per month per SIM card (beehive), but the solution is not scalable: it's not possible to order a batch of SIM cards, and each SIM card costs 5 euros to ship, 1.5 euros to activate, and the minimal balance to add on the platform is 30 euros.
@@ -102,27 +100,28 @@ Also, the platform is a mere web interface where we can manage SIM card. There i
 This solution is good if you have a few connected beehives.
 
 **[Free Mobile](https://mobile.free.fr)** provides cheap SIM cards at 2 euros (or free for people having a Freebox), with 200MB of data per month, which should be enough for a beehive.
-Since it works on traditional frequencies (700 MHz band 28), it should work with the `T-A7670G R2` board.
+Since it works on traditional frequencies (700 MHz band 28), it _should_ work with the `T-A7670G R2` board.
 
 ## Shopping list
 
 **Hardware**
 
-- LTE-M / NB-IOT: [LILYGO® T-SIM7080G S3](https://www.lilygo.cc/products/t-sim7080-s3) ([AliExpress](https://fr.aliexpress.com/item/1005005188988179.html)) - 42 euros
-- LTE / 4G: [LILYGO® T-A7670G R2 with GPS](https://www.lilygo.cc/products/t-sim-a7670e?variant=43043706077365) ([AliExpress](https://fr.aliexpress.com/item/1005003036514769.html)) - 47 euros
-- [DS18B20 Cable + DS18B20 Adapter](https://fr.aliexpress.com/item/4000143479592.html) - _SAMIORE Store_ - 3 euros
+- Pick one board:
+  - LTE-M / NB-IOT: [LILYGO® T-SIM7080G S3](https://www.lilygo.cc/products/t-sim7080-s3) ([AliExpress](https://fr.aliexpress.com/item/1005005188988179.html)) - 42 euros
+  - LTE / 4G: [LILYGO® T-A7670G R2 with GPS](https://www.lilygo.cc/products/t-sim-a7670e?variant=43043706077365) ([AliExpress](https://fr.aliexpress.com/item/1005003036514769.html)) - 47 euros
+- Temperature Sensor: [DS18B20 Cable + DS18B20 Adapter](https://fr.aliexpress.com/item/4000143479592.html) - _SAMIORE Store_ - 3 euros
 - [Solar Panels](https://fr.aliexpress.com/item/1005005509831452.html) - 33 euros for 2 items
-- [4x Load Sensors](https://fr.aliexpress.com/item/1005005916651412.html) - _SAMIORE Store_ - 11 euros for 4 items
-- [HX711](https://fr.aliexpress.com/item/33041823995.html) - _SAMIORE Store_ - 3 euros
+- Weight scale
+  - [4x Load Sensors](https://fr.aliexpress.com/item/1005005916651412.html) - _SAMIORE Store_ - 11 euros for 4 items
+  - [HX711](https://fr.aliexpress.com/item/33041823995.html) - _SAMIORE Store_ - 3 euros
+  - Alternative: [Set of 4x Load Sensors + HX711](https://fr.aliexpress.com/item/1005004455387340.html) - _SAMIORE Store_ - 6 euros
 - [Dupont Cable Kit](https://fr.aliexpress.com/item/1699285992.html) - _SAMIORE Store_ - 4 euros
-- [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
-- [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
-- [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items
-- [Waterprood Electric Box about 150mm x 100mm x 60mm](https://www.amazon.fr/gp/product/B00GWPF840) - 8 euros
-
-Alternatives:
-
-- [Set of 4x Load Sensors + HX711](https://fr.aliexpress.com/item/1005004455387340.html) - _SAMIORE Store_ - 6 euros
+- Battery & Charger:
+  - [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
+  - [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
+- Box: [Waterprood Electric Box about 150mm x 100mm x 60mm](https://www.amazon.fr/gp/product/B00GWPF840) - 8 euros
+- Optional:
+  - [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items (facilitate charging and powering the device without opening the box)
 
 **WARNINGS:**
 
@@ -136,6 +135,8 @@ Alternatives:
 
 - Connect the GPS antenna and LTE antenna to the module
 - Connect de DS18B20 adapter (data to GPIO pin 21, VCC to 3.3V DC1, GND to GND on board)
+
+![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/build-1.jpeg) ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/build-2.jpeg)
 
 # How to install
 
@@ -175,14 +176,46 @@ Install the SIM card and power the board.
 ## Configuration
 
 - Connect to the WiFi access point `Beelance-XXXXXX` and open a web browser to `http://192.168.4.1`.
-- Go to the configuration page (`http://192.168.4.1/config`) to set:
+
+- Go to the configuration page (`http://192.168.4.1/config`)
+
+![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-config.png)
+
+- Set:
+
+  - `admin_pwd`: The password to access the web interface
   - `bh_name`: The name for your beehive
   - `modem_apn`: The APN of your connectivity provider (`TM` for Things Mobile, `onomondo` for Onomondo)
-  - `admin_pwd`: The password to access the web interface
+  - `send_delay`: The time to sleep between each data send (in seconds). Default to 1 hour (3600 seconds)
+  - `send_url`: **ONLY IF YOU DO NOT USE Onomondo**: The URL to send the data to (must be a HTTP or HTTPS POST endpoint that will receive a Json payload)
   - `sys_tmp_pin`: THe sensor temperature GPIO that you used (21 by default, but you can change it)
+
 - Restart the device. It should:
   - Connect to the cellular network
   - Show the time and GPS location (if you are outside)
+
+If you are not using Onomondo or want to setup your own website to receive the data, here here a sample of Json that the device will send to the configured URL:
+
+```json
+{
+  "altitude": 0,
+  "beehive": "ruche_01",
+  "boot": 515,
+  "build": "ec13cb4",
+  "device": "73FADC",
+  "firmware": "Beelance-main-lilygo_t_sim7080g-debug.bin",
+  "iccid": "89457300000014300000",
+  "imei": "860016043100000",
+  "latitude": 0,
+  "longitude": 0,
+  "modem": "SIMCOM SIM7080",
+  "operator": "Orange F",
+  "temperature": 23.25,
+  "timestamp": "2024-03-25T19:19:43Z",
+  "uptime": 2807,
+  "version": "main_ec13cb4_modified"
+}
+```
 
 **Important information about the Modem**
 
@@ -193,9 +226,7 @@ Cellular communication goes through several steps:
 2. Network registration: can take up to 30 seconds
 3. Network search: if step 2 fails can take up to 1 minute
 4. Network registration for each search result until one succeeds (can take up to 30 seconds per operator tried)
-
-Once done, a restart is faster, as long as the connection lease is still opened.
-For example, if the SIM card is disconnected for 2 hours, it will take a longer time to reconnect.
+5. GPS search: can take up to 1 minute, but this timeout can be configured in the configuration page (`gps_timeout`)
 
 # How to use
 
@@ -205,6 +236,12 @@ The Dashboard is located at `http://192.168.4.1/`.
 For there you can see the device status and access some basic buttons.
 
 ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-dashboard-overview.png)
+
+- `Send now and sleep!`: will send the data now and go to sleep for the configured amount of time (`send_delay`) if sleep is not prevented
+- `Scan Operators`: Trigger a new operator scan and new GPS search
+- `Prevent Sleep`: Keeps the device active and prevents it from going to sleep
+- `Debug Logging`: activate debug logging, which you can see in the console at `http://192.168.4.1/console`
+- `Restart`: Restart the device
 
 The statistics menu shows some metrics regarding the device itself.
 
@@ -237,14 +274,15 @@ If you need to backup, restore or reset the configuration to factory settings, g
 
 The same page can be used to change your configuration and some more advanced settings.
 
-![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-config.png)
-
 ## Debugging and logging
 
 Select `Debug Logging` in the Dashboard (`http://192.168.4.1/`).
 This will activate debug logging and show the logs in the console at `http://192.168.4.1/console`.
 
 ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-console.png)
+
+**WARNING**: the console allows you to interact with the Modem internals (called `AT commands`).
+**DO NOT SEND ANY DATA UNLESS YOU KNOW WHAT YOU ARE DOING.**
 
 ## Factory reset
 
