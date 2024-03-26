@@ -11,7 +11,7 @@
 void Beelance::BeelanceClass::_initConfig() {
   Mycila::Logger.info(TAG, "Initializing Config System...");
 
-  Mycila::Config.begin(21);
+  Mycila::Config.begin(23);
 
   String hostname = String(Mycila::AppInfo.name + "-" + Mycila::AppInfo.id);
   hostname.toLowerCase();
@@ -37,6 +37,7 @@ void Beelance::BeelanceClass::_initConfig() {
   Mycila::Config.configure(KEY_WIFI_CONNECTION_TIMEOUT, String(ESPCONNECT_CONNECTION_TIMEOUT));
   Mycila::Config.configure(KEY_WIFI_PASSWORD);
   Mycila::Config.configure(KEY_WIFI_SSID);
+  Mycila::Config.configure(KEY_BOARD_LED, "true");
 
   // init logging
   configureDebugTask.forceRun();

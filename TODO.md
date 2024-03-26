@@ -5,8 +5,6 @@
 
 - mode nuit / jour
 
-- niveau batterie
-
 - HX711
 
   - https://github.com/bogde/HX711

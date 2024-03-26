@@ -45,6 +45,7 @@ LTE-M and NB-IOT are special communication frequencies for IoT devices which all
 - Configuration backup and restore
 - Work in AP Mode and WiFi mode
 - Sleep mode to save battery
+- Battery voltage and level monitoring
 - DS18B20 Temperature sensor
 - Supported boards:
   - [LILYGO® T-SIM7080G S3 with GPS](https://www.lilygo.cc/products/t-sim7080-s3)
@@ -198,22 +199,25 @@ If you are not using Onomondo or want to setup your own website to receive the d
 
 ```json
 {
-  "altitude": 0,
-  "beehive": "ruche_01",
-  "boot": 515,
-  "build": "ec13cb4",
-  "device": "73FADC",
-  "firmware": "Beelance-main-lilygo_t_sim7080g-debug.bin",
-  "iccid": "89457300000014300000",
-  "imei": "860016043100000",
-  "latitude": 0,
-  "longitude": 0,
-  "modem": "SIMCOM SIM7080",
-  "operator": "Orange F",
-  "temperature": 23.25,
-  "timestamp": "2024-03-25T19:19:43Z",
-  "uptime": 2807,
-  "version": "main_ec13cb4_modified"
+  "altitude": 7.400000095,
+  "battery_level": 90.79998016,
+  "battery_voltage": 4.107999802,
+  "beehive": "ruche_02",
+  "boot": 852,
+  "build": "3714812",
+  "device": "C01B0C",
+  "firmware": "Beelance-main-lilygo_t_a7670g-debug.bin",
+  "iccid": "89457300000014000000",
+  "imei": "867284062000000",
+  "latitude": 44.1234,
+  "longitude": -2.1234,
+  "modem": "A7670G-LLSE",
+  "operator": "20801",
+  "temperature": 0,
+  "timestamp": "2024-03-26T14:49:50Z",
+  "uptime": 119,
+  "version": "main_3714812_modified",
+  "weight": 0
 }
 ```
 

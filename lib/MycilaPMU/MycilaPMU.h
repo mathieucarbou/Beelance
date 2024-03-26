@@ -6,27 +6,50 @@
 
 #include <XPowersLib.h>
 
+// https://gist.github.com/exocode/90339d7f946ad5f83dd1cf29bf5df0dc#under-load
+#ifndef MYCILA_PMU_BATTERY_VOLTAGE_MAX
+#define MYCILA_PMU_BATTERY_VOLTAGE_MAX 4.2
+#endif
+
+#ifndef MYCILA_PMU_BATTERY_VOLTAGE_NOMINAL
+#define MYCILA_PMU_BATTERY_VOLTAGE_NOMINAL 3.7
+#endif
+
+#ifndef MYCILA_PMU_BATTERY_VOLTAGE_CRITICAL
+#define MYCILA_PMU_BATTERY_VOLTAGE_CRITICAL 3.5
+#endif
+
+#ifndef MYCILA_PMU_BATTERY_VOLTAGE_MIN
+#define MYCILA_PMU_BATTERY_VOLTAGE_MIN 3.2
+#endif
+
 #if defined(MYCILA_PMU_I2C_SDA) && defined(MYCILA_PMU_I2C_SCL)
-#define MYCILA_PMU_ENABLED
-#else
-#define MYCILA_PMU_I2C_SDA -1
-#define MYCILA_PMU_I2C_SCL -1
+#if defined(MYCILA_PMU_BATTERY_ADC_PIN)
+#error "Cannot define both MYCILA_PMU_BATTERY_ADC_PIN and MYCILA_PMU_I2C_SDA/MYCILA_PMU_I2C_SCL"
+#endif
+#define MYCILA_XPOWERS_PMU_ENABLED
 #endif
 
 namespace Mycila {
   class PMUClass {
     public:
-      void begin(int sda = MYCILA_PMU_I2C_SDA, int scl = MYCILA_PMU_I2C_SCL);
+      void begin();
 
-      bool isEnabled() const { return _enabled; }
+      // -1 if not available
+      float getBatteryVoltage();
+
+      // -1 if not available,, 0-100  otherwise
+      // voltage = -2 will query voltage
+      // voltage = -1 will return -1
+      // voltage >= 0: will return the level
+      float getBatteryLevel(float voltage = -2);
 
       void enableModem();
       void enableGPS();
       void setChargingLedMode(xpowers_chg_led_mode_t mode);
 
     private:
-      bool _enabled = false;
-#ifdef MYCILA_PMU_ENABLED
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
       XPowersPMU _pmu;
 #endif
   };

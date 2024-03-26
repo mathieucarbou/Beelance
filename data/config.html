@@ -66,22 +66,23 @@
     send_delay: ["Send interval in seconds", "uint"],
     send_url: ["Send URL where to post the data (leave empty to use Onomondo Connector optimization)", "string"],
     tz_info: ["Timezone Info (set to Paris by default)", "string"],
+    board_led: ["Board LED enabled ?", "switch"],
 
     Modem: "TITLE",
     modem_apn: ["Modem APN", "string"],
     modem_pin: ["Modem PIN (only if your SIM requires to be unlocked)", "password"],
     gps_timeout: ["GPS Sync Timeout in seconds", "uint"],
 
+    "Modem SIM7080G Only": "TITLE",
+    modem_mode: ["Modem Mode Preferred (only for SIM7080 variants)", "select", "AUTO,LTE-M,NB-IoT"],
+    bands_ltem: ["LTE-M Bands (only for SIM7080 variants)", "string"],
+    bands_nbiot: ["NB-IoT Bands (only for SIM7080 variants)", "string"],
+
     Network: "TITLE",
     ap_mode_enable: ["Access Point mode enabled ?", "switch"],
     admin_pwd: ["Admin password", "password"],
     wifi_ssid: ["WiFi SSID (when AP mode is disabled)", "string"],
     wifi_pwd: ["WiFi password (when AP mode is disabled)", "password"],
-
-    "SIM7080G Only": "TITLE",
-    modem_mode: ["Modem Mode Preferred (only for SIM7080 variants)", "select", "AUTO,LTE-M,NB-IoT"],
-    bands_ltem: ["LTE-M Bands (only for SIM7080 variants)", "string"],
-    bands_nbiot: ["NB-IoT Bands (only for SIM7080 variants)", "string"],
 
     Temperature: "TITLE",
     sys_tmp_enable: ["Temperature sensor enabled ?", "switch"],

@@ -48,11 +48,19 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   // home
 
   _bhName.update(Mycila::Config.get(KEY_BEEHIVE_NAME).c_str());
-  _temperature(&_systemTempState, &systemTemperatureSensor);
   _nextSend.update(static_cast<int>(sendTask.getRemainingTme() / Mycila::TaskDuration::SECONDS));
   _uptime.update(String(Mycila::System.getUptime()));
   _modemAPN.update(Mycila::Modem.getAPN().c_str(), Mycila::Modem.getAPN().isEmpty() ? DASH_STATUS_DANGER : DASH_STATUS_SUCCESS);
   _modemSignal.update(Mycila::Modem.getSignalQuality());
+
+  // temperature
+  if (!systemTemperatureSensor.isEnabled()) {
+    _temperature.update("Disabled", "");
+  } else if (!systemTemperatureSensor.isValid()) {
+    _temperature.update("Pending...", "");
+  } else {
+    _temperature.update(systemTemperatureSensor.getTemperature(), "°C");
+  }
 
   // modem
   switch (Mycila::Modem.getState()) {
@@ -123,9 +131,11 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
     case Mycila::ModemTimeState::MODEM_TIME_SYNCING:
       _time.update("Syncing...", DASH_STATUS_WARNING);
       break;
-    case Mycila::ModemTimeState::MODEM_TIME_SYNCED:
-      _time.update(Mycila::Time::getLocalStr().c_str(), DASH_STATUS_SUCCESS);
+    case Mycila::ModemTimeState::MODEM_TIME_SYNCED: {
+      String time = Mycila::Time::getLocalStr();
+      _time.update(time.isEmpty() ? "Syncing..." : time.c_str(), time.isEmpty() ? DASH_STATUS_WARNING : DASH_STATUS_SUCCESS);
       break;
+    }
     default:
       assert(false);
       break;
@@ -158,6 +168,23 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       break;
   }
 
+  float batVolt = Mycila::PMU.getBatteryVoltage();
+  if (batVolt < 0) {
+    _batVolt.update("", DASH_STATUS_IDLE);
+  } else if (batVolt < MYCILA_PMU_BATTERY_VOLTAGE_CRITICAL) {
+    _batVolt.update((String(batVolt) + " V").c_str(), DASH_STATUS_DANGER);
+  } else if (batVolt < MYCILA_PMU_BATTERY_VOLTAGE_NOMINAL) {
+    _batVolt.update((String(batVolt) + " V").c_str(), DASH_STATUS_WARNING);
+  } else {
+    _batVolt.update((String(batVolt) + " V").c_str(), DASH_STATUS_SUCCESS);
+  }
+
+  float batLevel = Mycila::PMU.getBatteryLevel(batVolt);
+  if (batLevel < 0)
+    _batLevel.update(0);
+  else
+    _batLevel.update(batLevel);
+
   _sendNow.update(sendTask.isEarlyRunRequested() || sendTask.isRunning());
   _scanOps.update(Mycila::Modem.getState() == Mycila::ModemState::MODEM_SEARCHING);
   _noSleepMode.update(Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE));
@@ -166,15 +193,5 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   if (!skipWebSocketPush && dashboard.hasClient()) {
     dashboard.sendUpdates();
-  }
-}
-
-void Beelance::WebsiteClass::_temperature(Card* card, Mycila::TemperatureSensor* sensor) {
-  if (!sensor->isEnabled()) {
-    card->update("Disabled", "");
-  } else if (!sensor->isValid()) {
-    card->update("Pending...", "");
-  } else {
-    card->update(sensor->getTemperature(), "°C");
   }
 }

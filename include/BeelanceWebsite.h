@@ -50,35 +50,33 @@ namespace Beelance {
       // overview
 
       Card _bhName = Card(&dashboard, GENERIC_CARD, "Beehive");
-      Card _systemTempState = Card(&dashboard, TEMPERATURE_CARD, "Temperature", "°C");
+      Card _weight = Card(&dashboard, GENERIC_CARD, "Weight", "kg");
+      Card _temperature = Card(&dashboard, TEMPERATURE_CARD, "Temperature", "°C");
       Card _nextSend = Card(&dashboard, GENERIC_CARD, "Next Update", "s");
-      Card _uptime = Card(&dashboard, GENERIC_CARD, "Uptime", "s");
-
-      Card _modemAPN = Card(&dashboard, STATUS_CARD, "APN");
-      Card _modemState = Card(&dashboard, STATUS_CARD, "Modem");
-      Card _modemOperator = Card(&dashboard, STATUS_CARD, "Operator");
-      Card _modemSignal = Card(&dashboard, PROGRESS_CARD, "Signal Quality", "%", 0, 100);
 
       Card _time = Card(&dashboard, STATUS_CARD, "Time");
       Card _latitude = Card(&dashboard, STATUS_CARD, "Latitude");
       Card _longitude = Card(&dashboard, STATUS_CARD, "Longitude");
       Card _altitude = Card(&dashboard, STATUS_CARD, "Altitude");
 
-      // actions
+      Card _modemState = Card(&dashboard, STATUS_CARD, "Modem");
+      Card _modemAPN = Card(&dashboard, STATUS_CARD, "APN");
+      Card _modemOperator = Card(&dashboard, STATUS_CARD, "Operator");
+      Card _modemSignal = Card(&dashboard, PROGRESS_CARD, "Signal Quality", "%", 0, 100);
 
-      Card _sendNow = Card(&dashboard, BUTTON_CARD, "Send now and sleep!");
+      Card _batVolt = Card(&dashboard, STATUS_CARD, "Battery Voltage");
+      Card _batLevel = Card(&dashboard, PROGRESS_CARD, "Battery Level", "%", 0, 100);
+      Card _uptime = Card(&dashboard, GENERIC_CARD, "Uptime", "s");
+      Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
+
       Card _scanOps = Card(&dashboard, BUTTON_CARD, "Scan Operators");
+      Card _sendNow = Card(&dashboard, BUTTON_CARD, "Send now and sleep!");
       Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep");
       Card _debugMode = Card(&dashboard, BUTTON_CARD, "Debug Logging");
-      Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
 
     private:
       void _update(bool skipWebSocketPush);
-
       void _boolConfig(Card* card, const char* key);
-      void _sliderConfig(Card* card, const char* key);
-
-      void _temperature(Card* card, Mycila::TemperatureSensor* sensor);
   };
 
   extern WebsiteClass Website;

@@ -6,6 +6,7 @@
 
 #include <ArduinoHttpClient.h>
 #include <MycilaLogger.h>
+#include <MycilaTime.h>
 
 #if defined(TINY_GSM_MODEM_A7670) && defined(MYCILA_GPS_RX_PIN) && defined(MYCILA_GPS_TX_PIN)
 #define TINY_GSM_MODEM_A7670G 1
@@ -90,6 +91,7 @@ void Mycila::ModemClass::loop() {
 
       // go to registration
       _setMode(_mode);
+      _timeState = ModemTimeState::MODEM_TIME_SYNCING;
       _state = MODEM_WAIT_REGISTRATION;
 
     } else {
@@ -247,52 +249,52 @@ void Mycila::ModemClass::loop() {
     refreshInfo = true;
   }
 
-  if (_state == MODEM_WAIT_GPS) {
-    if (refreshInfo || millis() - _lastRefreshTime >= 2000) {
-      Mycila::Logger.info(TAG, "Check for GPS Sync...");
+  if (_state == MODEM_WAIT_GPS && (refreshInfo || millis() - _lastRefreshTime >= 2000)) {
+    Mycila::Logger.info(TAG, "Check for GPS Sync...");
 #ifdef TINY_GSM_MODEM_A7670G
-      if (Serial2.available()) {
-        while (Serial2.available()) {
-          int c = Serial2.read();
-          if (tinyGPS.encode(c)) {
-            bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
-            if (valid) {
-              _gpsData.latitude = tinyGPS.location.lat();
-              _gpsData.longitude = tinyGPS.location.lng();
-              _gpsData.altitude = tinyGPS.altitude.meters();
-              _gpsData.accuracy = tinyGPS.hdop.hdop();
-              _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
-              _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
-              _gpsData.time.tm_mday = tinyGPS.date.day();
-              _gpsData.time.tm_hour = tinyGPS.time.hour();
-              _gpsData.time.tm_min = tinyGPS.time.minute();
-              _gpsData.time.tm_sec = tinyGPS.time.second();
-              _gpsState = MODEM_GPS_SYNCED;
-            }
+    if (Serial2.available()) {
+      while (Serial2.available()) {
+        int c = Serial2.read();
+        if (tinyGPS.encode(c)) {
+          bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
+          if (valid) {
+            _gpsData.latitude = tinyGPS.location.lat();
+            _gpsData.longitude = tinyGPS.location.lng();
+            _gpsData.altitude = tinyGPS.altitude.meters();
+            _gpsData.accuracy = tinyGPS.hdop.hdop();
+            _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
+            _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
+            _gpsData.time.tm_mday = tinyGPS.date.day();
+            _gpsData.time.tm_hour = tinyGPS.time.hour();
+            _gpsData.time.tm_min = tinyGPS.time.minute();
+            _gpsData.time.tm_sec = tinyGPS.time.second();
+            _gpsState = MODEM_GPS_SYNCED;
           }
         }
       }
+    }
 #endif
 #ifdef TINY_GSM_MODEM_SIM7080
-      uint8_t status = 0;
-      if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec)) {
-        _gpsData.time.tm_year -= 1900;
-        _gpsData.time.tm_mon -= 1;
-        _gpsState = MODEM_GPS_SYNCED;
-      }
-#endif
-      if (_gpsState == MODEM_GPS_SYNCED) {
-        Mycila::Logger.info(TAG, "GPS Synced!");
-        _state = MODEM_CONNECTING;
-        refreshInfo = true;
-      } else if (millis() - _gpsSyncStartTime >= _gpsSyncTimeout * 1000) {
-        Mycila::Logger.error(TAG, "GPS Sync timeout!");
-        _gpsState = MODEM_GPS_TIMEOUT;
-        _state = MODEM_CONNECTING;
-      } else {
-        _lastRefreshTime = millis();
-      }
+    uint8_t status = 0;
+    if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec)) {
+      _gpsData.time.tm_year -= 1900;
+      _gpsData.time.tm_mon -= 1;
+      _gpsState = MODEM_GPS_SYNCED;
     }
+#endif
+    if (_gpsState == MODEM_GPS_SYNCED) {
+      Mycila::Logger.info(TAG, "GPS Synced!");
+      if (_state < MODEM_CONNECTING)
+        _state = MODEM_CONNECTING;
+    } else if (millis() - _gpsSyncStartTime >= _gpsSyncTimeout * 1000) {
+      Mycila::Logger.error(TAG, "GPS Sync timeout!");
+      _gpsState = MODEM_GPS_TIMEOUT;
+      if (_state < MODEM_CONNECTING)
+        _state = MODEM_CONNECTING;
+    } else {
+      _lastRefreshTime = millis();
+    }
+    refreshInfo = true;
   }
 
   if (_state == MODEM_CONNECTING) {
@@ -310,10 +312,7 @@ void Mycila::ModemClass::loop() {
   }
 
   // refresh modem info
-  if (refreshInfo || millis() - _lastRefreshTime >= (_timeState == ModemTimeState::MODEM_TIME_SYNCED ? 60000 : 2000)) {
-    if (_state > MODEM_STARTING && _timeState == ModemTimeState::MODEM_TIME_OFF)
-      _timeState = ModemTimeState::MODEM_TIME_SYNCING;
-
+  if (refreshInfo || millis() - _lastRefreshTime >= 60000) {
     // time
     struct tm t = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     if (_timeState == ModemTimeState::MODEM_TIME_SYNCING && !_modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL).startsWith("80/01/06") && _modem.getNetworkTime(&t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, nullptr)) {
@@ -322,18 +321,19 @@ void Mycila::ModemClass::loop() {
       struct timeval now = {mktime(&t), 0};
       settimeofday(&now, nullptr);
       tzset();
-      _timeState = ModemTimeState::MODEM_TIME_SYNCED;
+      if (!Mycila::Time::getLocalStr().isEmpty())
+        _timeState = ModemTimeState::MODEM_TIME_SYNCED;
     }
 
     // signal quality
     int16_t sq = _modem.getSignalQuality();
     _signal = sq >= 0 && sq <= 31 ? map(sq, 0, 31, 0, 100) : 0;
 
-    _localIP = _modem.getLocalIP();
-    _imei = _modem.getIMEI();
     _iccid = _modem.getSimCCID();
-    _model = _modem.getModemName();
+    _imei = _modem.getIMEI();
     _imsi = _modem.getIMSI();
+    _localIP = _modem.getLocalIP();
+    _model = _modem.getModemName();
     _operator = _modem.getOperator();
 
     _lastRefreshTime = millis();

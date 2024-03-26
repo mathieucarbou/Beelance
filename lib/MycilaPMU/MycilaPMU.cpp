@@ -4,19 +4,19 @@
  */
 #include <MycilaPMU.h>
 
+#include <MycilaLogger.h>
+#include <esp_adc_cal.h>
+
 #define TAG "PMU"
 
-void Mycila::PMUClass::begin(int sda, int scl) {
-  if (_enabled)
-    return;
-
-  if (sda < 0 || scl < 0) {
+void Mycila::PMUClass::begin() {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  if (MYCILA_PMU_I2C_SDA < 0 || MYCILA_PMU_I2C_SCL < 0) {
     ESP_LOGW(TAG, "PMU not enabled: I2C pins not defined");
     return;
   }
 
-#ifdef MYCILA_PMU_ENABLED
-  if (!_pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, sda, scl)) {
+  if (!_pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, MYCILA_PMU_I2C_SDA, MYCILA_PMU_I2C_SCL)) {
     return;
   }
 
@@ -41,15 +41,34 @@ void Mycila::PMUClass::begin(int sda, int scl) {
   // TS Pin detection must be disable, otherwise it cannot be charged
   _pmu.disableTSPinMeasure();
 #endif
+}
 
-  _enabled = true;
+float Mycila::PMUClass::getBatteryVoltage() {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  float f = _pmu.getBattVoltage() / 1000.0;
+  return f < 1 ? -1 : f;
+#endif
+#ifdef MYCILA_PMU_BATTERY_ADC_PIN
+  esp_adc_cal_characteristics_t adc_chars;
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+  float f = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
+  return f < 1 ? -1 : f; // ADC does not work when USB is connected and switch is off (no battery to measure)
+#endif
+  return -1;
+}
+
+float Mycila::PMUClass::getBatteryLevel(float voltage) {
+  if (voltage == -2)
+    voltage = getBatteryVoltage();
+  if (voltage == -1)
+    return -1;
+  // map() equivalent with float
+  const float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
+  return run == 0 ? -1 : min(100.0, ((voltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
 }
 
 void Mycila::PMUClass::enableModem() {
-  if (!_enabled)
-    return;
-
-#ifdef MYCILA_PMU_ENABLED
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
   _pmu.enableDC3();
   _pmu.setDC3Voltage(3000); // SIM7080 Modem main power channel 2700~ 3400V
 
@@ -59,21 +78,31 @@ void Mycila::PMUClass::enableModem() {
 }
 
 void Mycila::PMUClass::enableGPS() {
-  if (!_enabled)
-    return;
-
-#ifdef MYCILA_PMU_ENABLED
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
   _pmu.enableBLDO2(); // The antenna power must be turned on to use the GPS function
   _pmu.setBLDO2Voltage(3300);
 #endif
 }
 
 void Mycila::PMUClass::setChargingLedMode(xpowers_chg_led_mode_t mode) {
-  if (!_enabled)
-    return;
-
-#ifdef MYCILA_PMU_ENABLED
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
   _pmu.setChargingLedMode(mode);
+#endif
+
+#ifdef MYCILA_BOARD_LED_PIN
+  pinMode(MYCILA_BOARD_LED_PIN, OUTPUT);
+  switch (mode) {
+    case XPOWERS_CHG_LED_ON:
+    case XPOWERS_CHG_LED_BLINK_1HZ:
+    case XPOWERS_CHG_LED_BLINK_4HZ:
+      Mycila::Logger.info(TAG, "LED: ON");
+      digitalWrite(MYCILA_BOARD_LED_PIN, HIGH);
+      break;
+    default:
+      Mycila::Logger.info(TAG, "LED: OFF");
+      digitalWrite(MYCILA_BOARD_LED_PIN, LOW);
+      break;
+  }
 #endif
 }
 

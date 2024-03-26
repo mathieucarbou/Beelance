@@ -85,7 +85,10 @@ bool Beelance::BeelanceClass::sendMeasurements() {
 }
 
 void Beelance::BeelanceClass::toJson(const JsonObject& root) {
+  float voltage = Mycila::PMU.getBatteryVoltage();
   root["altitude"] = Mycila::Modem.getGPSData().altitude;
+  root["battery_level"] = Mycila::PMU.getBatteryLevel(voltage);
+  root["battery_voltage"] = voltage;
   root["beehive"] = Mycila::Config.get(KEY_BEEHIVE_NAME);
   root["boot"] = Mycila::System.getBootCount();
   root["build"] = Mycila::AppInfo.buildHash;
@@ -101,6 +104,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) {
   root["timestamp"] = Mycila::Time::getISO8601Str();
   root["uptime"] = Mycila::System.getUptime();
   root["version"] = Mycila::AppInfo.version;
+  root["weight"] = 0;
 }
 
 namespace Beelance {

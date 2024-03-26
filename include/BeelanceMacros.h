@@ -34,6 +34,7 @@
 #define KEY_MODEM_GPS_SYNC_TIMEOUT  "gps_timeout"
 #define KEY_TIMEZONE_INFO           "tz_info"
 #define KEY_SEND_URL                "send_url"
+#define KEY_BOARD_LED               "board_led"
 
 // default settings
 

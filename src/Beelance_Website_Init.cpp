@@ -120,12 +120,6 @@ void Beelance::WebsiteClass::init() {
   _update(true);
 }
 
-void Beelance::WebsiteClass::_sliderConfig(Card* card, const char* key) {
-  card->attachCallback([key](int value) {
-    Mycila::Config.set(key, String(MAX(0, value)));
-  });
-}
-
 void Beelance::WebsiteClass::_boolConfig(Card* card, const char* key) {
   card->attachCallback([key, card, this](int value) {
     card->update(value);

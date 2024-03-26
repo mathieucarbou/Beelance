@@ -114,15 +114,11 @@ Mycila::Task configureNetworkTask("configureNetworkTask", [](void* params) {
 Mycila::Task configurePMUTask("configurePMUTask", [](void* params) {
   Mycila::Logger.info(TAG, "Configure PMU...");
   Mycila::PMU.begin();
-  if (Mycila::PMU.isEnabled()) {
-    Mycila::Logger.info(TAG, "PMU is enabled");
-    Mycila::Logger.info(TAG, "Powering Modem...");
-    Mycila::PMU.enableModem();
-    Mycila::Logger.info(TAG, "Powering GPS...");
-    Mycila::PMU.enableGPS();
-  } else {
-    Mycila::Logger.error(TAG, "Failed to enable PMU...");
-  }
+  Mycila::Logger.info(TAG, "Powering Modem...");
+  Mycila::PMU.enableModem();
+  Mycila::Logger.info(TAG, "Powering GPS...");
+  Mycila::PMU.enableGPS();
+  Mycila::PMU.setChargingLedMode(Mycila::Config.getBool(KEY_BOARD_LED) ? XPOWERS_CHG_LED_ON : XPOWERS_CHG_LED_CTRL_CHG);
 });
 
 Mycila::Task configureSystemTemperatureSensorTask("configureSystemTemperatureSensorTask", [](void* params) {
