@@ -5,8 +5,9 @@
 #include <MycilaPMU.h>
 
 #include <MycilaLogger.h>
-#include <algorithm>
 #include <esp_adc_cal.h>
+
+#include <algorithm>
 
 #define TAG "PMU"
 
