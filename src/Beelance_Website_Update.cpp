@@ -168,22 +168,13 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       break;
   }
 
-  float batVolt = Mycila::PMU.getBatteryVoltage();
-  if (batVolt < 0) {
-    _batVolt.update("", DASH_STATUS_IDLE);
-  } else if (batVolt < MYCILA_PMU_BATTERY_VOLTAGE_CRITICAL) {
-    _batVolt.update((String(batVolt) + " V").c_str(), DASH_STATUS_DANGER);
-  } else if (batVolt < MYCILA_PMU_BATTERY_VOLTAGE_NOMINAL) {
-    _batVolt.update((String(batVolt) + " V").c_str(), DASH_STATUS_WARNING);
-  } else {
-    _batVolt.update((String(batVolt) + " V").c_str(), DASH_STATUS_SUCCESS);
-  }
+  _batLevel.update(Mycila::PMU.getBatteryLevel());
 
-  float batLevel = Mycila::PMU.getBatteryLevel(batVolt);
-  if (batLevel < 0)
-    _batLevel.update(0);
-  else
-    _batLevel.update(batLevel);
+  if (Mycila::PMU.isBatteryCharging()) {
+    _batVolt.update("Charging...", DASH_STATUS_SUCCESS);
+  } else {
+    _batVolt.update((String(Mycila::PMU.getBatteryVoltage()) + " V").c_str(), DASH_STATUS_SUCCESS);
+  }
 
   _sendNow.update(sendTask.isEarlyRunRequested() || sendTask.isRunning());
   _scanOps.update(Mycila::Modem.getState() == Mycila::ModemState::MODEM_SEARCHING);

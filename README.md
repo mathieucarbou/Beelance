@@ -199,25 +199,26 @@ If you are not using Onomondo or want to setup your own website to receive the d
 
 ```json
 {
-  "altitude": 7.400000095,
-  "battery_level": 90.79998016,
-  "battery_voltage": 4.107999802,
+  "altitude": 7.400000095, // altitude == 0 if GPS fix failed
+  "battery_charging": false, // true or false
+  "battery_level": 90.79998016, // 0 if charging or not running on battery
+  "battery_voltage": 4.107999802, // 0 if charging or not running on battery
   "beehive": "ruche_02",
-  "boot": 852,
-  "build": "3714812",
-  "device": "C01B0C",
-  "firmware": "Beelance-main-lilygo_t_a7670g-debug.bin",
+  "boot": 852, // device boot count: useful to know if the device reboots often because of a bug
+  "build": "3714812", // exact firmware build hash
+  "device": "C01B0C", // ESP32 device ID
+  "firmware": "Beelance-main-lilygo_t_a7670g-debug.bin", // firmware name that was installed
   "iccid": "89457300000014000000",
   "imei": "867284062000000",
-  "latitude": 44.1234,
-  "longitude": -2.1234,
+  "latitude": 44.1234, // latitude == 0 if GPS fix failed
+  "longitude": -2.1234, // longitude == 0 if GPS fix failed
   "modem": "A7670G-LLSE",
-  "operator": "20801",
-  "temperature": 0,
-  "timestamp": "2024-03-26T14:49:50Z",
-  "uptime": 119,
-  "version": "main_3714812_modified",
-  "weight": 0
+  "operator": "20801", // Name or code of current operator
+  "temperature": 25.5, // temperature in Celsius, 0 if not activated
+  "timestamp": "2024-03-26T14:49:50Z", // UTC timestamp
+  "uptime": 119, // device uptime in seconds, useful to know if the device reboots often because of a bug
+  "version": "v1.2.3", // firmware version
+  "weight": 30 // weight in kg of the beehive. Not that the weight is not accurate because what is important is to track the evolution over time
 }
 ```
 

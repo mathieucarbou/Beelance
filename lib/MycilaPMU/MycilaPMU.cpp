@@ -46,27 +46,22 @@ void Mycila::PMUClass::begin() {
 }
 
 float Mycila::PMUClass::getBatteryVoltage() {
-#ifdef MYCILA_XPOWERS_PMU_ENABLED
-  float f = _pmu.getBattVoltage() / 1000.0;
-  return f < 1 ? -1 : f;
-#endif
-#ifdef MYCILA_PMU_BATTERY_ADC_PIN
-  esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-  float f = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
-  return f < 1 ? -1 : f; // ADC does not work when USB is connected and switch is off (no battery to measure)
-#endif
-  return -1;
+  return isBatteryCharging() ? 0 : _voltage;
 }
 
-float Mycila::PMUClass::getBatteryLevel(float voltage) {
-  if (voltage == -2)
-    voltage = getBatteryVoltage();
-  if (voltage == -1)
-    return -1;
+float Mycila::PMUClass::getBatteryLevel() {
+  float voltage = getBatteryVoltage();
   // map() equivalent with float
-  const float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
-  return run == 0 ? -1 : min(100.0, ((voltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
+  constexpr float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
+  return run == 0 || voltage < MYCILA_PMU_BATTERY_VOLTAGE_MIN ? 0 : min(100.0, ((voltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
+}
+
+bool Mycila::PMUClass::isBatteryCharging() {
+  _refreshVoltage();
+  // ADC does not work when USB is connected and switch is off (no battery to measure)
+  // The measured voltage is between 0 and 1.
+  // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
+  return (_voltage > 0 && _voltage < 1) || _voltage > MYCILA_PMU_BATTERY_VOLTAGE_MAX;
 }
 
 void Mycila::PMUClass::enableModem() {
@@ -106,6 +101,20 @@ void Mycila::PMUClass::setChargingLedMode(xpowers_chg_led_mode_t mode) {
       break;
   }
 #endif
+}
+
+void Mycila::PMUClass::_refreshVoltage() {
+  if (millis() - _lastVoltageRefreshTime >= 1000) {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+    _voltage = _pmu.getBattVoltage() / 1000.0;
+#endif
+#ifdef MYCILA_PMU_BATTERY_ADC_PIN
+    esp_adc_cal_characteristics_t adc_chars;
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+    _voltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
+#endif
+    _lastVoltageRefreshTime = millis();
+  }
 }
 
 namespace Mycila {

@@ -35,23 +35,23 @@ namespace Mycila {
     public:
       void begin();
 
-      // -1 if not available
       float getBatteryVoltage();
-
-      // -1 if not available,, 0-100  otherwise
-      // voltage = -2 will query voltage
-      // voltage = -1 will return -1
-      // voltage >= 0: will return the level
-      float getBatteryLevel(float voltage = -2);
+      float getBatteryLevel();
+      bool isBatteryCharging();
 
       void enableModem();
       void enableGPS();
       void setChargingLedMode(xpowers_chg_led_mode_t mode);
 
     private:
+      float _voltage = -1;
+      uint32_t _lastVoltageRefreshTime = 0;
 #ifdef MYCILA_XPOWERS_PMU_ENABLED
       XPowersPMU _pmu;
 #endif
+
+    private:
+      void _refreshVoltage();
   };
 
   extern PMUClass PMU;
