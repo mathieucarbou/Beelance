@@ -38,8 +38,8 @@ LTE-M and NB-IOT are special communication frequencies for IoT devices which all
 **Features:**
 
 - Powered by Solar Panel
-- Li-ion backup battery, recharged by solar panel
-- CAT-M (LTE-M), NB-IOT, LTE, 4G connectivity
+- Powered by battery (optional), recharged by solar panel (type 18650, LFP or Li-ion)
+- Remote communication with CAT-M (LTE-M), NB-IOT, LTE, 4G
 - Web interface with [ESP-DASH](https://docs.espdash.pro)
 - OTA Web updates with [ElegantOTA](https://docs.elegantota.pro)
 - Configuration backup and restore
@@ -110,19 +110,21 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
 - Pick one board:
   - LTE-M / NB-IOT: [LILYGO® T-SIM7080G S3](https://www.lilygo.cc/products/t-sim7080-s3) ([AliExpress](https://fr.aliexpress.com/item/1005005188988179.html)) - 42 euros
   - LTE / 4G: [LILYGO® T-A7670G R2 with GPS](https://www.lilygo.cc/products/t-sim-a7670e?variant=43043706077365) ([AliExpress](https://fr.aliexpress.com/item/1005003036514769.html)) - 47 euros
-- Temperature Sensor: [DS18B20 Cable + DS18B20 Adapter](https://fr.aliexpress.com/item/4000143479592.html) - _SAMIORE Store_ - 3 euros
+- Temperature Sensor: [DS18B20 Cable + DS18B20 Adapter](https://fr.aliexpress.com/item/4000143479592.html) - 3 euros - _SAMIORE Store_
 - [Solar Panels](https://fr.aliexpress.com/item/1005005509831452.html) - 33 euros for 2 items
 - Weight scale
-  - [4x Load Sensors](https://fr.aliexpress.com/item/1005005916651412.html) - _SAMIORE Store_ - 11 euros for 4 items
-  - [HX711](https://fr.aliexpress.com/item/33041823995.html) - _SAMIORE Store_ - 3 euros
-  - Alternative: [Set of 4x Load Sensors + HX711](https://fr.aliexpress.com/item/1005004455387340.html) - _SAMIORE Store_ - 6 euros
-- [Dupont Cable Kit](https://fr.aliexpress.com/item/1699285992.html) - _SAMIORE Store_ - 4 euros
-- Battery & Charger:
-  - [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
-  - [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
-- Box: [Waterprood Electric Box about 150mm x 100mm x 60mm](https://www.amazon.fr/gp/product/B00GWPF840) - 8 euros
+  - [4x Load Sensors](https://fr.aliexpress.com/item/1005005916651412.html) - 11 euros for 4 items - _SAMIORE Store_
+  - [HX711](https://fr.aliexpress.com/item/33041823995.html) - 3 euros - _SAMIORE Store_
+  - Alternative: [Set of 4x Load Sensors + HX711](https://fr.aliexpress.com/item/1005004455387340.html) - 6 euros - _SAMIORE Store_
+- [Dupont Cable Kit](https://fr.aliexpress.com/item/1699285992.html) - 4 euros - _SAMIORE Store_
+- Box:
+  - [Waterprood Electric Box about 150mm x 100mm x 60mm](https://www.amazon.fr/gp/product/B00GWPF840) - 8 euros
+  - If using a battery, take a UL94V-0 box (fire retardant)
 - Optional:
-  - [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items (facilitate charging and powering the device without opening the box)
+  - [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items - _Facilitate charging and powering the device without opening the box_
+  - Battery (18650): [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
+  - Charger: [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
+  - [USB-C 90 degree extension](https://www.amazon.fr/dp/B095BTZPQK) - 10 euros - _If you make the mistake like I did to put the board too close to the interior side of the box, and then you do not have enough clearance to connect a USB-C charging cable_
 
 **WARNINGS:**
 
