@@ -139,14 +139,11 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
     case Mycila::ModemState::MODEM_SEARCHING:
       _modemState.update("Searching for operators...", DASH_STATUS_WARNING);
       break;
-    case Mycila::ModemState::MODEM_WAIT_GPS:
+    case Mycila::ModemState::MODEM_GPS:
       _modemState.update("Waiting for GPS...", DASH_STATUS_WARNING);
       break;
     case Mycila::ModemState::MODEM_CONNECTING:
       _modemState.update("Connecting...", DASH_STATUS_WARNING);
-      break;
-    case Mycila::ModemState::MODEM_WAIT_TIME:
-      _modemState.update("Waiting for Time...", DASH_STATUS_WARNING);
       break;
     case Mycila::ModemState::MODEM_READY:
       _modemState.update("Ready", DASH_STATUS_SUCCESS);
@@ -173,9 +170,8 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       _modemOperator.update(candidate ? (candidate->name + " (" + candidate->mode + ") ?").c_str() : "", candidate ? DASH_STATUS_WARNING : DASH_STATUS_IDLE);
       break;
     }
-    case Mycila::ModemState::MODEM_WAIT_GPS:
+    case Mycila::ModemState::MODEM_GPS:
     case Mycila::ModemState::MODEM_CONNECTING:
-    case Mycila::ModemState::MODEM_WAIT_TIME:
       if (Mycila::Modem.getOperator().isEmpty())
         _modemOperator.update("", DASH_STATUS_WARNING);
       else

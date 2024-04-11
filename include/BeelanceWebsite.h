@@ -64,8 +64,8 @@ namespace Beelance {
       Card _weight = Card(&dashboard, SLIDER_CARD, "Weight", "g", 0, 200000, 100);
       Card _tare = Card(&dashboard, BUTTON_CARD, "Tare");
 
-      Card _modemState = Card(&dashboard, STATUS_CARD, "Modem");
       Card _modemAPN = Card(&dashboard, STATUS_CARD, "APN");
+      Card _modemState = Card(&dashboard, STATUS_CARD, "Modem");
       Card _modemOperator = Card(&dashboard, STATUS_CARD, "Operator");
       Card _modemSignal = Card(&dashboard, PROGRESS_CARD, "Signal Quality", "%", 0, 100);
 

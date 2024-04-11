@@ -210,7 +210,7 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
 
 |                         | T-SIM7080G-S3 Pin | T-A7670G R2 Pin |
 | :---------------------- | :---------------: | :-------------: |
-| Temperature Sensor DATA |        12         |       12        |
+| Temperature Sensor DATA |        12         |       15        |
 | Temperature Sensor VCC  |       3.3V        |      3.3V       |
 | Temperature Sensor GND  |        GND        |       GND       |
 | HX711 VCC               |       3.3V        |      3.3V       |

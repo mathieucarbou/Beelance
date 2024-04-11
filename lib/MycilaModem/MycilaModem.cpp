@@ -34,13 +34,7 @@ void Mycila::ModemClass::begin() {
   digitalWrite(MYCILA_MODEM_RST_PIN, LOW);
 #endif
 
-  // Turn on modem
-  pinMode(MYCILA_MODEM_PWR_PIN, OUTPUT);
-  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
-  delay(100);
-  digitalWrite(MYCILA_MODEM_PWR_PIN, HIGH);
-  delay(100);
-  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
+  _powerModem();
 
   // Set modem baud
   MYCILA_MODEM_SERIAL.begin(115200, SERIAL_8N1, MYCILA_MODEM_RX_PIN, MYCILA_MODEM_TX_PIN);
@@ -55,8 +49,6 @@ void Mycila::ModemClass::begin() {
 }
 
 void Mycila::ModemClass::loop() {
-  bool refreshInfo = false;
-
   if (_state == MODEM_STARTING) {
     Mycila::Logger.info(TAG, "Init SIM...");
 
@@ -112,10 +104,7 @@ void Mycila::ModemClass::loop() {
             break;
         }
         Mycila::Logger.error(TAG, "Init SIM Error: %s", _error.c_str());
-        _setState(MODEM_ERROR);
-        refreshInfo = true;
-      } else {
-        // we will loop again
+        _powerModem();
       }
     }
   }
@@ -127,14 +116,10 @@ void Mycila::ModemClass::loop() {
     if (_modem.isNetworkConnected()) {
       Mycila::Logger.info(TAG, "Registered!");
 
-      Mycila::Logger.info(TAG, "Sync GPS...");
-#ifdef TINY_GSM_MODEM_SIM7080
-      _modem.enableGPS(); // GPS is incompatible with networking
-#endif
+      activateGPS();
       _gpsSyncStartTime = millis();
-      _setState(MODEM_WAIT_GPS);
-      if (_gpsState != MODEM_GPS_SYNCED)
-        _gpsState = MODEM_GPS_SYNCING;
+      _lastRefreshTime = 0;
+      _setState(MODEM_GPS);
 
     } else if (_registrationCheckCount <= 0) {
       if (!_candidate) {
@@ -173,8 +158,8 @@ void Mycila::ModemClass::loop() {
       Mycila::Logger.info(TAG, "Not registered yet.");
     }
 
+    _sync();
     _registrationCheckLastTime = millis();
-    refreshInfo = true;
   }
 
   if (_state == MODEM_SEARCHING) {
@@ -244,199 +229,46 @@ void Mycila::ModemClass::loop() {
         }
       }
     } else {
-      // search again after
+      // search again
     }
 
-    refreshInfo = true;
+    _sync();
   }
 
-  if (_state == MODEM_WAIT_GPS && (refreshInfo || millis() - _lastRefreshTime >= 2000)) {
-    Mycila::Logger.info(TAG, "Check for GPS Sync...");
-#ifdef TINY_GSM_MODEM_A7670G
-    if (Serial2.available()) {
-      while (Serial2.available()) {
-        int c = Serial2.read();
-        if (tinyGPS.encode(c)) {
-          bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
-          if (valid) {
-            _gpsData.latitude = tinyGPS.location.lat();
-            _gpsData.longitude = tinyGPS.location.lng();
-            _gpsData.altitude = tinyGPS.altitude.meters();
-            _gpsData.accuracy = tinyGPS.hdop.hdop();
-            _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
-            _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
-            _gpsData.time.tm_mday = tinyGPS.date.day();
-            _gpsData.time.tm_hour = tinyGPS.time.hour();
-            _gpsData.time.tm_min = tinyGPS.time.minute();
-            _gpsData.time.tm_sec = tinyGPS.time.second();
-            _gpsState = MODEM_GPS_SYNCED;
-          }
-        }
-      }
-    }
-#endif
-#ifdef TINY_GSM_MODEM_SIM7080
-    uint8_t status = 0;
-    if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec)) {
-      _gpsData.time.tm_year -= 1900;
-      _gpsData.time.tm_mon -= 1;
-      _gpsState = MODEM_GPS_SYNCED;
-    }
-#endif
+  if (_state == MODEM_GPS && millis() - _lastRefreshTime >= 5000) {
+    _sync();
+
     if (_gpsState == MODEM_GPS_SYNCED) {
-      Mycila::Logger.info(TAG, "GPS Synced!");
-      if (_state < MODEM_CONNECTING)
-        _setState(MODEM_CONNECTING);
+      _setState(MODEM_CONNECTING);
+
     } else if (millis() - _gpsSyncStartTime >= _gpsSyncTimeout * 1000) {
       Mycila::Logger.error(TAG, "GPS Sync timeout!");
       _gpsState = MODEM_GPS_TIMEOUT;
-      if (_state < MODEM_CONNECTING)
-        _setState(MODEM_CONNECTING);
+      _setState(MODEM_CONNECTING);
+
     } else {
       _lastRefreshTime = millis();
     }
-    refreshInfo = true;
   }
 
   if (_state == MODEM_CONNECTING) {
-    Mycila::Logger.info(TAG, "Activate DATA...");
-#ifdef TINY_GSM_MODEM_A7670
-    _modem.gprsConnect(_apn.c_str());
-#endif
-#ifdef TINY_GSM_MODEM_SIM7080
-    _modem.disableGPS(); // GPS is incompatible with networking
-    _modem.setNetworkActive();
-#endif
-    _modem.waitForNetwork();
-    _setState(MODEM_WAIT_TIME);
-    refreshInfo = true;
-  }
-
-  if (_state == MODEM_WAIT_TIME && (refreshInfo || millis() - _lastRefreshTime >= 2000)) {
-    // try GPS Time
-    if (_gpsState == MODEM_GPS_SYNCED) {
-      Mycila::Logger.info(TAG, "Sync time from GPS...");
-
-      setenv("TZ", "UTC0", 1);
-      tzset();
-
-      struct timeval now = {mktime(&_gpsData.time), 0};
-      settimeofday(&now, nullptr);
-
-      setenv("TZ", _timeZoneInfo.c_str(), 1);
-      tzset();
-
-      String time = Mycila::Time::getLocalStr();
-      if (!time.isEmpty()) {
-        Mycila::Logger.info(TAG, "Time synced from GPS: %s", time.c_str());
-        _timeState = ModemTimeState::MODEM_TIME_SYNCED;
-      }
-    }
-
-    // otherwise try time from cell network, which is sadly unreliable
-    if (_timeState == ModemTimeState::MODEM_TIME_SYNCING) {
-      Mycila::Logger.info(TAG, "Sync time from cellular network...");
-
-      struct tm t = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-      float timezone = 0;
-      if (!_modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL).startsWith("80/01/06") && _modem.getNetworkTime(&t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, &timezone)) {
-        // +CCLK: "24/04/02,13:39:57+08 (dst, gmt+1, so 11:39 gmt)
-        t.tm_year -= 1900;
-        t.tm_mon -= 1;
-
-        setenv("TZ", "UTC0", 1);
-        tzset();
-
-        struct timeval now = {mktime(&t) - static_cast<int>(timezone * 3600.0), 0};
-        settimeofday(&now, nullptr);
-
-        setenv("TZ", _timeZoneInfo.c_str(), 1);
-        tzset();
-
-        String time = Mycila::Time::getLocalStr();
-        if (!time.isEmpty()) {
-          Mycila::Logger.info(TAG, "Time synced from cellular network: %s", time.c_str());
-          _timeState = ModemTimeState::MODEM_TIME_SYNCED;
-        }
-      }
-    }
-
-    // ready ? or retry later ?
-    if (_timeState == ModemTimeState::MODEM_TIME_SYNCED) {
+    if (activateData()) {
+      _sync();
+      activateGPS();
       _setState(MODEM_READY);
     } else {
-      _lastRefreshTime = millis();
+      Mycila::Logger.error(TAG, "Failed to activate data!");
+      _setState(MODEM_STARTING);
     }
-
-    refreshInfo = true;
   }
 
   // refresh modem info
-  if (refreshInfo || millis() - _lastRefreshTime >= 60000) {
-    // signal quality
-    int16_t sq = _modem.getSignalQuality();
-    _signal = sq >= 0 && sq <= 31 ? map(sq, 0, 31, 0, 100) : 0;
-
-    // misc info
-    _iccid = _modem.getSimCCID();
-    _imei = _modem.getIMEI();
-    _imsi = _modem.getIMSI();
-    _localIP = _modem.getLocalIP();
-    _model = _modem.getModemName();
-    _operator = _modem.getOperator();
-
+  if (_state > MODEM_OFF && millis() - _lastRefreshTime >= 30000) {
+    _sync();
     _lastRefreshTime = millis();
   }
 
-  // keep syncing GPS with A7670G
-#ifdef TINY_GSM_MODEM_A7670G
-  if (Serial2.available()) {
-    while (Serial2.available()) {
-      int c = Serial2.read();
-      if (tinyGPS.encode(c)) {
-        bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
-        if (valid) {
-          _gpsData.latitude = tinyGPS.location.lat();
-          _gpsData.longitude = tinyGPS.location.lng();
-          _gpsData.altitude = tinyGPS.altitude.meters();
-          _gpsData.accuracy = tinyGPS.hdop.hdop();
-          _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
-          _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
-          _gpsData.time.tm_mday = tinyGPS.date.day();
-          _gpsData.time.tm_hour = tinyGPS.time.hour();
-          _gpsData.time.tm_min = tinyGPS.time.minute();
-          _gpsData.time.tm_sec = tinyGPS.time.second();
-          _gpsState = MODEM_GPS_SYNCED;
-        }
-      }
-    }
-  }
-#endif
-
-  // execute queued AT commands
-  if (_commands.size()) {
-    for (size_t i = 0; i < _commands.size(); i++) {
-      Mycila::Logger.info(TAG, "Execute command: %s", _commands[i].c_str());
-      if (_commands[i].startsWith("AT+"))
-        _modem.sendAT(_commands[i].substring(2).c_str());
-      else
-        _modem.sendAT(_commands[i].c_str());
-      delay(5000);
-      while (!_spy.available()) {
-        delay(5000);
-      }
-      _readDrop();
-    }
-    _commands.clear();
-  }
-}
-
-void Mycila::ModemClass::connectivityCheck() {
-  // check for disconnect
-  if (_state == MODEM_READY && _localIP == "0.0.0.0") {
-    Mycila::Logger.warn(TAG, "Lost IP, reconnecting...");
-    _setState(MODEM_CONNECTING);
-  }
+  _dequeueATCommands();
 }
 
 void Mycila::ModemClass::powerOff() {
@@ -667,6 +499,175 @@ void Mycila::ModemClass::_setState(ModemState state) {
   _state = state;
   if (changed && _callback)
     _callback(_state);
+}
+
+bool Mycila::ModemClass::_syncGPS() {
+  if (_gpsState != MODEM_GPS_SYNCED)
+    _gpsState = MODEM_GPS_SYNCING;
+
+#ifdef TINY_GSM_MODEM_A7670G
+  if (Serial2.available()) {
+    while (Serial2.available()) {
+      int c = Serial2.read();
+      if (tinyGPS.encode(c)) {
+        bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
+        if (valid) {
+          _gpsData.latitude = tinyGPS.location.lat();
+          _gpsData.longitude = tinyGPS.location.lng();
+          _gpsData.altitude = tinyGPS.altitude.meters();
+          _gpsData.accuracy = tinyGPS.hdop.hdop();
+          _gpsData.time.tm_year = tinyGPS.date.year() - 1900;
+          _gpsData.time.tm_mon = tinyGPS.date.month() - 1;
+          _gpsData.time.tm_mday = tinyGPS.date.day();
+          _gpsData.time.tm_hour = tinyGPS.time.hour();
+          _gpsData.time.tm_min = tinyGPS.time.minute();
+          _gpsData.time.tm_sec = tinyGPS.time.second();
+          Mycila::Logger.info(TAG, "GPS Synced!");
+          return true;
+        }
+      }
+    }
+  }
+#endif
+
+#ifdef TINY_GSM_MODEM_SIM7080
+  uint8_t status = 0;
+  if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec)) {
+    _gpsData.time.tm_year -= 1900;
+    _gpsData.time.tm_mon -= 1;
+    Mycila::Logger.info(TAG, "GPS Synced!");
+    return true;
+  }
+#endif
+
+  return false;
+}
+
+bool Mycila::ModemClass::_syncTime() {
+  if (_timeState != MODEM_TIME_SYNCED)
+    _timeState = MODEM_TIME_SYNCING;
+
+  // try GPS Time
+  if (_gpsState == MODEM_GPS_SYNCED) {
+    setenv("TZ", "UTC0", 1);
+    tzset();
+
+    struct timeval now = {mktime(&_gpsData.time), 0};
+    settimeofday(&now, nullptr);
+
+    setenv("TZ", _timeZoneInfo.c_str(), 1);
+    tzset();
+
+    String time = Mycila::Time::getLocalStr();
+    if (!time.isEmpty()) {
+      Mycila::Logger.info(TAG, "Time synced from GPS: %s", time.c_str());
+      return true;
+    }
+  }
+
+  // otherwise try time from cell network, which is sadly unreliable
+  struct tm t = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+  float timezone = 0;
+  if (!_modem.getGSMDateTime(TinyGSMDateTimeFormat::DATE_FULL).startsWith("80/01/06") && _modem.getNetworkTime(&t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec, &timezone)) {
+    // +CCLK: "24/04/02,13:39:57+08 (dst, gmt+1, so 11:39 gmt)
+    t.tm_year -= 1900;
+    t.tm_mon -= 1;
+
+    setenv("TZ", "UTC0", 1);
+    tzset();
+
+    struct timeval now = {mktime(&t) - static_cast<int>(timezone * 3600.0), 0};
+    settimeofday(&now, nullptr);
+
+    setenv("TZ", _timeZoneInfo.c_str(), 1);
+    tzset();
+
+    String time = Mycila::Time::getLocalStr();
+    if (!time.isEmpty()) {
+      Mycila::Logger.info(TAG, "Time synced from cellular network: %s", time.c_str());
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void Mycila::ModemClass::_syncInfo() {
+  // signal quality
+  int16_t sq = _modem.getSignalQuality();
+  _signal = sq >= 0 && sq <= 31 ? map(sq, 0, 31, 0, 100) : 0;
+
+  // misc info
+  _iccid = _modem.getSimCCID();
+  _imei = _modem.getIMEI();
+  _imsi = _modem.getIMSI();
+  _localIP = _modem.getLocalIP();
+  _model = _modem.getModemName();
+  _operator = _modem.getOperator();
+}
+
+void Mycila::ModemClass::_sync() {
+  if (_state < MODEM_STARTING)
+    return;
+
+  _syncInfo();
+
+  if (_syncGPS()) {
+    _gpsState = MODEM_GPS_SYNCED;
+  }
+
+  if (_syncTime()) {
+    _timeState = ModemTimeState::MODEM_TIME_SYNCED;
+  }
+}
+
+void Mycila::ModemClass::_dequeueATCommands() {
+  if (_commands.size()) {
+    for (size_t i = 0; i < _commands.size(); i++) {
+      Mycila::Logger.info(TAG, "Execute command: %s", _commands[i].c_str());
+      if (_commands[i].startsWith("AT+"))
+        _modem.sendAT(_commands[i].substring(2).c_str());
+      else
+        _modem.sendAT(_commands[i].c_str());
+      delay(5000);
+      while (!_spy.available()) {
+        delay(5000);
+      }
+      _readDrop();
+    }
+    _commands.clear();
+  }
+}
+
+bool Mycila::ModemClass::activateData() {
+#ifdef TINY_GSM_MODEM_A7670
+  Mycila::Logger.info(TAG, "Activate Data...");
+  _modem.gprsConnect(_apn.c_str());
+#endif
+#ifdef TINY_GSM_MODEM_SIM7080
+  Mycila::Logger.info(TAG, "Disable GPS...");
+  _modem.disableGPS(); // GPS is incompatible with networking for SIM7080
+  Mycila::Logger.info(TAG, "Activate Data...");
+  _modem.sendAT("+CNACT=0,1");
+#endif
+  return _modem.waitForNetwork();
+}
+
+void Mycila::ModemClass::activateGPS() {
+  Mycila::Logger.info(TAG, "Enable GPS...");
+#ifdef TINY_GSM_MODEM_SIM7080
+  _modem.enableGPS(); // GPS is incompatible with networking for SIM7080
+#endif
+}
+
+void Mycila::ModemClass::_powerModem() {
+  // Turn on modem
+  pinMode(MYCILA_MODEM_PWR_PIN, OUTPUT);
+  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
+  delay(100);
+  digitalWrite(MYCILA_MODEM_PWR_PIN, HIGH);
+  delay(1000);
+  digitalWrite(MYCILA_MODEM_PWR_PIN, LOW);
 }
 
 namespace Mycila {

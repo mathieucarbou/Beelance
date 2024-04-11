@@ -17,7 +17,6 @@ Mycila::Task espConnectTask("ESPConnect.loop()", [](void* params) { ESPConnect.l
 Mycila::Task stackMonitorTask("TaskMonitor.log()", [](void* params) { Mycila::TaskMonitor.log(); });
 Mycila::Task websiteTask("Beelance.updateWebsite()", [](void* params) { Beelance::Beelance.updateWebsite(); });
 Mycila::Task modemLoopTask("Modem.loop()", [](void* params) { Mycila::Modem.loop(); });
-Mycila::Task modemConnectivityCheckTask("Modem.connectivityCheck()", [](void* params) { Mycila::Modem.connectivityCheck(); });
 
 Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
   if (Serial.available()) {
@@ -47,8 +46,12 @@ Mycila::Task hx711ScaleTask("hx711.calibrate()", [](void* params) {
 });
 
 Mycila::Task sendTask("Beelance.sendMeasurements()", [](void* params) {
-  if (!Beelance::Beelance.sendMeasurements())
-    modemConnectivityCheckTask.requestEarlyRun();
+  if (Mycila::Modem.activateData() && Beelance::Beelance.sendMeasurements()) {
+    Mycila::Modem.activateGPS();
+  } else {
+    Mycila::Logger.error(TAG, "Failed to send measurements. Restarting...");
+    restartTask.resume();
+  }
 });
 
 Mycila::Task restartTask("restartTask", [](void* params) {
@@ -103,6 +106,7 @@ Mycila::Task stopNetworkServicesTask("stopNetworkServicesTask", [](void* params)
 
 Mycila::Task otaPrepareTask("otaPrepareTask", [](void* params) {
   Mycila::Logger.info(TAG, "Preparing OTA update...");
+  watchdogTask.pause();
 });
 
 Mycila::Task watchdogTask("watchdogTask", [](void* params) {
@@ -183,10 +187,6 @@ void Beelance::BeelanceClass::_initTasks() {
   modemLoopTask.setType(Mycila::TaskType::FOREVER);
   modemLoopTask.setManager(&modemTaskManager);
 
-  modemConnectivityCheckTask.setType(Mycila::TaskType::FOREVER);
-  modemConnectivityCheckTask.setManager(&modemTaskManager);
-  modemConnectivityCheckTask.setInterval(60 * Mycila::TaskDuration::SECONDS);
-
   sendTask.setType(Mycila::TaskType::ONCE);
   sendTask.setManager(&modemTaskManager);
   sendTask.setEnabled(false);
@@ -207,8 +207,7 @@ void Beelance::BeelanceClass::_initTasks() {
   configureDebugTask.setDebugWhen(DEBUG_ENABLED);
   hx711TareTask.setDebugWhen(DEBUG_ENABLED);
   hx711ScaleTask.setDebugWhen(DEBUG_ENABLED);
-  hx711Task.setDebugWhen(DEBUG_ENABLED);
-  modemConnectivityCheckTask.setDebugWhen(DEBUG_ENABLED);
+  // hx711Task.setDebugWhen(DEBUG_ENABLED);
   otaPrepareTask.setDebugWhen(DEBUG_ENABLED);
   resetTask.setDebugWhen(DEBUG_ENABLED);
   restartTask.setDebugWhen(DEBUG_ENABLED);

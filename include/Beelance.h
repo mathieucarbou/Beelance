@@ -60,6 +60,5 @@ extern Mycila::Task configureTaskMonitorTask;
 extern Mycila::Task startModemTask;
 extern Mycila::Task serialDebugATTask;
 extern Mycila::Task modemLoopTask;
-extern Mycila::Task modemConnectivityCheckTask;
 
 extern float calibrationWeight;

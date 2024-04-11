@@ -42,9 +42,8 @@ namespace Mycila {
     MODEM_STARTING,
     MODEM_WAIT_REGISTRATION,
     MODEM_SEARCHING,
-    MODEM_WAIT_GPS,
+    MODEM_GPS,
     MODEM_CONNECTING,
-    MODEM_WAIT_TIME,
     MODEM_READY,
   } ModemState;
 
@@ -136,8 +135,9 @@ namespace Mycila {
 
       void enqueueAT(const String& cmd) { _commands.push_back(cmd); }
       void scanForOperators() { _state = MODEM_SEARCHING; }
-      void connectivityCheck();
       void powerOff();
+      bool activateData();
+      void activateGPS();
 
       // Returns ESP_OK or ESP_ERR_TIMEOUT if connection times out
       int sendTCP(const String& host, uint16_t port, const String& payload, const uint16_t connectTimeoutSec = MYCILA_MODEM_CONNECT_TIMEOUT);
@@ -207,6 +207,12 @@ namespace Mycila {
       void _readDrop();
       void _setMode(uint8_t mode);
       void _setState(ModemState state);
+      bool _syncGPS();
+      bool _syncTime();
+      void _syncInfo();
+      void _sync();
+      void _dequeueATCommands();
+      void _powerModem();
   };
 
   extern ModemClass Modem;
