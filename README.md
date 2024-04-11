@@ -26,6 +26,7 @@
   - [Device Configuration](#device-configuration)
     - [Important information about the Modem](#important-information-about-the-modem)
   - [Weight Scale Calibration](#weight-scale-calibration)
+    - [Temperature effect](#temperature-effect)
     - [Offset Calibration](#offset-calibration)
     - [Scale Calibration](#scale-calibration)
     - [Under the hood](#under-the-hood)
@@ -342,8 +343,23 @@ When the device is installed and powered on, you will see some weird values for 
 
 ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/cal-1.jpeg)
 
-The weight scale needs to be calibrated.
-Here are the steps below...
+Follow the steps below to calibrate...
+
+### Temperature effect
+
+**This is important that you run the calibration at a time of day when you want to see more accurate results.**
+
+The temperature has an effect on the load: for example, during the night, the load will be higher because the bees are in the beehive and there is also more humidity in the air and wood.
+Under a steady bright sun, the temperature is increasing and the load is heating / drying, so the weight will decrease.
+Here is an example of a 19.8 kg load put on the weight scale for several hours under the sun.
+You can see that the more the temperature is rising, the more the weight is decreasing.
+So you need to take this effect in consideration when looking at the statistics.
+You will still have the same effect whether you include the beehive in your calibration tare or not.
+
+![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/cal-7.jpeg)
+
+Also, the temperature rising has an opposite effect on the metal of the weight cells themselves: the more the temperature is rising, the more the metal is expanding and the weight is increasing.
+But this effect is negligible compared to the effect of the bees, honey and humidity.
 
 ### Offset Calibration
 
