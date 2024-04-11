@@ -56,6 +56,7 @@ float Mycila::HX711::read() {
 int32_t Mycila::HX711::tare() {
   if (!_enabled)
     return _offset;
+  _scale = 1;
   _offset = _hx711.read_average(30);
   return _offset;
 }

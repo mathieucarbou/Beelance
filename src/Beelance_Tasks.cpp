@@ -34,7 +34,13 @@ Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
 Mycila::Task temperatureTask("temperatureSensor.read()", [](void* params) { temperatureSensor.read(); });
 
 Mycila::Task hx711Task("hx711.read()", [](void* params) { hx711.read(); });
-Mycila::Task hx711TareTask("hx711.tare()", [](void* params) { Mycila::Config.set(KEY_HX711_OFFSET, String(hx711.tare())); });
+
+Mycila::Task hx711TareTask("hx711.tare()", [](void* params) {
+  hx711.tare();
+  Mycila::Config.set(KEY_HX711_OFFSET, String(hx711.getOffset()));
+  Mycila::Config.set(KEY_HX711_SCALE, String(hx711.getScale()));
+});
+
 Mycila::Task hx711ScaleTask("hx711.calibrate()", [](void* params) {
   Mycila::Config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6));
   calibrationWeight = 0;

@@ -55,29 +55,29 @@ namespace Beelance {
       // overview
 
       Card _bhName = Card(&dashboard, GENERIC_CARD, "Beehive");
-      Card _weight = Card(&dashboard, SLIDER_CARD, "Weight", "g", 0, 200000, 100);
-      Card _temperature = Card(&dashboard, TEMPERATURE_CARD, "Temperature", "°C");
-      Card _nextSend = Card(&dashboard, GENERIC_CARD, "Next Update", "min");
+      Card _power = Card(&dashboard, GENERIC_CARD, "Power", "%");
+      Card _volt = Card(&dashboard, GENERIC_CARD, "Voltage", "V");
+      Card _uptime = Card(&dashboard, GENERIC_CARD, "Uptime", "s");
 
-      Card _time = Card(&dashboard, STATUS_CARD, "Time");
-      Card _latitude = Card(&dashboard, STATUS_CARD, "Latitude");
-      Card _longitude = Card(&dashboard, STATUS_CARD, "Longitude");
-      Card _altitude = Card(&dashboard, STATUS_CARD, "Altitude");
+      Card _nextSend = Card(&dashboard, GENERIC_CARD, "Next Update", "min");
+      Card _temperature = Card(&dashboard, TEMPERATURE_CARD, "Temperature", "°C");
+      Card _weight = Card(&dashboard, SLIDER_CARD, "Weight", "g", 0, 200000, 100);
+      Card _tare = Card(&dashboard, BUTTON_CARD, "Tare");
 
       Card _modemState = Card(&dashboard, STATUS_CARD, "Modem");
       Card _modemAPN = Card(&dashboard, STATUS_CARD, "APN");
       Card _modemOperator = Card(&dashboard, STATUS_CARD, "Operator");
       Card _modemSignal = Card(&dashboard, PROGRESS_CARD, "Signal Quality", "%", 0, 100);
 
-      Card _power = Card(&dashboard, GENERIC_CARD, "Power", "%");
-      Card _volt = Card(&dashboard, GENERIC_CARD, "Voltage", "V");
-      Card _uptime = Card(&dashboard, GENERIC_CARD, "Uptime", "s");
-      Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
+      Card _time = Card(&dashboard, STATUS_CARD, "Time");
+      Card _latitude = Card(&dashboard, STATUS_CARD, "Latitude");
+      Card _longitude = Card(&dashboard, STATUS_CARD, "Longitude");
+      Card _altitude = Card(&dashboard, STATUS_CARD, "Altitude");
 
-      Card _scanOps = Card(&dashboard, BUTTON_CARD, "Scan Operators");
       Card _sendNow = Card(&dashboard, BUTTON_CARD, "Send now and sleep!");
       Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep");
-      Card _tare = Card(&dashboard, BUTTON_CARD, "Tare");
+      Card _scanOps = Card(&dashboard, BUTTON_CARD, "Scan Operators");
+      Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
 
     private:
       void _update(bool skipWebSocketPush);
