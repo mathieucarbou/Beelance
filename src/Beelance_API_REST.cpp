@@ -105,13 +105,39 @@ void Beelance::BeelanceClass::_initREST() {
     request->send(response);
   });
 
+  // beelance
+
+  Mycila::HTTPd.apiGET("/beelance/history.json", [this](AsyncWebServerRequest* request) {
+    if (LittleFS.exists(FILE_HISTORY)) {
+      AsyncWebServerResponse* response = request->beginResponse(LittleFS, FILE_HISTORY, "application/json");
+      request->send(response);
+    } else {
+      request->send(404);
+    }
+  });
+
+  Mycila::HTTPd.apiANY("/beelance/history/reset", [this](AsyncWebServerRequest* request) {
+    Beelance::Beelance.clearHistory();
+    request->send(200);
+  });
+
+  Mycila::HTTPd.apiGET("/beelance/history", [this](AsyncWebServerRequest* request) {
+    AsyncJsonResponse* response = new AsyncJsonResponse();
+    Beelance::Beelance.historyToJson(response->getRoot());
+    response->setLength();
+    request->send(response);
+  });
+
   Mycila::HTTPd.apiGET("/beelance", [this](AsyncWebServerRequest* request) {
     AsyncJsonResponse* response = new AsyncJsonResponse();
     JsonObject root = response->getRoot();
     Beelance::Beelance.toJson(root);
+    Beelance::Beelance.historyToJson(root["history"].to<JsonObject>());
     response->setLength();
     request->send(response);
   });
+
+  // root
 
   Mycila::HTTPd.apiGET("/", [this](AsyncWebServerRequest* request) {
     AsyncJsonResponse* response = new AsyncJsonResponse();
@@ -120,6 +146,7 @@ void Beelance::BeelanceClass::_initREST() {
     Mycila::AppInfo.toJson(root["app"].to<JsonObject>());
     // beelance
     Beelance::Beelance.toJson(root["beelance"].to<JsonObject>());
+    Beelance::Beelance.historyToJson(root["beelance"]["history"].to<JsonObject>());
     // config
     Mycila::Config.toJson(root["config"].to<JsonObject>());
     // network

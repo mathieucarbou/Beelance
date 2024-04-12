@@ -135,6 +135,11 @@ void Beelance::WebsiteClass::init() {
   _update(true);
 }
 
+void Beelance::WebsiteClass::disableTemperature() {
+  dashboard.remove(&_chartHourlyTemp);
+  dashboard.remove(&_chartDailyTemp);
+}
+
 void Beelance::WebsiteClass::_boolConfig(Card* card, const char* key) {
   card->attachCallback([key, card, this](int value) {
     card->update(value);

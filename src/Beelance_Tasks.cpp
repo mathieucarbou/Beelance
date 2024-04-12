@@ -61,6 +61,7 @@ Mycila::Task restartTask("restartTask", [](void* params) {
 
 Mycila::Task resetTask("resetTask", [](void* params) {
   Mycila::Logger.warn(TAG, "Resetting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  Beelance::Beelance.clearHistory();
   Mycila::Config.clear();
   Mycila::System.restart(500);
 });

@@ -544,8 +544,10 @@ bool Mycila::ModemClass::_syncGPS() {
 }
 
 bool Mycila::ModemClass::_syncTime() {
-  if (_timeState != MODEM_TIME_SYNCED)
-    _timeState = MODEM_TIME_SYNCING;
+  if (_timeState == MODEM_TIME_SYNCED)
+    return true;
+
+  _timeState = MODEM_TIME_SYNCING;
 
   // try GPS Time
   if (_gpsState == MODEM_GPS_SYNCED) {

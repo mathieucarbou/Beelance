@@ -3,6 +3,7 @@
  * Copyright (C) 2023-2024 Mathieu Carbou and others
  */
 #include <Beelance.h>
+#include <BeelanceWebsite.h>
 
 #ifdef BEELANCE_DISABLE_BROWNOUT_DETECTOR
 #include "soc/rtc_cntl_reg.h"
@@ -64,6 +65,9 @@ void setup() {
   // Temperature
   Mycila::Logger.info(TAG, "Configure Temperature Sensor...");
   temperatureSensor.begin(Mycila::Config.get(KEY_TEMPERATURE_PIN).toInt(), 30);
+  if (!temperatureSensor.isEnabled()) {
+    Beelance::Website.disableTemperature();
+  }
 
   // HX711
   Mycila::Logger.info(TAG, "Configure HX711...");

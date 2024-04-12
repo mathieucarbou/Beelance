@@ -205,6 +205,58 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _noSleepMode.update(Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE));
   _tare.update(hx711TareTask.isRunning() || (hx711TareTask.isEnabled() && !hx711TareTask.isPaused()));
 
+  if (_requestChartUpdate || skipWebSocketPush) {
+    _requestChartUpdate = false;
+
+    int idx = 0;
+    while (idx < BEELANCE_MAX_HISTORY_SIZE) {
+      _chartHourlyX[idx] = emptyString;
+      _chartHourlyTempY[idx] = 0;
+      _chartHourlyWeightY[idx] = 0;
+      idx++;
+    }
+
+    idx = 0;
+    for (const auto& [key, value] : Beelance::Beelance.hourlyHistory) {
+      if (idx < BEELANCE_MAX_HISTORY_SIZE) {
+        _chartHourlyX[idx] = key;
+        _chartHourlyTempY[idx] = value.temperature;
+        _chartHourlyWeightY[idx] = value.weight;
+        idx++;
+      }
+    }
+
+    _chartHourlyWeight.updateX(_chartHourlyX, BEELANCE_MAX_HISTORY_SIZE);
+    _chartHourlyWeight.updateY(_chartHourlyWeightY, BEELANCE_MAX_HISTORY_SIZE);
+
+    _chartHourlyTemp.updateX(_chartHourlyX, BEELANCE_MAX_HISTORY_SIZE);
+    _chartHourlyTemp.updateY(_chartHourlyTempY, BEELANCE_MAX_HISTORY_SIZE);
+
+    idx = 0;
+    while (idx < BEELANCE_MAX_HISTORY_SIZE) {
+      _chartDailyX[idx] = emptyString;
+      _chartDailyTempY[idx] = 0;
+      _chartDailyWeightY[idx] = 0;
+      idx++;
+    }
+
+    idx = 0;
+    for (const auto& [key, value] : Beelance::Beelance.dailyHistory) {
+      if (idx < BEELANCE_MAX_HISTORY_SIZE) {
+        _chartDailyX[idx] = key;
+        _chartDailyTempY[idx] = value.temperature;
+        _chartDailyWeightY[idx] = value.weight;
+        idx++;
+      }
+    }
+
+    _chartDailyWeight.updateX(_chartDailyX, BEELANCE_MAX_HISTORY_SIZE);
+    _chartDailyWeight.updateY(_chartDailyWeightY, BEELANCE_MAX_HISTORY_SIZE);
+
+    _chartDailyTemp.updateX(_chartDailyX, BEELANCE_MAX_HISTORY_SIZE);
+    _chartDailyTemp.updateY(_chartDailyTempY, BEELANCE_MAX_HISTORY_SIZE);
+  }
+
   if (!skipWebSocketPush && dashboard.hasClient()) {
     dashboard.sendUpdates();
   }
