@@ -33,8 +33,15 @@
     </tr>
     <tr>
       <td>
+        <form id="history-reset-form">
+          <button type="submit">Reset Graph History</button>
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <form id="reset-form">
-          <button type="submit">Reset</button>
+          <button type="submit">Factory Reset</button>
         </form>
       </td>
     </tr>
@@ -236,6 +243,17 @@
       .addEventListener("submit", function (event) {
         event.preventDefault();
         fetch("/api/system/reset", { method: "POST" }).then((res) => {
+          setTimeout(function () {
+            window.location.reload();
+          }, 2000);
+        });
+      });
+
+    document
+      .getElementById("history-reset-form")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        fetch("/api/beelance/history/reset", { method: "POST" }).then((res) => {
           setTimeout(function () {
             window.location.reload();
           }, 2000);

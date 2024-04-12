@@ -31,18 +31,18 @@ import esptool
 def esp32_create_combined_bin(source, target, env):
     print("Generating combined binary for serial flashing")
     
-    # subprocess.run(["pio", "run", "-e", env.get("PIOENV"), "-t", "buildfs"])
+    subprocess.run(["pio", "run", "-e", env.get("PIOENV"), "-t", "buildfs"])
 
     # The offset from begin of the file where the app0 partition starts
     # This is defined in the partition .csv file
     app_offset = 0x10000
     #  offset for spdiff partition
-    # fs_offset = 0x3F0000
+    fs_offset = 0x3F0000
 
     new_file_name = env.subst("$BUILD_DIR/${PROGNAME}.factory.bin")
     sections = env.subst(env.get("FLASH_EXTRA_IMAGES"))
     firmware_name = env.subst("$BUILD_DIR/${PROGNAME}.bin")
-    # fs_name = env.subst("$BUILD_DIR/littlefs.bin")
+    fs_name = env.subst("$BUILD_DIR/littlefs.bin")
     chip = env.get("BOARD_MCU")
     flash_size = env.BoardConfig().get("upload.flash_size")
     flash_freq = env.BoardConfig().get("build.f_flash", '40m')
@@ -76,8 +76,8 @@ def esp32_create_combined_bin(source, target, env):
     print(f" - {hex(app_offset)} | {firmware_name}")
     cmd += [hex(app_offset), firmware_name]
 
-    # print(f" - {hex(fs_offset)} | {fs_name}")
-    # cmd += [hex(fs_offset), fs_name]
+    print(f" - {hex(fs_offset)} | {fs_name}")
+    cmd += [hex(fs_offset), fs_name]
 
     print('Using esptool.py arguments: %s' % ' '.join(cmd))
 

@@ -19,6 +19,7 @@ void Mycila::TemperatureSensor::begin(const uint8_t pin, uint32_t expirationDela
     return;
   }
 
+#ifndef MYCILA_SIMULATION
   _oneWire.begin(_pin);
   _dallas.setOneWire(&_oneWire);
   _dallas.begin();
@@ -29,6 +30,7 @@ void Mycila::TemperatureSensor::begin(const uint8_t pin, uint32_t expirationDela
     _dallas.setWaitForConversion(false);
     _dallas.requestTemperatures();
   }
+#endif
 
   Logger.info(TAG, "Enable Temperature Sensor on pin %u...", _pin);
   Logger.debug(TAG, "- Expiration: %u seconds", expirationDelay);
@@ -50,8 +52,12 @@ void Mycila::TemperatureSensor::end() {
 float Mycila::TemperatureSensor::read() {
   if (!_enabled)
     return 0;
+#ifdef MYCILA_SIMULATION
+  float read = random(20, 30);
+#else
   float read = _dallas.getTempCByIndex(0);
   _dallas.requestTemperatures();
+#endif
   if (!isnan(read) && read > 0) {
     read = round(read * 100) / 100;
     _lastUpdate = millis();

@@ -11,6 +11,8 @@ namespace Beelance {
     public:
       void init();
       void update() { _update(false); }
+      void requestChartUpdate() { _requestChartUpdate = true; }
+      void disableTemperature();
 
     private:
       Statistic _firmName = Statistic(&dashboard, "Application");
@@ -78,6 +80,23 @@ namespace Beelance {
       Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep");
       Card _scanOps = Card(&dashboard, BUTTON_CARD, "Scan Operators");
       Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
+
+      // graphs
+
+      Chart _chartHourlyWeight = Chart(&dashboard, BAR_CHART, "Weight (g) - Hourly Max");
+      Chart _chartHourlyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Hourly Max");
+      Chart _chartDailyWeight = Chart(&dashboard, BAR_CHART, "Weight (g) - Daily Max");
+      Chart _chartDailyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Daily Max");
+
+      String _chartHourlyX[BEELANCE_MAX_HISTORY_SIZE];
+      float _chartHourlyWeightY[BEELANCE_MAX_HISTORY_SIZE];
+      float _chartHourlyTempY[BEELANCE_MAX_HISTORY_SIZE];
+
+      String _chartDailyX[BEELANCE_MAX_HISTORY_SIZE];
+      float _chartDailyWeightY[BEELANCE_MAX_HISTORY_SIZE];
+      float _chartDailyTempY[BEELANCE_MAX_HISTORY_SIZE];
+
+      bool _requestChartUpdate = true;
 
     private:
       void _update(bool skipWebSocketPush);

@@ -73,3 +73,9 @@
 #ifndef BEELANCE_HX711_DATA_PIN
 #define BEELANCE_HX711_DATA_PIN 14
 #endif
+
+#ifndef BEELANCE_MAX_HISTORY_SIZE
+#define BEELANCE_MAX_HISTORY_SIZE 10
+#endif
+
+#define FILE_HISTORY "/history.json"
