@@ -576,7 +576,7 @@ bool Mycila::ModemClass::_syncTime() {
     setenv("TZ", "UTC0", 1);
     tzset();
 
-    struct timeval now = {mktime(&t) - static_cast<int>(timezone * 3600.0), 0};
+    struct timeval now = {mktime(&t) - static_cast<int32_t>(timezone * 3600.0), 0};
     settimeofday(&now, nullptr);
 
     setenv("TZ", _timeZoneInfo.c_str(), 1);

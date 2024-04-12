@@ -173,7 +173,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) {
   root["bh"] = Mycila::Config.get(KEY_BEEHIVE_NAME);
   // sensors
   root["temp"] = temperatureSensor.isValid() ? _round2(temperatureSensor.getTemperature()) : 0;
-  root["wt"] = hx711.isValid() ? static_cast<int>(hx711.getWeight()) : 0;
+  root["wt"] = hx711.isValid() ? static_cast<int32_t>(hx711.getWeight()) : 0;
   // gps
   root["lat"] = Mycila::Modem.getGPSData().latitude;
   root["long"] = Mycila::Modem.getGPSData().longitude;
@@ -193,7 +193,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) {
 }
 
 double Beelance::BeelanceClass::_round2(double value) {
-  return static_cast<int>(value * 100 + 0.5) / 100.0;
+  return static_cast<int32_t>(value * 100 + 0.5) / 100.0;
 }
 
 namespace Beelance {

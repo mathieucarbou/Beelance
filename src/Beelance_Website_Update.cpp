@@ -59,9 +59,9 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   } else if (!hx711.isValid()) {
     _weight.update("Pending...", "");
   } else if (calibrationWeight > 0 && !hx711ScaleTask.isPaused()) {
-    _weight.update(static_cast<int>(calibrationWeight), "g");
+    _weight.update(static_cast<int32_t>(calibrationWeight), "g");
   } else {
-    _weight.update(static_cast<int>(hx711.getWeight()), "g");
+    _weight.update(static_cast<int32_t>(hx711.getWeight()), "g");
   }
 
   // temperature
@@ -75,7 +75,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   // next update
   if (sendTask.isEnabled() && !sendTask.isPaused()) {
-    _nextSend.update(static_cast<int>(ceil(static_cast<double>(sendTask.getRemainingTme()) / Mycila::TaskDuration::MINUTES)), "min");
+    _nextSend.update(static_cast<int32_t>(ceil(static_cast<double>(sendTask.getRemainingTme()) / Mycila::TaskDuration::MINUTES)), "min");
   } else {
     _nextSend.update("", "");
   }
@@ -191,7 +191,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _modemSignal.update(Mycila::Modem.getSignalQuality());
 
   if (Mycila::PMU.isBatteryPowered()) {
-    _power.update((String("Battery: ") + static_cast<int>(floor(Mycila::PMU.getBatteryLevel()))).c_str(), "%");
+    _power.update((String("Battery: ") + static_cast<int32_t>(floor(Mycila::PMU.getBatteryLevel()))).c_str(), "%");
   } else {
     _power.update("External", "");
   }
