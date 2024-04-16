@@ -222,9 +222,12 @@ void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const f
   Mycila::Logger.info(TAG, "Record measurement: temperature = %.2f C, weight = %d g", temperature, weight);
 
   const String dt = Mycila::Time::toLocalStr(timestamp); // 2024-04-12 15:02:17
-  const String day = dt.substring(5, 10);                // 2024-04-12
-  // const String day = dt.substring(0, 16);                // 2024-04-12 15:02
   const String hour = dt.substring(11, 13) + ":00";      // 15:00
+#ifdef MYCILA_SIMULATION
+  const String day = dt.substring(0, 16); // 2024-04-12 15:02
+#else
+  const String day = dt.substring(5, 10); // 2024-04-12
+#endif
 
   bool change = false;
 
