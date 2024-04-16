@@ -317,8 +317,9 @@ On Windows, you can use the official [ESP32 Flash Download Tool](https://www.esp
 In the main dashboard, click to restart the device and wait to makes sure it becomes ready (modem ready, time and GPS fix, etc.).
 You can also go to the console at `http://192.168.4.1/console` to see the logs, and if you really want to see verbose logging, you can activate debug logs in he console.
 
-Once your testing is finished and when installed, you can deactivate the option `Prevent Sleep`: this is make the device go into deep sleep after it has sent the data.
-If the device is in deep sleep and you need to access it, just press the reset button to restart it, or disconnect power and restarts it.
+Once your testing is finished and when installed, you can deactivate the option `Prevent Sleep On Battery`: when disabled, the device will be allowed to go into deep sleep after it has sent the data, and when it is powered by battery.
+When the device is powered by external power like USB-C or Solar Panel, it will not go to sleep.
+If the device is in deep sleep and you need to access it, just power it from USB-C and press the reset button to restart it, or disconnect power and restart it.
 
 ### Important information about the Modem
 
@@ -491,7 +492,7 @@ For there you can see the device status and access some basic buttons.
 
 - `Send now and sleep!`: will send the data now and go to sleep for the configured amount of time (`send_delay`) if sleep is not prevented
 - `Scan Operators`: Trigger a new operator scan and new GPS search
-- `Prevent Sleep`: Keeps the device active and prevents it from going to sleep
+- `Prevent Sleep On Battery`: Keeps the device active and prevents it from going to sleep when powered by battery
 - `Restart`: Restart the device
 
 The statistics menu shows some metrics regarding the device itself.

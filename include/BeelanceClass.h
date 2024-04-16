@@ -36,6 +36,7 @@ namespace Beelance {
       void toJson(const JsonObject& root);
       void historyToJson(const JsonObject& root);
       void clearHistory();
+      bool mustSleep();
 
     private:
       void _initConfig();

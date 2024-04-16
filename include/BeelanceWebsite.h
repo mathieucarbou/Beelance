@@ -77,7 +77,7 @@ namespace Beelance {
       Card _altitude = Card(&dashboard, STATUS_CARD, "Altitude");
 
       Card _sendNow = Card(&dashboard, BUTTON_CARD, "Send now and sleep!");
-      Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep");
+      Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep On Battery");
       Card _scanOps = Card(&dashboard, BUTTON_CARD, "Scan Operators");
       Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
 

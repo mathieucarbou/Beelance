@@ -109,13 +109,13 @@ void Beelance::BeelanceClass::_initEventHandlers() {
 
         if (Beelance::Beelance.isNightModeActive()) {
           const uint32_t delay = Beelance::Beelance.getDelayUntilNextSend();
-          if (Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE)) {
+          if (Beelance::Beelance.mustSleep()) {
+            Mycila::Logger.info(TAG, "Modem is ready. Night Mode is active, going to sleep for %u seconds...", delay);
+            Beelance::Beelance.sleep(delay); // after sleep, ESP will be restarted
+          } else {
             Mycila::Logger.info(TAG, "Modem is ready. Night Mode is active, sleep is disabled, sending next measurements in %u seconds...", delay);
             sendTask.setEnabled(true);
             sendTask.resume(delay * Mycila::TaskDuration::SECONDS);
-          } else {
-            Mycila::Logger.info(TAG, "Modem is ready. Night Mode is active, going to sleep for %u seconds...", delay);
-            Beelance::Beelance.sleep(delay); // after sleep, ESP will be restarted
           }
         } else {
           Mycila::Logger.info(TAG, "Modem is ready. Night Mode is off, sending measurements now....");

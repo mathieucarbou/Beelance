@@ -194,13 +194,13 @@ void Beelance::BeelanceClass::_initTasks() {
   sendTask.setCallback([](const Mycila::Task& me, const uint32_t elapsed) {
     Mycila::Logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
     const uint32_t delay = Beelance::Beelance.getDelayUntilNextSend();
-    if (Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE)) {
+    if (Beelance::Beelance.mustSleep()) {
+      Mycila::Logger.info(TAG, "Going to sleep for %u seconds...", delay);
+      Beelance::Beelance.sleep(delay); // after sleep, ESP will be restarted
+    } else {
       Mycila::Logger.info(TAG, "Sending next measurements in %u seconds...", delay);
       sendTask.setInterval(delay * Mycila::TaskDuration::SECONDS);
       sendTask.resume();
-    } else {
-      Mycila::Logger.info(TAG, "Going to sleep for %u seconds...", delay);
-      Beelance::Beelance.sleep(delay); // after sleep, ESP will be restarted
     }
   });
 
