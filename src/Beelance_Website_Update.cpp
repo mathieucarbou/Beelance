@@ -210,45 +210,62 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
     int idx = 0;
     while (idx < BEELANCE_MAX_HISTORY_SIZE) {
+      _chartLatestX[idx] = emptyString;
+      _chartLatestTempY[idx] = 0;
+      _chartLatestWeightY[idx] = 0;
+
       _chartHourlyX[idx] = emptyString;
       _chartHourlyTempY[idx] = 0;
       _chartHourlyWeightY[idx] = 0;
+
+      _chartDailyX[idx] = emptyString;
+      _chartDailyTempY[idx] = 0;
+      _chartDailyWeightY[idx] = 0;
+
       idx++;
     }
 
     idx = 0;
-    for (const auto& [key, value] : Beelance::Beelance.hourlyHistory) {
+    for (const auto& entry : Beelance::Beelance.latestHistory) {
       if (idx < BEELANCE_MAX_HISTORY_SIZE) {
-        _chartHourlyX[idx] = key;
-        _chartHourlyTempY[idx] = value.temperature;
-        _chartHourlyWeightY[idx] = value.weight;
+        _chartLatestX[idx] = entry.time;
+        _chartLatestTempY[idx] = entry.temperature;
+        _chartLatestWeightY[idx] = entry.weight;
         idx++;
       }
     }
+
+    idx = 0;
+    for (const auto& entry : Beelance::Beelance.hourlyHistory) {
+      if (idx < BEELANCE_MAX_HISTORY_SIZE) {
+        _chartHourlyX[idx] = entry.time;
+        _chartHourlyTempY[idx] = entry.temperature;
+        _chartHourlyWeightY[idx] = entry.weight;
+        idx++;
+      }
+    }
+
+    idx = 0;
+    for (const auto& entry : Beelance::Beelance.dailyHistory) {
+      if (idx < BEELANCE_MAX_HISTORY_SIZE) {
+        _chartDailyX[idx] = entry.time;
+        _chartDailyTempY[idx] = entry.temperature;
+        _chartDailyWeightY[idx] = entry.weight;
+        idx++;
+      }
+    }
+
+    _chartLatestWeight.updateX(_chartLatestX, BEELANCE_MAX_HISTORY_SIZE);
+    _chartLatestWeight.updateY(_chartLatestWeightY, BEELANCE_MAX_HISTORY_SIZE);
+
+    _chartLatestTemp.updateX(_chartLatestX, BEELANCE_MAX_HISTORY_SIZE);
+    _chartLatestTemp.updateY(_chartLatestTempY, BEELANCE_MAX_HISTORY_SIZE);
 
     _chartHourlyWeight.updateX(_chartHourlyX, BEELANCE_MAX_HISTORY_SIZE);
     _chartHourlyWeight.updateY(_chartHourlyWeightY, BEELANCE_MAX_HISTORY_SIZE);
 
     _chartHourlyTemp.updateX(_chartHourlyX, BEELANCE_MAX_HISTORY_SIZE);
     _chartHourlyTemp.updateY(_chartHourlyTempY, BEELANCE_MAX_HISTORY_SIZE);
-
-    idx = 0;
-    while (idx < BEELANCE_MAX_HISTORY_SIZE) {
-      _chartDailyX[idx] = emptyString;
-      _chartDailyTempY[idx] = 0;
-      _chartDailyWeightY[idx] = 0;
-      idx++;
-    }
-
-    idx = 0;
-    for (const auto& [key, value] : Beelance::Beelance.dailyHistory) {
-      if (idx < BEELANCE_MAX_HISTORY_SIZE) {
-        _chartDailyX[idx] = key;
-        _chartDailyTempY[idx] = value.temperature;
-        _chartDailyWeightY[idx] = value.weight;
-        idx++;
-      }
-    }
 
     _chartDailyWeight.updateX(_chartDailyX, BEELANCE_MAX_HISTORY_SIZE);
     _chartDailyWeight.updateY(_chartDailyWeightY, BEELANCE_MAX_HISTORY_SIZE);

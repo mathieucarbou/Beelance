@@ -136,6 +136,7 @@ void Beelance::WebsiteClass::init() {
 }
 
 void Beelance::WebsiteClass::disableTemperature() {
+  dashboard.remove(&_chartLatestTemp);
   dashboard.remove(&_chartHourlyTemp);
   dashboard.remove(&_chartDailyTemp);
 }

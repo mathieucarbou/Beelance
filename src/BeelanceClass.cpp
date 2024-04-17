@@ -7,7 +7,15 @@
 #include <BeelanceWebsite.h>
 #include <LittleFS.h>
 
+#include <algorithm>
+
 #define TAG "BEELANCE"
+
+Beelance::BeelanceClass::BeelanceClass() {
+  latestHistory.reserve(BEELANCE_MAX_HISTORY_SIZE);
+  hourlyHistory.reserve(BEELANCE_MAX_HISTORY_SIZE);
+  dailyHistory.reserve(BEELANCE_MAX_HISTORY_SIZE);
+}
 
 void Beelance::BeelanceClass::_initHTTPd() {
   Mycila::HTTPd.init(&webServer, BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
@@ -198,19 +206,34 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) {
 }
 
 void Beelance::BeelanceClass::historyToJson(const JsonObject& root) {
-  JsonObject hourly = root["hourly"].to<JsonObject>();
-  for (const auto& [key, value] : hourlyHistory) {
-    hourly[key]["temp"] = value.temperature;
-    hourly[key]["wt"] = value.weight;
+  // latest
+  JsonArray latest = root["latest"].to<JsonArray>();
+  for (const auto& entry : latestHistory) {
+    JsonObject o = latest.createNestedObject();
+    o["time"] = entry.time;
+    o["temp"] = entry.temperature;
+    o["wt"] = entry.weight;
   }
-  JsonObject daily = root["daily"].to<JsonObject>();
-  for (const auto& [key, value] : dailyHistory) {
-    daily[key]["temp"] = value.temperature;
-    daily[key]["wt"] = value.weight;
+  // hourly
+  JsonArray hourly = root["hourly"].to<JsonArray>();
+  for (const auto& entry : hourlyHistory) {
+    JsonObject o = hourly.createNestedObject();
+    o["time"] = entry.time;
+    o["temp"] = entry.temperature;
+    o["wt"] = entry.weight;
+  }
+  // daily
+  JsonArray daily = root["daily"].to<JsonArray>();
+  for (const auto& entry : dailyHistory) {
+    JsonObject o = daily.createNestedObject();
+    o["time"] = entry.time;
+    o["temp"] = entry.temperature;
+    o["wt"] = entry.weight;
   }
 }
 
 void Beelance::BeelanceClass::clearHistory() {
+  latestHistory.clear();
   hourlyHistory.clear();
   dailyHistory.clear();
   if (LittleFS.exists(FILE_HISTORY))
@@ -226,45 +249,62 @@ void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const f
   Mycila::Logger.info(TAG, "Record measurement: temperature = %.2f C, weight = %d g", temperature, weight);
 
   const String dt = Mycila::Time::toLocalStr(timestamp); // 2024-04-12 15:02:17
+  const String hhmm = dt.substring(11, 16);              // 15:02
   const String hour = dt.substring(11, 13) + ":00";      // 15:00
   const String day = dt.substring(5, 10);                // 2024-04-12
-  // const String day = dt.substring(0, 16); // 2024-04-12 15:02
 
-  bool change = false;
-
-  if (hourlyHistory.find(hour) == hourlyHistory.end()) {
-    hourlyHistory[hour] = {temperature, weight};
-    change = true;
-  } else {
-    if (temperature > hourlyHistory[hour].temperature) {
-      hourlyHistory[hour].temperature = temperature;
-      change = true;
-    }
-    if (weight > hourlyHistory[hour].weight) {
-      hourlyHistory[hour].weight = weight;
-      change = true;
+  bool found = false;
+  for (auto& entry : latestHistory) {
+    if (entry.time == hhmm) {
+      found = true;
+      if (temperature > entry.temperature)
+        entry.temperature = temperature;
+      if (weight > entry.weight)
+        entry.weight = weight;
+      break;
     }
   }
-
-  if (dailyHistory.find(day) == dailyHistory.end()) {
-    dailyHistory[day] = {temperature, weight};
-    change = true;
-  } else {
-    if (temperature > dailyHistory[day].temperature) {
-      dailyHistory[day].temperature = temperature;
-      change = true;
-    }
-    if (weight > dailyHistory[day].weight) {
-      dailyHistory[day].weight = weight;
-      change = true;
-    }
+  if (!found) {
+    while (latestHistory.size() >= BEELANCE_MAX_HISTORY_SIZE)
+      latestHistory.erase(latestHistory.begin());
+    latestHistory.push_back({hhmm, temperature, weight});
   }
 
-  _prune();
-
-  if (change) {
-    Beelance::Website.requestChartUpdate();
+  found = false;
+  for (auto& entry : hourlyHistory) {
+    if (entry.time == hour) {
+      found = true;
+      if (temperature > entry.temperature)
+        entry.temperature = temperature;
+      if (weight > entry.weight)
+        entry.weight = weight;
+      break;
+    }
   }
+  if (!found) {
+    while (hourlyHistory.size() >= BEELANCE_MAX_HISTORY_SIZE)
+      hourlyHistory.erase(hourlyHistory.begin());
+    hourlyHistory.push_back({hour, temperature, weight});
+  }
+
+  found = false;
+  for (auto& entry : dailyHistory) {
+    if (entry.time == day) {
+      found = true;
+      if (temperature > entry.temperature)
+        entry.temperature = temperature;
+      if (weight > entry.weight)
+        entry.weight = weight;
+      break;
+    }
+  }
+  if (!found) {
+    while (dailyHistory.size() >= BEELANCE_MAX_HISTORY_SIZE)
+      dailyHistory.erase(dailyHistory.begin());
+    dailyHistory.push_back({day, temperature, weight});
+  }
+
+  Beelance::Website.requestChartUpdate();
 }
 
 void Beelance::BeelanceClass::_loadHistory() {
@@ -282,27 +322,31 @@ void Beelance::BeelanceClass::_loadHistory() {
       deserializeJson(root, file);
       file.close();
 
+      // latestHistory
+      latestHistory.clear();
+      JsonArray latest = root["latest"].as<JsonArray>();
+      for (int len = latest.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
+        latestHistory.push_back({latest[i]["time"].as<String>(), latest[i]["temp"].as<float>(), latest[i]["wt"].as<int32_t>()});
+
       // hourlyHistory
       hourlyHistory.clear();
-      for (JsonPair kv : root["hourly"].as<JsonObject>()) {
-        JsonObject o = kv.value().as<JsonObject>();
-        hourlyHistory[String(kv.key().c_str())] = {o["temp"].as<float>(), o["wt"].as<int32_t>()};
-      }
+      JsonArray hourly = root["hourly"].as<JsonArray>();
+      for (int len = hourly.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
+        hourlyHistory.push_back({hourly[i]["time"].as<String>(), hourly[i]["temp"].as<float>(), hourly[i]["wt"].as<int32_t>()});
 
       // dailyHistory
       dailyHistory.clear();
-      for (JsonPair kv : root["daily"].as<JsonObject>()) {
-        JsonObject o = kv.value().as<JsonObject>();
-        dailyHistory[String(kv.key().c_str())] = {o["temp"].as<float>(), o["wt"].as<int32_t>()};
-      }
+      JsonArray daily = root["daily"].as<JsonArray>();
+      for (int len = daily.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
+        dailyHistory.push_back({daily[i]["time"].as<String>(), daily[i]["temp"].as<float>(), daily[i]["wt"].as<int32_t>()});
+
     } else {
       Mycila::Logger.error(TAG, "Unable to open file: " FILE_HISTORY);
     }
+
   } else {
     Mycila::Logger.warn(TAG, "File not found: " FILE_HISTORY);
   }
-
-  _prune();
 
   Beelance::Website.requestChartUpdate();
 }
@@ -322,13 +366,6 @@ void Beelance::BeelanceClass::_saveHistory() {
   } else {
     Mycila::Logger.error(TAG, "Unable to save file: " FILE_HISTORY);
   }
-}
-
-void Beelance::BeelanceClass::_prune() {
-  while (hourlyHistory.size() > BEELANCE_MAX_HISTORY_SIZE)
-    hourlyHistory.erase(hourlyHistory.begin());
-  while (dailyHistory.size() > BEELANCE_MAX_HISTORY_SIZE)
-    dailyHistory.erase(dailyHistory.begin());
 }
 
 double Beelance::BeelanceClass::_round2(double value) {

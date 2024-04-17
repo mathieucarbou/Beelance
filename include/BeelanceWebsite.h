@@ -83,10 +83,17 @@ namespace Beelance {
 
       // graphs
 
+      Chart _chartLatestWeight = Chart(&dashboard, BAR_CHART, "Weight (g) - Latest");
       Chart _chartHourlyWeight = Chart(&dashboard, BAR_CHART, "Weight (g) - Hourly Max");
-      Chart _chartHourlyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Hourly Max");
       Chart _chartDailyWeight = Chart(&dashboard, BAR_CHART, "Weight (g) - Daily Max");
+
+      Chart _chartLatestTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Latest");
+      Chart _chartHourlyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Hourly Max");
       Chart _chartDailyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Daily Max");
+
+      String _chartLatestX[BEELANCE_MAX_HISTORY_SIZE];
+      float _chartLatestWeightY[BEELANCE_MAX_HISTORY_SIZE];
+      float _chartLatestTempY[BEELANCE_MAX_HISTORY_SIZE];
 
       String _chartHourlyX[BEELANCE_MAX_HISTORY_SIZE];
       float _chartHourlyWeightY[BEELANCE_MAX_HISTORY_SIZE];

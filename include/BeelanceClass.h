@@ -6,17 +6,20 @@
 
 #include <Beelance.h>
 
-#include <map>
 #include <mutex>
+#include <vector>
 
 namespace Beelance {
   typedef struct {
+      String time;
       float temperature;
       int32_t weight;
   } Measurement;
 
   class BeelanceClass {
     public:
+      BeelanceClass();
+
       void begin() {
         _initConfig();
         _initHTTPd();
@@ -48,14 +51,14 @@ namespace Beelance {
       void _recordMeasurement(const time_t timestamp, const float temperature, const int32_t weight);
       void _loadHistory();
       void _saveHistory();
-      void _prune();
 
     private:
       static double _round2(double v);
 
     public:
-      std::map<const String, Measurement> hourlyHistory;
-      std::map<const String, Measurement> dailyHistory;
+      std::vector<Measurement> latestHistory;
+      std::vector<Measurement> hourlyHistory;
+      std::vector<Measurement> dailyHistory;
       std::mutex _mutex;
   };
 
