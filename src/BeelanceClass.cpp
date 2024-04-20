@@ -205,11 +205,11 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) {
   root["volt"] = _round2(Mycila::PMU.getVoltage());
 }
 
-void Beelance::BeelanceClass::historyToJson(const JsonObject& root) {
+void Beelance::BeelanceClass::historyToJson(const JsonObject& root) const {
   // latest
   JsonArray latest = root["latest"].to<JsonArray>();
   for (const auto& entry : latestHistory) {
-    JsonObject o = latest.createNestedObject();
+    JsonObject o = latest.add<JsonObject>();
     o["time"] = entry.time;
     o["temp"] = entry.temperature;
     o["wt"] = entry.weight;
@@ -217,7 +217,7 @@ void Beelance::BeelanceClass::historyToJson(const JsonObject& root) {
   // hourly
   JsonArray hourly = root["hourly"].to<JsonArray>();
   for (const auto& entry : hourlyHistory) {
-    JsonObject o = hourly.createNestedObject();
+    JsonObject o = hourly.add<JsonObject>();
     o["time"] = entry.time;
     o["temp"] = entry.temperature;
     o["wt"] = entry.weight;
@@ -225,7 +225,7 @@ void Beelance::BeelanceClass::historyToJson(const JsonObject& root) {
   // daily
   JsonArray daily = root["daily"].to<JsonArray>();
   for (const auto& entry : dailyHistory) {
-    JsonObject o = daily.createNestedObject();
+    JsonObject o = daily.add<JsonObject>();
     o["time"] = entry.time;
     o["temp"] = entry.temperature;
     o["wt"] = entry.weight;

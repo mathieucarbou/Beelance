@@ -37,7 +37,7 @@ namespace Beelance {
       void updateWebsite();
       bool sendMeasurements();
       void toJson(const JsonObject& root);
-      void historyToJson(const JsonObject& root);
+      void historyToJson(const JsonObject& root) const;
       void clearHistory();
       bool mustSleep();
 
