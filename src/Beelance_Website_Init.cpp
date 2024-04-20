@@ -94,13 +94,13 @@ void Beelance::WebsiteClass::init() {
 
   // home callbacks
 
-  _restart.attachCallback([=](uint32_t value) {
+  _restart.attachCallback([this](uint32_t value) {
     restartTask.resume();
     _restart.update(!restartTask.isPaused());
     dashboard.refreshCard(&_restart);
   });
 
-  _sendNow.attachCallback([=](uint32_t value) {
+  _sendNow.attachCallback([this](uint32_t value) {
     if (sendTask.isEnabled()) {
       sendTask.resume();
       sendTask.requestEarlyRun();
@@ -109,20 +109,20 @@ void Beelance::WebsiteClass::init() {
     dashboard.refreshCard(&_sendNow);
   });
 
-  _tare.attachCallback([=](uint32_t value) {
+  _tare.attachCallback([this](uint32_t value) {
     hx711TareTask.resume();
     _tare.update(hx711TareTask.isRunning() || (hx711TareTask.isEnabled() && !hx711TareTask.isPaused()));
     dashboard.refreshCard(&_tare);
   });
 
-  _weight.attachCallback([=](int expectedWeight) {
+  _weight.attachCallback([this](int expectedWeight) {
     calibrationWeight = expectedWeight;
     hx711ScaleTask.resume(2 * Mycila::TaskDuration::SECONDS);
     _weight.update(expectedWeight);
     dashboard.refreshCard(&_weight);
   });
 
-  _scanOps.attachCallback([=](uint32_t value) {
+  _scanOps.attachCallback([this](uint32_t value) {
     if (value && Mycila::Modem.isReady()) {
       Mycila::Modem.scanForOperators();
     }

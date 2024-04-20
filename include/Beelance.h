@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <Arduino.h>
 #include <ESPmDNS.h>
 #include <HardwareSerial.h>
 
