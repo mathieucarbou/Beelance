@@ -200,7 +200,6 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _uptime.update(String(Mycila::System.getUptime()));
   _restart.update(!restartTask.isPaused());
 
-  _scanOps.update(Mycila::Modem.getState() == Mycila::ModemState::MODEM_SEARCHING);
   _sendNow.update(sendTask.isRunning() || (sendTask.isEnabled() && !sendTask.isPaused() && sendTask.isEarlyRunRequested()));
   _noSleepMode.update(Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE));
   _tare.update(hx711TareTask.isRunning() || (hx711TareTask.isEnabled() && !hx711TareTask.isPaused()));

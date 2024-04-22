@@ -122,12 +122,10 @@ void Beelance::WebsiteClass::init() {
     dashboard.refreshCard(&_weight);
   });
 
-  _scanOps.attachCallback([this](uint32_t value) {
-    if (value && Mycila::Modem.isReady()) {
-      Mycila::Modem.scanForOperators();
-    }
-    _scanOps.update(Mycila::Modem.getState() == Mycila::ModemState::MODEM_SEARCHING);
-    dashboard.refreshCard(&_scanOps);
+  _resetHistory.attachCallback([this](uint32_t value) {
+    Beelance::Beelance.clearHistory();
+    _resetHistory.update(false);
+    dashboard.refreshCard(&_resetHistory);
   });
 
   _boolConfig(&_noSleepMode, KEY_NO_SLEEP_ENABLE);

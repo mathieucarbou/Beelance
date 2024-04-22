@@ -76,10 +76,12 @@ namespace Beelance {
       Card _longitude = Card(&dashboard, STATUS_CARD, "Longitude");
       Card _altitude = Card(&dashboard, STATUS_CARD, "Altitude");
 
+      // actions
+
       Card _sendNow = Card(&dashboard, BUTTON_CARD, "Send now and sleep!");
       Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep On Battery");
-      Card _scanOps = Card(&dashboard, BUTTON_CARD, "Scan Operators");
       Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
+      Card _resetHistory = Card(&dashboard, BUTTON_CARD, "Reset Graph History");
 
       // graphs
 
