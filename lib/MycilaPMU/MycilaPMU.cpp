@@ -72,7 +72,7 @@ float Mycila::PMUClass::getBatteryLevel() {
 }
 
 bool Mycila::PMUClass::isExternallyPowered() {
-  return getVoltage() > MYCILA_PMU_BATTERY_VOLTAGE_MAX;
+  return getVoltage() >= MYCILA_PMU_BATTERY_VOLTAGE_MAX;
 }
 
 bool Mycila::PMUClass::isBatteryPowered() {
@@ -80,7 +80,7 @@ bool Mycila::PMUClass::isBatteryPowered() {
   // ADC does not work when USB is connected and switch is off (no battery to measure)
   // The measured voltage is between 0 and 1.
   // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
-  return voltage <= MYCILA_PMU_BATTERY_VOLTAGE_MAX && (voltage <= 0 || voltage >= 1);
+  return voltage < MYCILA_PMU_BATTERY_VOLTAGE_MAX && (voltage <= 0 || voltage >= 1);
 }
 
 void Mycila::PMUClass::enableModem() {
