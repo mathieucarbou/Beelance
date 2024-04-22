@@ -94,6 +94,8 @@ The device takes measurements and sends them periodically:
 - Battery level and voltage
 - Operator and SIM card information
 
+It will also keep a local history of the 10 last measurements, the maximum values of the last 10 hours and the maximum values of the last 10 days, both for weight and temperature.
+
 ### Configuration
 
 The device has an access point, we can connect to it to:
