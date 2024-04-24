@@ -50,6 +50,7 @@ namespace Mycila {
       void enableCamera();
       void setChargingLedMode(xpowers_chg_led_mode_t mode);
       void powerOff();
+      void reset();
 
       void toJson(const JsonObject& root) const;
 

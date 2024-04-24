@@ -213,6 +213,12 @@ void Mycila::PMUClass::powerOff() {
 #endif
 }
 
+void Mycila::PMUClass::reset() {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  _pmu.reset();
+#endif
+}
+
 void Mycila::PMUClass::toJson(const JsonObject& root) const {
   root["powered_by"] = isBatteryPowered() ? "bat" : "ext";
   root["battery_level"] = getBatteryLevel();
