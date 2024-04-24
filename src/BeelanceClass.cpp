@@ -179,7 +179,7 @@ bool Beelance::BeelanceClass::sendMeasurements() {
   return false;
 }
 
-void Beelance::BeelanceClass::toJson(const JsonObject& root) {
+void Beelance::BeelanceClass::toJson(const JsonObject& root) const {
   // time
   root["ts"] = Mycila::Time::getUnixTime();
   // beehive
@@ -202,7 +202,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) {
   // power
   root["pow"] = Mycila::PMU.isBatteryPowered() ? "bat" : "ext";
   root["bat"] = _round2(Mycila::PMU.getBatteryLevel());
-  root["volt"] = _round2(Mycila::PMU.getVoltage());
+  root["volt"] = _round2(Mycila::PMU.getBatteryVoltage());
 }
 
 void Beelance::BeelanceClass::historyToJson(const JsonObject& root) const {
@@ -241,8 +241,9 @@ void Beelance::BeelanceClass::clearHistory() {
   Beelance::Website.requestChartUpdate();
 }
 
-bool Beelance::BeelanceClass::mustSleep() {
-  return !Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE) && Mycila::PMU.isBatteryPowered();
+bool Beelance::BeelanceClass::mustSleep() const {
+  return !Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE);
+  // return !Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE) && Mycila::PMU.isBatteryPowered();
 }
 
 void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const float temperature, const int32_t weight) {

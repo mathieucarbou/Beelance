@@ -32,6 +32,8 @@ Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
 
 Mycila::Task temperatureTask("temperatureSensor.read()", [](void* params) { temperatureSensor.read(); });
 
+Mycila::Task pmuTask("Mycila::PMU.read()", [](void* params) { Mycila::PMU.read(); });
+
 Mycila::Task hx711Task("hx711.read()", [](void* params) { hx711.read(); });
 
 Mycila::Task hx711TareTask("hx711.tare()", [](void* params) {
@@ -164,6 +166,10 @@ void Beelance::BeelanceClass::_initTasks() {
   configureDebugTask.setType(Mycila::TaskType::ONCE);
   configureDebugTask.setManager(&loopTaskManager);
 
+  pmuTask.setType(Mycila::TaskType::FOREVER);
+  pmuTask.setManager(&loopTaskManager);
+  pmuTask.setInterval(5 * Mycila::TaskDuration::SECONDS);
+
   // hx711
 
   hx711Task.setType(Mycila::TaskType::FOREVER);
@@ -199,8 +205,7 @@ void Beelance::BeelanceClass::_initTasks() {
       Beelance::Beelance.sleep(delay); // after sleep, ESP will be restarted
     } else {
       Mycila::Logger.info(TAG, "Sending next measurements in %u seconds...", delay);
-      sendTask.setInterval(delay * Mycila::TaskDuration::SECONDS);
-      sendTask.resume();
+      sendTask.resume(delay * Mycila::TaskDuration::SECONDS);
     }
   });
 

@@ -36,10 +36,10 @@ namespace Beelance {
       void sleep(uint32_t seconds);
       void updateWebsite();
       bool sendMeasurements();
-      void toJson(const JsonObject& root);
+      void toJson(const JsonObject& root) const;
       void historyToJson(const JsonObject& root) const;
       void clearHistory();
-      bool mustSleep();
+      bool mustSleep() const;
 
     private:
       void _initConfig();

@@ -41,7 +41,11 @@ extern Mycila::TaskManager loopTaskManager;
 extern Mycila::TaskManager modemTaskManager;
 
 extern Mycila::Task espConnectTask;
+extern Mycila::Task hx711ScaleTask;
+extern Mycila::Task hx711TareTask;
+extern Mycila::Task hx711Task;
 extern Mycila::Task otaPrepareTask;
+extern Mycila::Task pmuTask;
 extern Mycila::Task resetTask;
 extern Mycila::Task restartTask;
 extern Mycila::Task sendTask;
@@ -49,9 +53,6 @@ extern Mycila::Task stackMonitorTask;
 extern Mycila::Task startNetworkServicesTask;
 extern Mycila::Task stopNetworkServicesTask;
 extern Mycila::Task temperatureTask;
-extern Mycila::Task hx711Task;
-extern Mycila::Task hx711ScaleTask;
-extern Mycila::Task hx711TareTask;
 extern Mycila::Task watchdogTask;
 extern Mycila::Task websiteTask;
 

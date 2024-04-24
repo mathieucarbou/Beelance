@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <ArduinoJson.h>
 #include <XPowersLib.h>
 
 // https://gist.github.com/exocode/90339d7f946ad5f83dd1cf29bf5df0dc#under-load
@@ -35,11 +36,12 @@ namespace Mycila {
     public:
       void begin();
 
-      float getVoltage();
-      float getBatteryVoltage();
-      float getBatteryLevel();
-      bool isBatteryPowered();
-      bool isExternallyPowered();
+      float getBatteryVoltage() const { return _batteryVoltage; }
+      float getBatteryLevel() const;
+      bool isBatteryPowered() const;
+      bool isExternallyPowered() const;
+
+      float read();
 
       void enableModem();
       void enableGPS();
@@ -49,11 +51,15 @@ namespace Mycila {
       void setChargingLedMode(xpowers_chg_led_mode_t mode);
       void powerOff();
 
+      void toJson(const JsonObject& root) const;
+
     private:
-      float _voltage = -1;
-      uint32_t _lastVoltageRefreshTime = 0;
+      float _batteryVoltage = 0;
 #ifdef MYCILA_XPOWERS_PMU_ENABLED
       XPowersPMU _pmu;
+      bool _pmuBatteryConnected = false;
+      bool _pmuBatteryCharging = false;
+      bool _pmuBatteryDischarging = false;
 #endif
   };
 

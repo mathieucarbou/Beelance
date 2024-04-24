@@ -21,6 +21,16 @@ void Mycila::PMUClass::begin() {
   if (!_pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, MYCILA_PMU_I2C_SDA, MYCILA_PMU_I2C_SCL)) {
     return;
   }
+  // Set the minimum common working voltage of the PMU VBUS input,
+  // below this value will turn off the PMU
+  // _pmu.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
+
+  // Set the maximum current of the PMU VBUS input,
+  // higher than this value will turn off the PMU
+  // _pmu.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_2000MA);
+
+  // Set VSY off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
+  // _pmu.setSysPowerDownVoltage(2600);
 
   _pmu.setChargingLedMode(XPOWERS_CHG_LED_CTRL_CHG);
 
@@ -40,47 +50,76 @@ void Mycila::PMUClass::begin() {
   _pmu.disableDLDO1();   // Switch Function
   _pmu.disableDLDO2();   // Switch Function
 
+  _pmu.enableBattDetection();
+  _pmu.enableBattVoltageMeasure();
+  _pmu.enableVbusVoltageMeasure();
+  _pmu.enableSystemVoltageMeasure();
+  _pmu.disableTemperatureMeasure();
+
   // TS Pin detection must be disable, otherwise it cannot be charged
   _pmu.disableTSPinMeasure();
+
+  // Disable all interrupts
+  _pmu.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+  // Clear all interrupt flags
+  _pmu.clearIrqStatus();
+
+  // Enable the required interrupt function
+  _pmu.enableIRQ(
+    XPOWERS_AXP2101_BAT_INSERT_IRQ | XPOWERS_AXP2101_BAT_REMOVE_IRQ |      // BATTERY
+    XPOWERS_AXP2101_VBUS_INSERT_IRQ | XPOWERS_AXP2101_VBUS_REMOVE_IRQ |    // VBUS
+    XPOWERS_AXP2101_PKEY_SHORT_IRQ | XPOWERS_AXP2101_PKEY_LONG_IRQ |       // POWER KEY
+    XPOWERS_AXP2101_BAT_CHG_DONE_IRQ | XPOWERS_AXP2101_BAT_CHG_START_IRQ); // CHARGE
+
+  // Set the precharge charging current
+  _pmu.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
+  // Set constant current charge current limit
+  _pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_200MA);
+  // Set stop charging termination current
+  _pmu.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
+  // Set charge cut-off voltage
+  _pmu.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V2);
+  // Set the time of pressing the button to turn off
+  _pmu.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
 #endif
 }
 
-float Mycila::PMUClass::getVoltage() {
-  if (millis() - _lastVoltageRefreshTime >= 2000) {
-#ifdef MYCILA_XPOWERS_PMU_ENABLED
-    _voltage = _pmu.getBattVoltage() / 1000.0;
-#endif
-#ifdef MYCILA_PMU_BATTERY_ADC_PIN
-    esp_adc_cal_characteristics_t adc_chars;
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-    _voltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
-#endif
-    _lastVoltageRefreshTime = millis();
-  }
-  return _voltage;
-}
-
-float Mycila::PMUClass::getBatteryVoltage() {
-  return isBatteryPowered() ? _voltage : 0;
-}
-
-float Mycila::PMUClass::getBatteryLevel() {
-  float voltage = getBatteryVoltage();
+float Mycila::PMUClass::getBatteryLevel() const {
   // map() equivalent with float
   constexpr float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
-  return run == 0 || voltage < MYCILA_PMU_BATTERY_VOLTAGE_MIN ? 0 : min(100.0, ((voltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
+  return run == 0 || _batteryVoltage < MYCILA_PMU_BATTERY_VOLTAGE_MIN ? 0 : min(100.0, ((_batteryVoltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
 }
 
-bool Mycila::PMUClass::isExternallyPowered() {
-  return getVoltage() >= MYCILA_PMU_BATTERY_VOLTAGE_MAX;
+bool Mycila::PMUClass::isExternallyPowered() const {
+  return _batteryVoltage > MYCILA_PMU_BATTERY_VOLTAGE_MAX;
 }
 
-bool Mycila::PMUClass::isBatteryPowered() {
-  float voltage = getVoltage();
+bool Mycila::PMUClass::isBatteryPowered() const {
   // ADC does not work when USB is connected and switch is off (no battery to measure)
   // The measured voltage is between 0 and 1.
   // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
-  return voltage < MYCILA_PMU_BATTERY_VOLTAGE_MAX && (voltage <= 0 || voltage >= 1);
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  if (_pmuBatteryCharging || _pmuBatteryDischarging)
+    return true;
+#endif
+  return _batteryVoltage <= MYCILA_PMU_BATTERY_VOLTAGE_MAX && (_batteryVoltage <= 0 || _batteryVoltage >= 1);
+}
+
+float Mycila::PMUClass::read() {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  _batteryVoltage = _pmu.getBattVoltage() / 1000.0;
+  //  getBatteryPercent() cannot be used because it requires a full charge and discharge cycle
+  // _pmu.getBatteryPercent();
+  _pmuBatteryConnected = _pmu.isBatteryConnect();
+  _pmuBatteryCharging = _pmu.isCharging();
+  _pmuBatteryDischarging = _pmu.isDischarge();
+#endif
+#ifdef MYCILA_PMU_BATTERY_ADC_PIN
+  esp_adc_cal_characteristics_t adc_chars;
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+  _batteryVoltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
+#endif
+  return _batteryVoltage;
 }
 
 void Mycila::PMUClass::enableModem() {
@@ -153,12 +192,6 @@ void Mycila::PMUClass::setChargingLedMode(xpowers_chg_led_mode_t mode) {
 
 void Mycila::PMUClass::powerOff() {
 #ifdef MYCILA_XPOWERS_PMU_ENABLED
-  // Turn off ADC data monitoring to save power
-  _pmu.disableBattDetection();
-  _pmu.disableTemperatureMeasure();
-  _pmu.disableVbusVoltageMeasure();
-  _pmu.disableBattVoltageMeasure();
-  _pmu.disableSystemVoltageMeasure();
   // Turn off the power output of other channels
   _pmu.disableDC2();
   _pmu.disableDC3();
@@ -173,15 +206,22 @@ void Mycila::PMUClass::powerOff() {
   _pmu.disableCPUSLDO();
   _pmu.disableDLDO1();
   _pmu.disableDLDO2();
-  // Close other IRQs
-  _pmu.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-  // Clear PMU Interrupt Status Register // I applied a short press interrupt on PMU
-  _pmu.clearIrqStatus();
-  // Turn off the charging indicator to save power
   _pmu.setChargingLedMode(XPOWERS_CHG_LED_OFF);
 #endif
 #ifdef MYCILA_BOARD_LED_PIN
   digitalWrite(MYCILA_BOARD_LED_PIN, LOW);
+#endif
+}
+
+void Mycila::PMUClass::toJson(const JsonObject& root) const {
+  root["powered_by"] = isBatteryPowered() ? "bat" : "ext";
+  root["battery_level"] = getBatteryLevel();
+  root["battery_voltage"] = _batteryVoltage;
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  root["pmu_battery_connected"] = _pmuBatteryConnected;
+  root["pmu_battery_powered"] = _pmuBatteryCharging || _pmuBatteryDischarging;
+  root["pmu_battery_charging"] = _pmuBatteryCharging;
+  root["pmu_battery_discharging"] = _pmuBatteryDischarging;
 #endif
 }
 

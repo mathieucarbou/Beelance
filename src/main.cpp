@@ -16,7 +16,7 @@ AsyncWebServer webServer(80);
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 
 Mycila::TaskManager hx711TaskManager("hx711", 3);
-Mycila::TaskManager loopTaskManager("loopTask", 11);
+Mycila::TaskManager loopTaskManager("loopTask", 12);
 Mycila::TaskManager modemTaskManager("modemTask", 5);
 
 Mycila::HX711 hx711;

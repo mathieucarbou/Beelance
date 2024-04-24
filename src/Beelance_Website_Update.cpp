@@ -195,7 +195,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   } else {
     _power.update("External", "");
   }
-  _volt.update(Mycila::PMU.getVoltage());
+  _volt.update(Mycila::PMU.getBatteryVoltage());
 
   _uptime.update(String(Mycila::System.getUptime()));
   _restart.update(!restartTask.isPaused());

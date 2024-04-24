@@ -98,6 +98,7 @@ void Beelance::BeelanceClass::_initREST() {
     JsonObject root = response->getRoot();
     Mycila::System.toJson(root);
     hx711.toJson(root["hx711"].to<JsonObject>());
+    Mycila::PMU.toJson(root["pmu"].to<JsonObject>());
     Mycila::TaskMonitor.toJson(root["stack"].to<JsonObject>());
     loopTaskManager.toJson(root["task_managers"][0].to<JsonObject>());
     temperatureSensor.toJson(root["temp_sensor"].to<JsonObject>());
@@ -154,6 +155,7 @@ void Beelance::BeelanceClass::_initREST() {
     // system
     Mycila::System.toJson(root["system"].to<JsonObject>());
     hx711.toJson(root["system"]["hx711"].to<JsonObject>());
+    Mycila::PMU.toJson(root["system"]["pmu"].to<JsonObject>());
     Mycila::TaskMonitor.toJson(root["system"]["stack"].to<JsonObject>());
     loopTaskManager.toJson(root["system"]["task_managers"][0].to<JsonObject>());
     temperatureSensor.toJson(root["system"]["temp_sensor"].to<JsonObject>());
