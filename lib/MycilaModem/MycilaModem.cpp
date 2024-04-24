@@ -511,7 +511,7 @@ bool Mycila::ModemClass::_syncGPS() {
       int c = Serial2.read();
       if (tinyGPS.encode(c)) {
         bool valid = tinyGPS.location.isValid() && tinyGPS.date.isValid() && tinyGPS.time.isValid() && tinyGPS.altitude.isValid() && tinyGPS.hdop.isValid();
-        if (valid) {
+        if (valid && tinyGPS.altitude.meters() >= 0) {
           _gpsData.latitude = tinyGPS.location.lat();
           _gpsData.longitude = tinyGPS.location.lng();
           _gpsData.altitude = tinyGPS.altitude.meters();
@@ -532,7 +532,7 @@ bool Mycila::ModemClass::_syncGPS() {
 
 #ifdef TINY_GSM_MODEM_SIM7080
   uint8_t status = 0;
-  if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec)) {
+  if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec) && _gpsData.altitude >= 0) {
     _gpsData.time.tm_year -= 1900;
     _gpsData.time.tm_mon -= 1;
     Mycila::Logger.info(TAG, "GPS Synced!");
