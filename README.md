@@ -70,7 +70,7 @@ Example of Google Sheet receiving the data:
 
 ### Powering
 
-Beelance can be powered by USB-C, Solar Panel or battery.
+Beelance can be powered by USB-C, USB-C Solar Panel or battery.
 On the field, it is recommended to use a Solar Panel to power the device.
 If a battery is used, the device will automatically switch to the battery when the solar panel is not providing enough power.
 Otherwise, the battery will be charged by the solar panel at the same time the solar panel powers the device.
@@ -183,7 +183,6 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
   - [IP67 Box about 200mm x 120mm x 75mm](https://fr.aliexpress.com/item/1005001304761174.html) - 11 euros
   - If using a battery, take a UL94V-0 box (fire retardant)
 - Optional but recommended:
-  - [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items - _Facilitate charging and powering the device without opening the box_
   - Battery (18650): [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
   - Charger: [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
   - [Expandable braided sleeving](https://www.amazon.fr/gp/product/B0B3RBS4DX) to protect small wires
@@ -206,7 +205,6 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
 - Connect the HX11 adapter (see GPIO pins table below)
 - Wire the weight cells to the adapter according to the schemas and photos below. Please also see this more [complete guide also](https://www.instructables.com/Arduino-Bathroom-Scale-With-50-Kg-Load-Cells-and-H/).
 - Solar Panel must be connected to USB-C port: this will automatically boot the device when the solar panel are delivering enough power
-- Optionally wire an external USB-C connector on the box, connected to the board like the photo (to charge the battery or power the board more easily)
 
 ### Default GPIO Pinout
 
@@ -253,6 +251,10 @@ Do not forget to install the SIM card before powering.
 - On the `T-SIM7080G-S3`, to start from battery, you need to press 3 seconds on the power button
 
 [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/lilygo-power.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/lilygo-power.jpeg)
+
+The boards can have an internal solar connector, which is not used for Beelance.
+We use instead a USB-C Solar Panel which is capable of automatically power the board in case it shuts down.
+Never power the device with both the on-board solar connector and a usb-c solar panel.
 
 **WARNING / DISCLAIMER**:
 
@@ -457,7 +459,7 @@ Here is below a sample of the JSON payload that the device will send to the conf
 - `boot`: the device boot count, useful to know if the device reboots often because of a bug
 - `ver`: the firmware version
 - `up`: the device uptime in seconds, useful to know if the device reboots often because of a bug
-- `pow`: `bat` (for battery powered) or `ext` (when powered by USB-C or Solar Panel)
+- `pow`: `bat` (for battery powered) or `ext` (when powered by USB-C / Solar Panel)
 - `bat`: the battery level in percentage, 0 if not running on battery
 - `volt`: the battery voltage, or the external supplied voltage
 
