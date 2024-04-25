@@ -81,11 +81,6 @@
     modem_pin: ["Modem PIN (only if your SIM requires to be unlocked)", "password"],
     gps_timeout: ["GPS Sync Timeout in seconds", "uint"],
 
-    "Modem SIM7080G Only": "TITLE",
-    modem_mode: ["Modem Mode Preferred (only for SIM7080 variants)", "select", "AUTO,LTE-M,NB-IoT"],
-    bands_ltem: ["LTE-M Bands (only for SIM7080 variants)", "string"],
-    bands_nbiot: ["NB-IoT Bands (only for SIM7080 variants)", "string"],
-
     Network: "TITLE",
     ap_mode_enable: ["Access Point mode enabled ?", "switch"],
     admin_pwd: ["Admin password", "password"],
@@ -103,6 +98,12 @@
 
     Debug: "TITLE",
     debug_enable: ["Debug mode enabled ?", "switch"],
+
+    "SIM7080G Only": "TITLE",
+    modem_mode: ["Modem Mode Preferred (only for SIM7080 variants)", "select", "AUTO,LTE-M,NB-IoT"],
+    bands_ltem: ["LTE-M Bands (only for SIM7080 variants)", "string"],
+    bands_nbiot: ["NB-IoT Bands (only for SIM7080 variants)", "string"],
+    pmu_chg_current: ["PMU Charge Current in mA (only for SIM7080 variants)", "select", "100,200,300,400,500"],
   };
 
   async function onInputChange(event) {

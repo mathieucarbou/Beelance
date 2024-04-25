@@ -57,6 +57,7 @@ void setup() {
   Mycila::PMU.begin();
   Mycila::PMU.enableDCPins();
   Mycila::PMU.setChargingLedMode(XPOWERS_CHG_LED_ON);
+  Mycila::PMU.setChargingCurrent(Mycila::Config.get(KEY_PMU_CHARGING_CURRENT).toInt());
   Mycila::Logger.info(TAG, "Powering Modem...");
   Mycila::PMU.enableModem();
   Mycila::Logger.info(TAG, "Powering GPS...");

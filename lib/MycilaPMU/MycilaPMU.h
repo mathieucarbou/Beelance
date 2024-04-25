@@ -49,6 +49,7 @@ namespace Mycila {
       void enableSDCard();
       void enableCamera();
       void setChargingLedMode(xpowers_chg_led_mode_t mode);
+      void setChargingCurrent(int current);
       void powerOff();
       void reset();
 
@@ -61,6 +62,7 @@ namespace Mycila {
       bool _pmuBatteryConnected = false;
       bool _pmuBatteryCharging = false;
       bool _pmuBatteryDischarging = false;
+      xpowers_axp2101_chg_curr_t _chargingCurrent = xpowers_axp2101_chg_curr_t::XPOWERS_AXP2101_CHG_CUR_500MA;
 #endif
   };
 

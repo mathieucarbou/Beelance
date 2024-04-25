@@ -32,6 +32,7 @@
 #define KEY_NIGHT_START_TIME        "night_start"
 #define KEY_NIGHT_STOP_TIME         "night_end"
 #define KEY_NO_SLEEP_ENABLE         "no_sleep_enable"
+#define KEY_PMU_CHARGING_CURRENT    "pmu_chg_current"
 #define KEY_SEND_INTERVAL           "send_delay"
 #define KEY_SEND_URL                "send_url"
 #define KEY_TEMPERATURE_PIN         "temp_pin"

@@ -74,7 +74,7 @@ void Mycila::PMUClass::begin() {
   // Set the precharge charging current
   _pmu.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
   // Set constant current charge current limit
-  _pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_200MA);
+  _pmu.setChargerConstantCurr(_chargingCurrent);
   // Set stop charging termination current
   _pmu.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
   // Set charge cut-off voltage
@@ -187,6 +187,22 @@ void Mycila::PMUClass::setChargingLedMode(xpowers_chg_led_mode_t mode) {
       digitalWrite(MYCILA_BOARD_LED_PIN, LOW);
       break;
   }
+#endif
+}
+
+void Mycila::PMUClass::setChargingCurrent(int chargingCurrent) {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  if (chargingCurrent >= 500)
+    _chargingCurrent = xpowers_axp2101_chg_curr_t::XPOWERS_AXP2101_CHG_CUR_500MA;
+  else if (chargingCurrent >= 400)
+    _chargingCurrent = xpowers_axp2101_chg_curr_t::XPOWERS_AXP2101_CHG_CUR_400MA;
+  else if (chargingCurrent >= 300)
+    _chargingCurrent = xpowers_axp2101_chg_curr_t::XPOWERS_AXP2101_CHG_CUR_300MA;
+  else if (chargingCurrent >= 200)
+    _chargingCurrent = xpowers_axp2101_chg_curr_t::XPOWERS_AXP2101_CHG_CUR_200MA;
+  else
+    _chargingCurrent = xpowers_axp2101_chg_curr_t::XPOWERS_AXP2101_CHG_CUR_100MA;
+  _pmu.setChargerConstantCurr(_chargingCurrent);
 #endif
 }
 
