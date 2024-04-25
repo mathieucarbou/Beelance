@@ -39,7 +39,6 @@ namespace Mycila {
       float getBatteryVoltage() const { return _batteryVoltage; }
       float getBatteryLevel() const;
       bool isBatteryPowered() const;
-      bool isExternallyPowered() const;
 
       float read();
 

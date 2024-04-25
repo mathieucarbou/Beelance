@@ -85,13 +85,11 @@ void Mycila::PMUClass::begin() {
 }
 
 float Mycila::PMUClass::getBatteryLevel() const {
+  if (!isBatteryPowered())
+    return 0;
   // map() equivalent with float
   constexpr float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
   return run == 0 || _batteryVoltage < MYCILA_PMU_BATTERY_VOLTAGE_MIN ? 0 : min(100.0, ((_batteryVoltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
-}
-
-bool Mycila::PMUClass::isExternallyPowered() const {
-  return _batteryVoltage > MYCILA_PMU_BATTERY_VOLTAGE_MAX;
 }
 
 bool Mycila::PMUClass::isBatteryPowered() const {
