@@ -189,6 +189,7 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
   - [Expandable braided sleeving](https://www.amazon.fr/gp/product/B0B3RBS4DX) to protect small wires
   - [Waterproof connectors](https://fr.aliexpress.com/item/1005003084329744.html) - only if you want to go further in the perfection
   - [3D printed supports for load sensors](https://www.thingiverse.com/thing:4869785), or you can make some in metal or wood yourself
+  - [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items - _Facilitate charging and powering the device without opening the box_
 
 **WARNINGS:**
 
