@@ -4,6 +4,7 @@
  */
 
 #include <Beelance.h>
+#include <BeelanceWebsite.h>
 
 #define TAG "EVENTS"
 
@@ -75,18 +76,53 @@ void Beelance::BeelanceClass::_initEventHandlers() {
     Mycila::Logger.info(TAG, "Set %s: '%s' => '%s'", key.c_str(), oldValue.c_str(), newValue.c_str());
     if (key == KEY_AP_MODE_ENABLE && (ESPConnect.getState() == ESPConnectState::AP_STARTED || ESPConnect.getState() == ESPConnectState::NETWORK_CONNECTING || ESPConnect.getState() == ESPConnectState::NETWORK_CONNECTED || ESPConnect.getState() == ESPConnectState::NETWORK_TIMEOUT || ESPConnect.getState() == ESPConnectState::NETWORK_DISCONNECTED || ESPConnect.getState() == ESPConnectState::NETWORK_RECONNECTING)) {
       restartTask.resume();
+
     } else if (key == KEY_DEBUG_ENABLE) {
       configureDebugTask.resume();
       esp_log_level_set("*", static_cast<esp_log_level_t>(Mycila::Logger.getLevel()));
-    } else if (key == KEY_MODEM_APN || key == KEY_MODEM_BANDS_LTE_M || key == KEY_MODEM_BANDS_NB_IOT || key == KEY_MODEM_MODE) {
-      startModemTask.resume(); // will just reconfigure
+
+    } else if (key == KEY_MODEM_APN) {
+      Mycila::Modem.setAPN(Mycila::Config.get(KEY_MODEM_APN));
+
+    } else if (key == KEY_MODEM_PIN) {
+      Mycila::Modem.setPIN(Mycila::Config.get(KEY_MODEM_PIN));
+
+    } else if (key == KEY_MODEM_BANDS_LTE_M) {
+      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, Mycila::Config.get(KEY_MODEM_BANDS_LTE_M));
+
+    } else if (key == KEY_MODEM_BANDS_NB_IOT) {
+      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, Mycila::Config.get(KEY_MODEM_BANDS_NB_IOT));
+
+    } else if (key == KEY_MODEM_MODE) {
+      String tech = Mycila::Config.get(KEY_MODEM_MODE);
+      if (tech == "LTE-M") {
+        Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
+      } else if (tech == "NB-IoT") {
+        Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_NB_IOT);
+      } else {
+        Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_AUTO);
+      }
+
+    } else if (key == KEY_MODEM_GPS_SYNC_TIMEOUT) {
+      Mycila::Modem.setGpsSyncTimeout(Mycila::Config.get(KEY_MODEM_GPS_SYNC_TIMEOUT).toInt());
+
     } else if (key == KEY_TIMEZONE_INFO) {
+      Mycila::Logger.info(TAG, "Setting timezone to %s", Mycila::Config.get(KEY_TIMEZONE_INFO).c_str());
+      Mycila::Modem.setTimeZoneInfo(Mycila::Config.get(KEY_TIMEZONE_INFO));
       setenv("TZ", Mycila::Config.get(KEY_TIMEZONE_INFO).c_str(), 1);
       tzset();
+
     } else if (key == KEY_HX711_OFFSET) {
+      Mycila::Logger.info(TAG, "Setting HX711 offset to %d", Mycila::Config.get(KEY_HX711_OFFSET).toInt());
       hx711.setOffset(Mycila::Config.get(KEY_HX711_OFFSET).toInt());
+
     } else if (key == KEY_HX711_SCALE) {
+      Mycila::Logger.info(TAG, "Setting HX711 scale to %f", Mycila::Config.get(KEY_HX711_SCALE).toFloat());
       hx711.setScale(Mycila::Config.get(KEY_HX711_SCALE).toFloat());
+
+    } else if (key == KEY_PMU_CHARGING_CURRENT) {
+      Mycila::Logger.info(TAG, "Setting charging current to %d mA", Mycila::Config.get(KEY_PMU_CHARGING_CURRENT).toInt());
+      Mycila::PMU.setChargingCurrent(Mycila::Config.get(KEY_PMU_CHARGING_CURRENT).toInt());
     }
   });
 

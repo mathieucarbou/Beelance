@@ -4,7 +4,6 @@
  */
 #include <MycilaPMU.h>
 
-#include <MycilaLogger.h>
 #include <esp_adc_cal.h>
 
 #include <algorithm>
@@ -177,11 +176,9 @@ void Mycila::PMUClass::setChargingLedMode(xpowers_chg_led_mode_t mode) {
     case XPOWERS_CHG_LED_ON:
     case XPOWERS_CHG_LED_BLINK_1HZ:
     case XPOWERS_CHG_LED_BLINK_4HZ:
-      Mycila::Logger.info(TAG, "LED: ON");
       digitalWrite(MYCILA_BOARD_LED_PIN, HIGH);
       break;
     default:
-      Mycila::Logger.info(TAG, "LED: OFF");
       digitalWrite(MYCILA_BOARD_LED_PIN, LOW);
       break;
   }

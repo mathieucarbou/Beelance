@@ -77,22 +77,22 @@
     tz_info: ["Timezone Info (set to Paris by default)", "string"],
 
     Modem: "TITLE",
-    modem_apn: ["Modem APN", "string"],
-    modem_pin: ["Modem PIN (only if your SIM requires to be unlocked)", "password"],
+    modem_apn: ["Modem APN - RESTART TO APPLY", "string"],
+    modem_pin: ["Modem PIN (only if your SIM requires to be unlocked) - RESTART TO APPLY", "password"],
     gps_timeout: ["GPS Sync Timeout in seconds", "uint"],
 
     Network: "TITLE",
     admin_pwd: ["Admin password", "password"],
     wifi_ssid: ["WiFi SSID (when AP mode is disabled)", "string"],
     wifi_pwd: ["WiFi password (when AP mode is disabled)", "password"],
-    ap_mode_enable: ["Access Point mode enabled ?", "switch"],
+    ap_mode_enable: ["Access Point mode enabled ? Switching this will restart the device", "switch"],
 
     Temperature: "TITLE",
-    temp_pin: ["Temperature sensor GPIO pin", "pin"],
+    temp_pin: ["Temperature sensor GPIO pin - RESTART TO APPLY", "pin"],
 
     HX711: "TITLE",
-    hx711_clk_pin: ["HX711 Clock (SCK) GPIO pin", "pin"],
-    hx711_dt_pin: ["HX711 Data (DT) GPIO pin", "pin"],
+    hx711_clk_pin: ["HX711 Clock (SCK) GPIO pin - RESTART TO APPLY", "pin"],
+    hx711_dt_pin: ["HX711 Data (DT) GPIO pin - RESTART TO APPLY", "pin"],
     hx711_offset: ["HX711 Calibration Offset (for manual adjustment)", "string"],
     hx711_scale: ["HX711 Calibration Scale (for manual adjustment)", "string"],
 
