@@ -379,7 +379,8 @@ If you end up with a weight which is changing between -50 and 50 grams, this is 
 
 Once the baseline is set, **the second step is to calibrate the scale.**
 This ensures to get the right weight in grams when there is a load on the scale.
-To do that, place on the setup (on the beehive or on the scale) a load of about 20 kg, like a big bag of sugar or anything else.
+To do that, place on the setup (on the beehive or on the scale) a load of about 15-20 kg, like a big bag of sugar or anything else.
+YOU MUST KNOW THE EXACT WEIGHT OF THIS LOAD.
 
 **This is important that:**
 
@@ -400,6 +401,9 @@ For example in my case I set the cursor to `11600 g`.
 
 Once the cursor is set to the right position, after 2 seconds, the device will resume the measurements and you will see the weight changing around the calibrated value.
 If it becomes too high or too low, move the cursor again to the expected weight value.
+
+**Wait for 24 hours.** for the meta weight cells to adapt to the load, and check the weight value again.
+If it has changed too much (by about 1kg for example), just set the slider again to the right value.
 
 ### Under the hood
 
