@@ -183,6 +183,7 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
   - [IP67 Box about 200mm x 120mm x 75mm](https://fr.aliexpress.com/item/1005001304761174.html) - 11 euros
   - If using a battery, take a UL94V-0 box (fire retardant)
 - Optional but recommended:
+  - [Water Protection PCB Spray](https://www.amazon.fr/dp/B08KJPDPH9) - 30 euros for 400mL
   - Battery (18650): [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
   - Charger: [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
   - [Expandable braided sleeving](https://www.amazon.fr/gp/product/B0B3RBS4DX) to protect small wires
@@ -205,6 +206,7 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
 - Connect the HX11 adapter (see GPIO pins table below)
 - Wire the weight cells to the adapter according to the schemas and photos below. Please also see this more [complete guide also](https://www.instructables.com/Arduino-Bathroom-Scale-With-50-Kg-Load-Cells-and-H/).
 - Solar Panel must be connected to USB-C port: this will automatically boot the device when the solar panel are delivering enough power
+- Do not forget to apply some protective spray for humidity on the board and components
 
 ### Default GPIO Pinout
 
