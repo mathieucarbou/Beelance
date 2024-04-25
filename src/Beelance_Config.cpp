@@ -35,7 +35,7 @@ void Beelance::BeelanceClass::_initConfig() {
   Mycila::Config.configure(KEY_NIGHT_START_TIME, "23:00");
   Mycila::Config.configure(KEY_NIGHT_STOP_TIME, "05:00");
   Mycila::Config.configure(KEY_NO_SLEEP_ENABLE, "true");
-  Mycila::Config.configure(KEY_PMU_CHARGING_CURRENT, "300");
+  Mycila::Config.configure(KEY_PMU_CHARGING_CURRENT, "500");
   Mycila::Config.configure(KEY_SEND_INTERVAL, "3600");
   Mycila::Config.configure(KEY_SEND_URL);
   Mycila::Config.configure(KEY_TEMPERATURE_PIN, String(BEELANCE_TEMPERATURE_PIN));
