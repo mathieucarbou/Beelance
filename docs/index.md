@@ -22,6 +22,9 @@
 - [How to install](#how-to-install)
   - [SIM card](#sim-card)
   - [Powering](#powering-1)
+    - [Powering with the internal 3.7V battery](#powering-with-the-internal-37v-battery)
+    - [Powering with USB-C power bank](#powering-with-usb-c-power-bank)
+    - [Powering with USB-C Solar Panel](#powering-with-usb-c-solar-panel)
   - [Firmware flash (first time)](#firmware-flash-first-time)
   - [Device Configuration](#device-configuration)
     - [Important information about the Modem](#important-information-about-the-modem)
@@ -247,18 +250,6 @@ Do not forget to install the SIM card before powering.
 
 ## Powering
 
-- Install the battery in the board (optional)
-- Connect the solar panel to USB-C port
-- Set the board switch to `ON`
-- If the solar panel is delivering enough power, the device will boot automatically
-- On the `T-SIM7080G-S3`, to start from battery, you need to press 3 seconds on the power button
-
-[![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/lilygo-power.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/lilygo-power.jpeg)
-
-The boards can have an internal solar connector, which is not used for Beelance.
-We use instead a USB-C Solar Panel which is capable of automatically power the board in case it shuts down.
-Never power the device with both the on-board solar connector and a usb-c solar panel.
-
 **WARNING / DISCLAIMER**:
 
 **_Leaving a device in nature with a battery is a potential hazard, especially with Li-ion batteries which are not supposed to be used above 60 degrees._**
@@ -267,6 +258,39 @@ Never power the device with both the on-board solar connector and a usb-c solar 
 **_In any case, use an appropriate box which is fire retardant (UL94V-0) and waterproof._**
 **_The project's authors decline any responsibility regarding the use and assembly of this project._**
 **_You are entirely responsible of any loss, damage or injury caused by the use of this project._**
+
+### Powering with the internal 3.7V battery
+
+This option is compatible with the solar panels.
+
+The board accepts an internal 18650 3.7V battery, but you could pick and Li-ion or LFP battery of 3.7V nominal voltage but with higher capacity.
+This battery will be recharged when the USB-C will be powered (by solar panel or something else).
+
+it is also possible to use a bigger 3.7 battery and connect the VCC and GND to the internal battery holder.
+
+To start the board from the internal battery:
+
+1. Set the board switch to `ON`
+2. On the `T-SIM7080G-S3`, to start from battery, you need to press 3 seconds on the power button
+
+[![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/lilygo-power.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/lilygo-power.jpeg)
+
+### Powering with USB-C power bank
+
+Another option is to use a big power bank of 20000mAh or more and use it to power the device with usb-c.
+If you are using the sleep option between each push, and send each 2 hours, and use the night mode to sleep the device, a power bank can allow you to last a very long time.
+The duration depends on the device and push frequency and sleep parameters, but it should last several weeks up to several months.
+
+### Powering with USB-C Solar Panel
+
+This option is compatible with the internal 3.7V battery: the solar panel will power the device and charge the battery with the sun and the battery will take over as needed.
+
+**DO NOT USE the board internal solar connector.**
+We use instead a USB-C Solar Panel which is capable of automatically power the board in case it shuts down.
+Never power the device with both the on-board solar connector and a usb-c solar panel.
+
+**This option is not working very well with the LILYGO T-A7670G** because this board does not have a Power Management Unit (PMU) like the `T-SIM7080G-S3`.
+So when the solar panel is not able to produce enough current, the device will simply not start, until the solar panel voltage becomes 0 and then the device will switch on the battery.
 
 ## Firmware flash (first time)
 
