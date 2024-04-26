@@ -190,8 +190,20 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   _modemSignal.update(Mycila::Modem.getSignalQuality());
 
-  if (Mycila::PMU.isBatteryPowered()) {
-    _power.update((String("Battery: ") + static_cast<int>(floor(Mycila::PMU.getBatteryLevel()))).c_str(), "%");
+  if (Mycila::PMU.isBatteryCharging()) {
+    float level = Mycila::PMU.getBatteryLevel();
+    if (level > 0) {
+      _power.update((String("Bat. charging: ") + static_cast<int>(floor(level))).c_str(), "%");
+    } else {
+      _power.update("Bat. charging...", "");
+    }
+  } else if (Mycila::PMU.isBatteryDischarging()) {
+    float level = Mycila::PMU.getBatteryLevel();
+    if (level > 0) {
+      _power.update((String("Bat. discharging: ") + static_cast<int>(floor(level))).c_str(), "%");
+    } else {
+      _power.update("Bat. discharging...", "");
+    }
   } else {
     _power.update("External", "");
   }

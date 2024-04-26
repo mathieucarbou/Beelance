@@ -53,7 +53,7 @@ void Mycila::PMUClass::begin() {
   _pmu.enableBattVoltageMeasure();
   _pmu.enableVbusVoltageMeasure();
   _pmu.enableSystemVoltageMeasure();
-  _pmu.disableTemperatureMeasure();
+  _pmu.enableTemperatureMeasure();
 
   // TS Pin detection must be disable, otherwise it cannot be charged
   _pmu.disableTSPinMeasure();
@@ -84,22 +84,50 @@ void Mycila::PMUClass::begin() {
 }
 
 float Mycila::PMUClass::getBatteryLevel() const {
-  if (!isBatteryPowered())
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  if (!_pmuBatteryConnected)
+    return 0;
+#endif
+  if (_batteryVoltage < MYCILA_PMU_BATTERY_VOLTAGE_MIN)
+    return 0;
+  if (_batteryVoltage > MYCILA_PMU_BATTERY_VOLTAGE_MAX)
     return 0;
   // map() equivalent with float
   constexpr float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
-  return run == 0 || _batteryVoltage < MYCILA_PMU_BATTERY_VOLTAGE_MIN ? 0 : min(100.0, ((_batteryVoltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
+  return run <= 0 ? 0 : min(100.0, ((_batteryVoltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
 }
 
-bool Mycila::PMUClass::isBatteryPowered() const {
+bool Mycila::PMUClass::isBatteryCharging() const {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  return _pmuBatteryCharging;
+#else
   // ADC does not work when USB is connected and switch is off (no battery to measure)
   // The measured voltage is between 0 and 1.
   // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
-#ifdef MYCILA_XPOWERS_PMU_ENABLED
-  if (_pmuBatteryCharging || _pmuBatteryDischarging)
-    return true;
+  return _batteryVoltage > MYCILA_PMU_BATTERY_VOLTAGE_MAX || (_batteryVoltage > 0 && _batteryVoltage < 1);
 #endif
-  return _batteryVoltage <= MYCILA_PMU_BATTERY_VOLTAGE_MAX && (_batteryVoltage <= 0 || _batteryVoltage >= 1);
+}
+
+bool Mycila::PMUClass::isBatteryDischarging() const {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  return _pmuBatteryDischarging;
+#else
+  // ADC does not work when USB is connected and switch is off (no battery to measure)
+  // The measured voltage is between 0 and 1.
+  // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
+  return _batteryVoltage <= MYCILA_PMU_BATTERY_VOLTAGE_MAX && _batteryVoltage >= 1;
+#endif
+}
+
+bool Mycila::PMUClass::isBatteryConnected() const {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  return _pmuBatteryConnected;
+#else
+  // ADC does not work when USB is connected and switch is off (no battery to measure)
+  // The measured voltage is between 0 and 1.
+  // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
+  return _batteryVoltage <= MYCILA_PMU_BATTERY_VOLTAGE_MAX || (_batteryVoltage > 0 && _batteryVoltage < 1);
+#endif
 }
 
 float Mycila::PMUClass::read() {
@@ -231,15 +259,12 @@ void Mycila::PMUClass::reset() {
 }
 
 void Mycila::PMUClass::toJson(const JsonObject& root) const {
-  root["powered_by"] = isBatteryPowered() ? "bat" : "ext";
+  root["powered_by"] = isBatteryDischarging() ? "bat" : "ext";
   root["battery_level"] = getBatteryLevel();
   root["battery_voltage"] = _batteryVoltage;
-#ifdef MYCILA_XPOWERS_PMU_ENABLED
-  root["pmu_battery_connected"] = _pmuBatteryConnected;
-  root["pmu_battery_powered"] = _pmuBatteryCharging || _pmuBatteryDischarging;
-  root["pmu_battery_charging"] = _pmuBatteryCharging;
-  root["pmu_battery_discharging"] = _pmuBatteryDischarging;
-#endif
+  root["battery_charging"] = isBatteryCharging();
+  root["battery_discharging"] = isBatteryDischarging();
+  root["battery_connected"] = isBatteryConnected();
 }
 
 namespace Mycila {

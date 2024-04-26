@@ -169,7 +169,7 @@ void Beelance::BeelanceClass::_initTasks() {
 
   pmuTask.setType(Mycila::TaskType::FOREVER);
   pmuTask.setManager(&loopTaskManager);
-  pmuTask.setInterval(5 * Mycila::TaskDuration::SECONDS);
+  pmuTask.setInterval(500 * Mycila::TaskDuration::MILLISECONDS);
 
   // hx711
 

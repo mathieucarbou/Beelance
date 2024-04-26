@@ -200,7 +200,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) const {
   root["ver"] = Mycila::AppInfo.version;
   root["up"] = Mycila::System.getUptime();
   // power
-  root["pow"] = Mycila::PMU.isBatteryPowered() ? "bat" : "ext";
+  root["pow"] = Mycila::PMU.isBatteryDischarging() ? "bat" : "ext";
   root["bat"] = _round2(Mycila::PMU.getBatteryLevel());
   root["volt"] = _round2(Mycila::PMU.getBatteryVoltage());
 }

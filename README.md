@@ -463,7 +463,7 @@ Here is below a sample of the JSON payload that the device will send to the conf
 - `ver`: the firmware version
 - `up`: the device uptime in seconds, useful to know if the device reboots often because of a bug
 - `pow`: `bat` (for battery powered) or `ext` (when powered by USB-C / Solar Panel)
-- `bat`: the battery level in percentage, 0 if not running on battery
+- `bat`: the battery level in percentage. If not running on battery, depending on the board this value will either be 0 (we cannot determine the battery %, or a % if the battery voltage is accurate)
 - `volt`: the battery voltage, or the external supplied voltage
 
 ### IFTTT Integration
