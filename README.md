@@ -126,8 +126,8 @@ Firmware downloads are available in the [Releases](https://github.com/mathieucar
 
 Firmware files are named as follow:
 
-- `Beelance-<VERSION>-<BOARD>.bin`: the firmware used to update through web interface
-- `Beelance-<VERSION>-<BOARD>.factory.bin`: the firmware used to flash for the first time
+- `Beelance-<VERSION>-<BOARD>.UPDATE.bin`: the firmware used to update through web interface
+- `Beelance-<VERSION>-<BOARD>.FACTORY.bin`: the firmware used to flash for the first time
 
 Where:
 
@@ -175,7 +175,7 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
 **Hardware**
 
 - Pick one board:
-  - LTE-M / NB-IOT: [LILYGO® T-SIM7080G S3 with GPS](https://www.lilygo.cc/products/t-sim7080-s3) ([AliExpress](https://fr.aliexpress.com/item/1005005188988179.html)) - 42 euros
+  - LTE-M / NB-IOT: [LILYGO® T-SIM7080G S3 with GPS and PMU](https://www.lilygo.cc/products/t-sim7080-s3) ([AliExpress](https://fr.aliexpress.com/item/1005005188988179.html)) - 42 euros
   - LTE / 4G: [LILYGO® T-A7670G R2 with GPS](https://www.lilygo.cc/products/t-sim-a7670e?variant=43043706077365) ([AliExpress](https://fr.aliexpress.com/item/1005003036514769.html)) - 47 euros
 - Temperature Sensor: [DS18B20 Cable + DS18B20 Adapter](https://fr.aliexpress.com/item/4000143479592.html) - 3 euros - _SAMIORE Store_
 - [Solar Panels](https://fr.aliexpress.com/item/1005005509831452.html) - 33 euros for 2 items
@@ -185,14 +185,13 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
   - [IP55 Box about 150mm x 100mm x 60mm](https://www.amazon.fr/gp/product/B00GWPF840) - 8 euros
   - [IP67 Box about 200mm x 120mm x 75mm](https://fr.aliexpress.com/item/1005001304761174.html) - 11 euros
   - If using a battery, take a UL94V-0 box (fire retardant)
+- [Water Protection PCB Spray](https://www.amazon.fr/dp/B08KJPDPH9) - 30 euros for 400mL
 - Optional but recommended:
-  - [Water Protection PCB Spray](https://www.amazon.fr/dp/B08KJPDPH9) - 30 euros for 400mL
   - Battery (18650): [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
   - Charger: [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
   - [Expandable braided sleeving](https://www.amazon.fr/gp/product/B0B3RBS4DX) to protect small wires
   - [Waterproof connectors](https://fr.aliexpress.com/item/1005003084329744.html) - only if you want to go further in the perfection
   - [3D printed supports for load sensors](https://www.thingiverse.com/thing:4869785), or you can make some in metal or wood yourself
-  - [Waterproof USB-C Sockets](https://www.amazon.fr/gp/product/B0BX37L2V3) - 9 euros for 5 items - _Facilitate charging and powering the device without opening the box_
 
 **WARNINGS:**
 
@@ -200,7 +199,9 @@ Since it works on traditional frequencies (700 MHz band 28), it _should_ work wi
    The seller _SAMIORE Store_ is quite reliable: I often buy electronic stuff at this store.
    I already received broken items or unfinished items from some other sellers.
 
-2. Verify the Solar Panel Voc: **it should be within 4.4-6V.**
+2. Verify the Solar Panel Voc (if you buy another brand): **it should be within 4.4-6V.**
+
+3. We recommend to use the `T-SIM7080G` if using both a battery with solar panel because the `LILYGO T-A7670G` does not have a good PMU and won't switch to the battery when solar panel is producing just a little power on cloudy days or start/end of day.
 
 ## Wiring
 
@@ -315,7 +316,7 @@ esptool.py --port /dev/ttyUSB0 \
   --flash_mode dout \
   --flash_freq 40m \
   --flash_size detect \
-  0x0 Beelance-VERSION-CHIP.factory.bin
+  0x0 Beelance-VERSION-CHIP.FACTORY.bin
 ```
 
 On Windows, you can use the official [ESP32 Flash Download Tool](https://www.espressif.com/en/support/download/other-tools).
@@ -487,8 +488,18 @@ Here is below a sample of the JSON payload that the device will send to the conf
 - `ver`: the firmware version
 - `up`: the device uptime in seconds, useful to know if the device reboots often because of a bug
 - `pow`: `bat` (for battery powered) or `ext` (when powered by USB-C / Solar Panel)
-- `bat`: the battery level in percentage. If not running on battery, depending on the board this value will either be 0 (we cannot determine the battery %, or a % if the battery voltage is accurate)
+- `bat`: the battery level in percentage, or 0 if not able to determine
 - `volt`: the battery voltage, or the external supplied voltage
+
+Here are the possible combinations for `pow`, `bat` and `volt`:
+
+- `pow == "bat" && bat > 0`: the device is powered by the battery and the battery level is known. `volt` will display the battery voltage.
+- `pow == "ext" && bat > 0`: the device is powered by the battery and the battery level is known. `volt` will display the battery voltage.
+  The battery is charging a little bit: not enough to power the device and charging at the same time, but enough to charge while in deep sleep.
+  This state is only for the `T-SIM7080G` because the `T-A7670G` does not have a PMU allowing to observe the battery voltage while charging with USB-C and being in use.
+- `pow == "ext" && bat == 0`: the device is powered by the USB-C (Solar Panel or else).
+  The battery voltage and level are not knows because the battery is charging at the same time the device is powered.
+  `volt` will display the battery voltage during charge which will usually be >= 4.2V.
 
 ### IFTTT Integration
 
@@ -551,6 +562,8 @@ It is always recommended to update the firmware to the latest version.
 Download the latest version on your mobile phone or computer, then connect to each device on their WiFi access point.
 Then go to `http://192.168.4.1/update` and upload the firmware.
 The device will automatically reboot after the upload.
+
+**The firmware file to use for the OTA Update is the one ending with `.UPDATE.bin`.**
 
 ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-ota-update.png)
 
