@@ -51,7 +51,8 @@ float Mycila::HX711::read() {
 #ifdef MYCILA_SIMULATION
   _weight = random(15, 30) * 1000;
 #else
-  _weight = (_hx711.read_average(30) - _offset) * _scale;
+  float f = (_hx711.read_average(30) - _offset) * _scale;
+  _weight = f < 0 ? 0 : f;
 #endif
   _lastUpdate = millis();
   return _weight;
