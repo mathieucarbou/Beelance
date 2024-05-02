@@ -41,7 +41,7 @@ namespace Mycila {
       bool isBatteryCharging() const;
       bool isBatteryDischarging() const;
       bool isBatteryConnected() const;
-      
+
       uint8_t readLowBatteryShutdownThreshold();
       float read();
 
