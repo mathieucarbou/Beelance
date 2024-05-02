@@ -49,6 +49,8 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _hx711OffsetStat.set(String(hx711.getOffset()).c_str());
   _hx711ScaleStat.set(String(hx711.getScale(), 6).c_str());
 
+  _pmuLowBatShutThreshold.set((String(Mycila::PMU.readLowBatteryShutdownThreshold()) + " %").c_str());
+
   // home
 
   _bhName.update(Mycila::Config.get(KEY_BEEHIVE_NAME).c_str());

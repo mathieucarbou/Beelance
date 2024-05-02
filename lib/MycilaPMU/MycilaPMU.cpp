@@ -80,6 +80,9 @@ void Mycila::PMUClass::begin() {
   _pmu.setChargeTargetVoltage(XPOWERS_AXP2101_CHG_VOL_4V2);
   // Set the time of pressing the button to turn off
   _pmu.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
+
+  // / Get the default low voltage shutdown percentage setting
+  ESP_LOGI(TAG, "Low battery shutdown threshold: %u %", _pmu.getLowBatShutdownThreshold());
 #endif
 }
 
@@ -127,6 +130,14 @@ bool Mycila::PMUClass::isBatteryConnected() const {
   // The measured voltage is between 0 and 1.
   // When charging (usb-c connected and battery present), the voltage is greater than the maximum voltage of the battery.
   return _batteryVoltage <= MYCILA_PMU_BATTERY_VOLTAGE_MAX || (_batteryVoltage > 0 && _batteryVoltage < 1);
+#endif
+}
+
+uint8_t Mycila::PMUClass::readLowBatteryShutdownThreshold() {
+#ifdef MYCILA_XPOWERS_PMU_ENABLED
+  return _pmu.getLowBatShutdownThreshold();
+#else
+  return 0;
 #endif
 }
 
