@@ -95,7 +95,7 @@ void setup() {
   ESPConnect.setBlocking(false);
   ESPConnect.setCaptivePortalTimeout(Mycila::Config.get(KEY_CAPTURE_PORTAL_TIMEOUT).toInt());
   ESPConnect.setConnectTimeout(Mycila::Config.get(KEY_WIFI_CONNECTION_TIMEOUT).toInt());
-  ESPConnect.begin(&webServer, Mycila::Config.get(KEY_HOSTNAME), Mycila::AppInfo.name + "-" + Mycila::AppInfo.id, Mycila::Config.get(KEY_ADMIN_PASSWORD), {Mycila::Config.get(KEY_WIFI_SSID), Mycila::Config.get(KEY_WIFI_PASSWORD), Mycila::Config.getBool(KEY_AP_MODE_ENABLE)});
+  ESPConnect.begin(webServer, Mycila::Config.get(KEY_HOSTNAME), Mycila::AppInfo.name + "-" + Mycila::AppInfo.id, Mycila::Config.get(KEY_ADMIN_PASSWORD), {Mycila::Config.get(KEY_WIFI_SSID), Mycila::Config.get(KEY_WIFI_PASSWORD), Mycila::Config.getBool(KEY_AP_MODE_ENABLE)});
 
   assert(modemTaskManager.asyncStart(BEELANCE_MODEM_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
   assert(hx711TaskManager.asyncStart(BEELANCE_HX711_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
