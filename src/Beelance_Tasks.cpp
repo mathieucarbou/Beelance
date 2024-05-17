@@ -143,8 +143,6 @@ void Beelance::BeelanceClass::_initTasks() {
 
   temperatureTask.setType(Mycila::TaskType::FOREVER);
   temperatureTask.setManager(loopTaskManager);
-  temperatureTask.setEnabledWhen([]() { return temperatureSensor.isEnabled(); });
-  temperatureTask.setInterval(5 * Mycila::TaskDuration::SECONDS);
 
   restartTask.setType(Mycila::TaskType::ONCE);
   restartTask.setManager(loopTaskManager);

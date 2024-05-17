@@ -20,7 +20,7 @@ Mycila::TaskManager loopTaskManager("loopTask", 12);
 Mycila::TaskManager modemTaskManager("modemTask", 5);
 
 Mycila::HX711 hx711;
-Mycila::TemperatureSensor temperatureSensor;
+Mycila::DS18 temperatureSensor;
 
 float calibrationWeight = 0;
 
@@ -65,7 +65,7 @@ void setup() {
 
   // Temperature
   Mycila::Logger.info(TAG, "Configure Temperature Sensor...");
-  temperatureSensor.begin(Mycila::Config.get(KEY_TEMPERATURE_PIN).toInt(), 30);
+  temperatureSensor.begin(Mycila::Config.get(KEY_TEMPERATURE_PIN).toInt());
   if (!temperatureSensor.isEnabled()) {
     Beelance::Website.disableTemperature();
   }

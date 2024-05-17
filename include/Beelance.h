@@ -15,6 +15,7 @@
 
 #include <MycilaAppInfo.h>
 #include <MycilaConfig.h>
+#include <MycilaDS18.h>
 #include <MycilaESPConnect.h>
 #include <MycilaHX711.h>
 #include <MycilaLogger.h>
@@ -23,7 +24,6 @@
 #include <MycilaSystem.h>
 #include <MycilaTaskManager.h>
 #include <MycilaTaskMonitor.h>
-#include <MycilaTemperatureSensor.h>
 #include <MycilaTime.h>
 
 #include <BeelanceClass.h>
@@ -33,7 +33,7 @@ extern AsyncWebServer webServer;
 extern ESPDash dashboard;
 
 extern Mycila::HX711 hx711;
-extern Mycila::TemperatureSensor temperatureSensor;
+extern Mycila::DS18 temperatureSensor;
 
 extern Mycila::TaskManager hx711TaskManager;
 extern Mycila::TaskManager loopTaskManager;
