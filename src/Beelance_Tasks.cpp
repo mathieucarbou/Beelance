@@ -129,74 +129,74 @@ Mycila::Task configureDebugTask("configureDebugTask", [](void* params) {
 
 void Beelance::BeelanceClass::_initTasks() {
   espConnectTask.setType(Mycila::TaskType::FOREVER);
-  espConnectTask.setManager(&loopTaskManager);
+  espConnectTask.setManager(loopTaskManager);
 
   websiteTask.setType(Mycila::TaskType::FOREVER);
-  websiteTask.setManager(&loopTaskManager);
+  websiteTask.setManager(loopTaskManager);
   websiteTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   websiteTask.setInterval(1 * Mycila::TaskDuration::SECONDS);
 
   stackMonitorTask.setType(Mycila::TaskType::FOREVER);
-  stackMonitorTask.setManager(&loopTaskManager);
+  stackMonitorTask.setManager(loopTaskManager);
   stackMonitorTask.setEnabledWhen(DEBUG_ENABLED);
   stackMonitorTask.setInterval(10 * Mycila::TaskDuration::SECONDS);
 
   temperatureTask.setType(Mycila::TaskType::FOREVER);
-  temperatureTask.setManager(&loopTaskManager);
+  temperatureTask.setManager(loopTaskManager);
   temperatureTask.setEnabledWhen([]() { return temperatureSensor.isEnabled(); });
   temperatureTask.setInterval(5 * Mycila::TaskDuration::SECONDS);
 
   restartTask.setType(Mycila::TaskType::ONCE);
-  restartTask.setManager(&loopTaskManager);
+  restartTask.setManager(loopTaskManager);
 
   resetTask.setType(Mycila::TaskType::ONCE);
-  resetTask.setManager(&loopTaskManager);
+  resetTask.setManager(loopTaskManager);
 
   startNetworkServicesTask.setType(Mycila::TaskType::ONCE);
-  startNetworkServicesTask.setManager(&loopTaskManager);
+  startNetworkServicesTask.setManager(loopTaskManager);
 
   stopNetworkServicesTask.setType(Mycila::TaskType::ONCE);
-  stopNetworkServicesTask.setManager(&loopTaskManager);
+  stopNetworkServicesTask.setManager(loopTaskManager);
 
   otaPrepareTask.setType(Mycila::TaskType::ONCE);
-  otaPrepareTask.setManager(&loopTaskManager);
+  otaPrepareTask.setManager(loopTaskManager);
 
   watchdogTask.setType(Mycila::TaskType::ONCE);
-  watchdogTask.setManager(&loopTaskManager);
+  watchdogTask.setManager(loopTaskManager);
 
   configureDebugTask.setType(Mycila::TaskType::ONCE);
-  configureDebugTask.setManager(&loopTaskManager);
+  configureDebugTask.setManager(loopTaskManager);
 
   pmuTask.setType(Mycila::TaskType::FOREVER);
-  pmuTask.setManager(&loopTaskManager);
+  pmuTask.setManager(loopTaskManager);
   pmuTask.setInterval(500 * Mycila::TaskDuration::MILLISECONDS);
 
   // hx711
 
   hx711Task.setType(Mycila::TaskType::FOREVER);
-  hx711Task.setManager(&hx711TaskManager);
+  hx711Task.setManager(hx711TaskManager);
   hx711Task.setEnabledWhen([]() { return hx711.isEnabled(); });
   hx711Task.setInterval(500 * Mycila::TaskDuration::MILLISECONDS);
 
   hx711TareTask.setType(Mycila::TaskType::ONCE);
-  hx711TareTask.setManager(&hx711TaskManager);
+  hx711TareTask.setManager(hx711TaskManager);
 
   hx711ScaleTask.setType(Mycila::TaskType::ONCE);
-  hx711ScaleTask.setManager(&hx711TaskManager);
+  hx711ScaleTask.setManager(hx711TaskManager);
 
   // modem
 
   startModemTask.setType(Mycila::TaskType::ONCE);
-  startModemTask.setManager(&modemTaskManager);
+  startModemTask.setManager(modemTaskManager);
 
   serialDebugATTask.setType(Mycila::TaskType::FOREVER);
-  serialDebugATTask.setManager(&modemTaskManager);
+  serialDebugATTask.setManager(modemTaskManager);
 
   modemLoopTask.setType(Mycila::TaskType::FOREVER);
-  modemLoopTask.setManager(&modemTaskManager);
+  modemLoopTask.setManager(modemTaskManager);
 
   sendTask.setType(Mycila::TaskType::ONCE);
-  sendTask.setManager(&modemTaskManager);
+  sendTask.setManager(modemTaskManager);
   sendTask.setEnabled(false);
   sendTask.setCallback([](const Mycila::Task& me, const uint32_t elapsed) {
     Mycila::Logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
