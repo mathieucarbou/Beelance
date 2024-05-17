@@ -17,10 +17,6 @@ Beelance::BeelanceClass::BeelanceClass() {
   dailyHistory.reserve(BEELANCE_MAX_HISTORY_SIZE);
 }
 
-void Beelance::BeelanceClass::_initHTTPd() {
-  Mycila::HTTPd.init(&webServer, BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
-}
-
 void Beelance::BeelanceClass::_initWebsite() {
   Beelance::Website.init();
 }

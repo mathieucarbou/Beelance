@@ -16,7 +16,6 @@
 #include <MycilaAppInfo.h>
 #include <MycilaConfig.h>
 #include <MycilaESPConnect.h>
-#include <MycilaHTTPd.h>
 #include <MycilaHX711.h>
 #include <MycilaLogger.h>
 #include <MycilaModem.h>

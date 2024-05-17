@@ -22,7 +22,6 @@ namespace Beelance {
 
       void begin() {
         _initConfig();
-        _initHTTPd();
         _initTasks();
         _initEventHandlers();
         _initWebsite();
@@ -43,7 +42,6 @@ namespace Beelance {
 
     private:
       void _initConfig();
-      void _initHTTPd();
       void _initTasks();
       void _initEventHandlers();
       void _initWebsite();
