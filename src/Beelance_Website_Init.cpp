@@ -20,25 +20,19 @@ void Beelance::WebsiteClass::init() {
   webServer.rewrite("/ota/logo/dark", "/logo");
   webServer.rewrite("/ota/logo/light", "/logo");
 
-  webServer.on(
-    "/api/logo",
-    HTTP_GET,
-    [](AsyncWebServerRequest* request) {
-      AsyncWebServerResponse* response = request->beginResponse_P(200, "image/png", logo_png_gz_start, logo_png_gz_end - logo_png_gz_start);
-      response->addHeader("Content-Encoding", "gzip");
-      response->addHeader("Cache-Control", "public, max-age=900");
-      request->send(response);
-    });
+  webServer.on("/api/logo", HTTP_GET, [](AsyncWebServerRequest* request) {
+    AsyncWebServerResponse* response = request->beginResponse_P(200, "image/png", logo_png_gz_start, logo_png_gz_end - logo_png_gz_start);
+    response->addHeader("Content-Encoding", "gzip");
+    response->addHeader("Cache-Control", "public, max-age=900");
+    request->send(response);
+  });
 
   // ping
 
-  webServer.on(
-    "/api/ping",
-    HTTP_GET,
-    [](AsyncWebServerRequest* request) {
-      AsyncWebServerResponse* response = request->beginResponse(200, "text/plain", "pong");
-      request->send(response);
-    });
+  webServer.on("/api/ping", HTTP_GET, [](AsyncWebServerRequest* request) {
+    AsyncWebServerResponse* response = request->beginResponse(200, "text/plain", "pong");
+    request->send(response);
+  });
 
   // dashboard
 
@@ -47,11 +41,13 @@ void Beelance::WebsiteClass::init() {
 
   // config
 
-  webServer.on("/config", HTTP_GET, [](AsyncWebServerRequest* request) {
-    AsyncWebServerResponse* response = request->beginResponse_P(200, "text/html", config_html_gz_start, config_html_gz_end - config_html_gz_start);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-  }).setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+  webServer
+    .on("/config", HTTP_GET, [](AsyncWebServerRequest* request) {
+      AsyncWebServerResponse* response = request->beginResponse_P(200, "text/html", config_html_gz_start, config_html_gz_end - config_html_gz_start);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
+    })
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
 
   // ota
 
