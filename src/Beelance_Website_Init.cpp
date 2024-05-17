@@ -69,7 +69,7 @@ void Beelance::WebsiteClass::init() {
 
   // web console
 
-  WebSerial.begin(&webServer, "/console", BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+  WebSerial.begin(webServer, "/console", BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
   WebSerial.onMessage([](AsyncWebSocketClient*, const String& msg) {
     if (msg.startsWith("AT+"))
       Mycila::Modem.enqueueAT(msg);
