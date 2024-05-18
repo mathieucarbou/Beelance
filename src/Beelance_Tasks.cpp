@@ -207,19 +207,4 @@ void Beelance::BeelanceClass::_initTasks() {
       sendTask.resume(delay * Mycila::TaskDuration::SECONDS);
     }
   });
-
-#ifdef MYCILA_TASK_MANAGER_DEBUG
-  configureDebugTask.setDebugWhen(DEBUG_ENABLED);
-  hx711TareTask.setDebugWhen(DEBUG_ENABLED);
-  hx711ScaleTask.setDebugWhen(DEBUG_ENABLED);
-  // hx711Task.setDebugWhen(DEBUG_ENABLED);
-  otaPrepareTask.setDebugWhen(DEBUG_ENABLED);
-  resetTask.setDebugWhen(DEBUG_ENABLED);
-  restartTask.setDebugWhen(DEBUG_ENABLED);
-  sendTask.setDebugWhen(DEBUG_ENABLED);
-  startModemTask.setDebugWhen(DEBUG_ENABLED);
-  startNetworkServicesTask.setDebugWhen(DEBUG_ENABLED);
-  stopNetworkServicesTask.setDebugWhen(DEBUG_ENABLED);
-  temperatureTask.setDebugWhen(DEBUG_ENABLED);
-#endif
 }
