@@ -67,7 +67,6 @@ void setup() {
   Mycila::PMU.enableGPS();
 
   // Temperature
-  logger.info(TAG, "Configure Temperature Sensor...");
   temperatureSensor.begin(config.get(KEY_TEMPERATURE_PIN).toInt());
   if (!temperatureSensor.isEnabled()) {
     Beelance::Website.disableTemperature();
@@ -81,7 +80,6 @@ void setup() {
   hx711.begin(config.get(KEY_HX711_DATA_PIN).toInt(), config.get(KEY_HX711_CLOCK_PIN).toInt());
 
   // stack monitor
-  logger.info(TAG, "Configure Task Stack Monitor...");
   Mycila::TaskMonitor.begin(5);
   Mycila::TaskMonitor.addTask("async_tcp"); // ESPAsyncTCP
   Mycila::TaskMonitor.addTask("loopTask");  // Arduino
@@ -89,7 +87,6 @@ void setup() {
   Mycila::TaskMonitor.addTask("hx711");     // HX711
 
   // network
-  logger.info(TAG, "Configure Network...");
   webServer.end();
   mdns_service_remove("_http", "_tcp");
   ESPConnect.end();

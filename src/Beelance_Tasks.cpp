@@ -121,7 +121,7 @@ Mycila::Task watchdogTask("watchdogTask", [](void* params) {
 });
 
 Mycila::Task configureDebugTask("configureDebugTask", [](void* params) {
-  logger.info(TAG, "Configure Debug Level...");
+  logger.info(TAG, "Configure logging...");
   logger.setLevel(config.getBool(KEY_DEBUG_ENABLE) ? ARDUHAL_LOG_LEVEL_DEBUG : ARDUHAL_LOG_LEVEL_INFO);
   esp_log_level_set("*", static_cast<esp_log_level_t>(logger.getLevel()));
   Mycila::Modem.setDebug(config.getBool(KEY_DEBUG_ENABLE));
