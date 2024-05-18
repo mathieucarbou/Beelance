@@ -36,7 +36,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _modemNBIoTBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_NB_IOT).c_str());
   _modemIpStat.set(Mycila::Modem.getLocalIP().c_str());
 
-  _hostnameStat.set(Mycila::Config.get(KEY_HOSTNAME).c_str());
+  _hostnameStat.set(config.get(KEY_HOSTNAME).c_str());
   _apIPStat.set(ESPConnect.getIPAddress(ESPConnectMode::AP).toString().c_str());
   _apMACStat.set(ESPConnect.getMACAddress(ESPConnectMode::AP).c_str());
   _wifiIPStat.set(ESPConnect.getIPAddress(ESPConnectMode::STA).toString().c_str());
@@ -53,7 +53,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   // home
 
-  _bhName.update(Mycila::Config.get(KEY_BEEHIVE_NAME).c_str());
+  _bhName.update(config.get(KEY_BEEHIVE_NAME).c_str());
 
   // weight
   if (!hx711.isEnabled()) {
@@ -215,7 +215,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _restart.update(!restartTask.isPaused());
 
   _sendNow.update(sendTask.isRunning() || (sendTask.isEnabled() && !sendTask.isPaused() && sendTask.isEarlyRunRequested()));
-  _noSleepMode.update(Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE));
+  _noSleepMode.update(config.getBool(KEY_NO_SLEEP_ENABLE));
   _tare.update(hx711TareTask.isRunning() || (hx711TareTask.isEnabled() && !hx711TareTask.isPaused()));
 
   if (_requestChartUpdate || skipWebSocketPush) {

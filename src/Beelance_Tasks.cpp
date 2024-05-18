@@ -38,12 +38,12 @@ Mycila::Task hx711Task("hx711.read()", [](void* params) { hx711.read(); });
 
 Mycila::Task hx711TareTask("hx711.tare()", [](void* params) {
   hx711.tare();
-  Mycila::Config.set(KEY_HX711_OFFSET, String(hx711.getOffset()));
-  Mycila::Config.set(KEY_HX711_SCALE, String(hx711.getScale()));
+  config.set(KEY_HX711_OFFSET, String(hx711.getOffset()));
+  config.set(KEY_HX711_SCALE, String(hx711.getScale()));
 });
 
 Mycila::Task hx711ScaleTask("hx711.calibrate()", [](void* params) {
-  Mycila::Config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6));
+  config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6));
   calibrationWeight = 0;
 });
 
@@ -64,18 +64,18 @@ Mycila::Task restartTask("restartTask", [](void* params) {
 Mycila::Task resetTask("resetTask", [](void* params) {
   Mycila::Logger.warn(TAG, "Resetting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
   Beelance::Beelance.clearHistory();
-  Mycila::Config.clear();
+  config.clear();
   Mycila::PMU.reset();
   Mycila::System.restart(500);
 });
 
 Mycila::Task startModemTask("startModemTask", [](void* params) {
-  Mycila::Modem.setPIN(Mycila::Config.get(KEY_MODEM_PIN));
-  Mycila::Modem.setAPN(Mycila::Config.get(KEY_MODEM_APN));
-  Mycila::Modem.setTimeZoneInfo(Mycila::Config.get(KEY_TIMEZONE_INFO));
-  Mycila::Modem.setGpsSyncTimeout(Mycila::Config.get(KEY_MODEM_GPS_SYNC_TIMEOUT).toInt());
+  Mycila::Modem.setPIN(config.get(KEY_MODEM_PIN));
+  Mycila::Modem.setAPN(config.get(KEY_MODEM_APN));
+  Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
+  Mycila::Modem.setGpsSyncTimeout(config.get(KEY_MODEM_GPS_SYNC_TIMEOUT).toInt());
   // mode
-  String tech = Mycila::Config.get(KEY_MODEM_MODE);
+  String tech = config.get(KEY_MODEM_MODE);
   if (tech == "LTE-M") {
     Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
   } else if (tech == "NB-IoT") {
@@ -84,8 +84,8 @@ Mycila::Task startModemTask("startModemTask", [](void* params) {
     Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_AUTO);
   }
   // bands
-  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, Mycila::Config.get(KEY_MODEM_BANDS_LTE_M));
-  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, Mycila::Config.get(KEY_MODEM_BANDS_NB_IOT));
+  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.get(KEY_MODEM_BANDS_LTE_M));
+  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.get(KEY_MODEM_BANDS_NB_IOT));
   // start modem
   if (Mycila::Modem.getState() == Mycila::ModemState::MODEM_OFF) {
     Mycila::Logger.info(TAG, "Enable Modem...");
@@ -122,9 +122,9 @@ Mycila::Task watchdogTask("watchdogTask", [](void* params) {
 
 Mycila::Task configureDebugTask("configureDebugTask", [](void* params) {
   Mycila::Logger.info(TAG, "Configure Debug Level...");
-  Mycila::Logger.setLevel(Mycila::Config.getBool(KEY_DEBUG_ENABLE) ? ARDUHAL_LOG_LEVEL_DEBUG : ARDUHAL_LOG_LEVEL_INFO);
+  Mycila::Logger.setLevel(config.getBool(KEY_DEBUG_ENABLE) ? ARDUHAL_LOG_LEVEL_DEBUG : ARDUHAL_LOG_LEVEL_INFO);
   esp_log_level_set("*", static_cast<esp_log_level_t>(Mycila::Logger.getLevel()));
-  Mycila::Modem.setDebug(Mycila::Config.getBool(KEY_DEBUG_ENABLE));
+  Mycila::Modem.setDebug(config.getBool(KEY_DEBUG_ENABLE));
 });
 
 void Beelance::BeelanceClass::_initTasks() {

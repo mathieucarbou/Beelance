@@ -20,17 +20,17 @@ void Beelance::BeelanceClass::_initREST() {
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   // config
 
   webServer
     .on("/api/config/backup", HTTP_GET, [](AsyncWebServerRequest* request) {
-      AsyncWebServerResponse* response = request->beginResponse(200, "text/plain", Mycila::Config.backup());
+      AsyncWebServerResponse* response = request->beginResponse(200, "text/plain", config.backup());
       response->addHeader("Content-Disposition", "attachment; filename=\"config.txt\"");
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on(
@@ -44,7 +44,7 @@ void Beelance::BeelanceClass::_initREST() {
         File cfg = LittleFS.open("/config.txt", "r");
         const String data = cfg.readString();
         cfg.close();
-        Mycila::Config.restore(data);
+        config.restore(data);
         response->addHeader("Connection", "close");
         response->addHeader("Access-Control-Allow-Origin", "*");
         request->send(response);
@@ -57,7 +57,7 @@ void Beelance::BeelanceClass::_initREST() {
         if (final)
           request->_tempFile.close();
       })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/config", HTTP_POST, [](AsyncWebServerRequest* request) {
@@ -65,23 +65,23 @@ void Beelance::BeelanceClass::_initREST() {
       for (size_t i = 0, max = request->params(); i < max; i++) {
         AsyncWebParameter* p = request->getParam(i);
         if (p->isPost() && !p->isFile()) {
-          const char* keyRef = Mycila::Config.keyRef(p->name().c_str());
+          const char* keyRef = config.keyRef(p->name().c_str());
           settings[keyRef] = p->value();
         }
       }
       request->send(200);
-      Mycila::Config.set(settings);
+      config.set(settings);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/config", HTTP_GET, [](AsyncWebServerRequest* request) {
       AsyncJsonResponse* response = new AsyncJsonResponse(false);
-      Mycila::Config.toJson(response->getRoot());
+      config.toJson(response->getRoot());
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   // network
 
@@ -92,7 +92,7 @@ void Beelance::BeelanceClass::_initREST() {
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   // system
 
@@ -101,14 +101,14 @@ void Beelance::BeelanceClass::_initREST() {
       restartTask.resume();
       request->send(200);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/system/reset", HTTP_ANY, [=](AsyncWebServerRequest* request) {
       resetTask.resume();
       request->send(200);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/system", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -123,7 +123,7 @@ void Beelance::BeelanceClass::_initREST() {
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   // beelance
 
@@ -136,14 +136,14 @@ void Beelance::BeelanceClass::_initREST() {
         request->send(404);
       }
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/beelance/history/reset", HTTP_ANY, [this](AsyncWebServerRequest* request) {
       Beelance::Beelance.clearHistory();
       request->send(200);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/beelance/history", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -152,7 +152,7 @@ void Beelance::BeelanceClass::_initREST() {
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   webServer
     .on("/api/beelance", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -163,7 +163,7 @@ void Beelance::BeelanceClass::_initREST() {
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   // root
 
@@ -177,7 +177,7 @@ void Beelance::BeelanceClass::_initREST() {
       Beelance::Beelance.toJson(root["beelance"].to<JsonObject>());
       Beelance::Beelance.historyToJson(root["beelance"]["history"].to<JsonObject>());
       // config
-      Mycila::Config.toJson(root["config"].to<JsonObject>());
+      config.toJson(root["config"].to<JsonObject>());
       // network
       ESPConnect.toJson(root["network"].to<JsonObject>());
       // system
@@ -190,5 +190,5 @@ void Beelance::BeelanceClass::_initREST() {
       response->setLength();
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 }

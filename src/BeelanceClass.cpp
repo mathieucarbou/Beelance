@@ -37,12 +37,12 @@ bool Beelance::BeelanceClass::isNightModeActive() const {
     return false;
   }
 
-  const int inRange = Mycila::Time::timeInRange(&timeInfo, Mycila::Config.get(KEY_NIGHT_START_TIME), Mycila::Config.get(KEY_NIGHT_STOP_TIME));
+  const int inRange = Mycila::Time::timeInRange(&timeInfo, config.get(KEY_NIGHT_START_TIME), config.get(KEY_NIGHT_STOP_TIME));
   return inRange != -1 && inRange;
 }
 
 uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
-  const int itvl = Mycila::Config.get(KEY_SEND_INTERVAL).toInt() < BEELANCE_MIN_SEND_DELAY ? BEELANCE_MIN_SEND_DELAY : Mycila::Config.get(KEY_SEND_INTERVAL).toInt();
+  const int itvl = config.get(KEY_SEND_INTERVAL).toInt() < BEELANCE_MIN_SEND_DELAY ? BEELANCE_MIN_SEND_DELAY : config.get(KEY_SEND_INTERVAL).toInt();
 
   if (!Mycila::Modem.isTimeSynced()) {
     // modem time not synced
@@ -63,7 +63,7 @@ uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
       total += itvl;
       time_t unixTime = now + total;
       localtime_r(&unixTime, &timeInfo);
-    } while (Mycila::Time::timeInRange(&timeInfo, Mycila::Config.get(KEY_NIGHT_START_TIME), Mycila::Config.get(KEY_NIGHT_STOP_TIME)) == 1);
+    } while (Mycila::Time::timeInRange(&timeInfo, config.get(KEY_NIGHT_START_TIME), config.get(KEY_NIGHT_STOP_TIME)) == 1);
 
     if (total == itvl) {
       // the next send time is not within the night time range
@@ -73,7 +73,7 @@ uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
 
   // total is after the night time range
   // total - itvl is still within the night time range
-  const int stopTimeMins = Mycila::Time::toMinutes(Mycila::Config.get(KEY_NIGHT_STOP_TIME));
+  const int stopTimeMins = Mycila::Time::toMinutes(config.get(KEY_NIGHT_STOP_TIME));
 
   const time_t unixTime = now + total - itvl;
   struct tm timeInfo;
@@ -111,7 +111,7 @@ bool Beelance::BeelanceClass::sendMeasurements() {
     return false;
   }
 
-  if (Mycila::Config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
+  if (config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
     Mycila::Logger.error(TAG, "Unable to send measurements: no URL defined");
     return false;
   }
@@ -125,8 +125,8 @@ bool Beelance::BeelanceClass::sendMeasurements() {
   _recordMeasurement(doc["ts"].as<time_t>(), doc["temp"].as<float>(), doc["wt"].as<int32_t>());
   _saveHistory();
 
-  if (!Mycila::Config.get(KEY_SEND_URL).isEmpty()) {
-    const String url = Mycila::Config.get(KEY_SEND_URL);
+  if (!config.get(KEY_SEND_URL).isEmpty()) {
+    const String url = config.get(KEY_SEND_URL);
     Mycila::Logger.info(TAG, "Sending measurements to %s...", url.c_str());
     switch (Mycila::Modem.httpPOST(url, payload)) {
       case ESP_OK:
@@ -179,7 +179,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) const {
   // time
   root["ts"] = Mycila::Time::getUnixTime();
   // beehive
-  root["bh"] = Mycila::Config.get(KEY_BEEHIVE_NAME);
+  root["bh"] = config.get(KEY_BEEHIVE_NAME);
   // sensors
   root["temp"] = _round2(temperatureSensor.getLastTemperature());
   root["wt"] = hx711.isValid() ? static_cast<int32_t>(hx711.getWeight()) : 0;
@@ -238,8 +238,8 @@ void Beelance::BeelanceClass::clearHistory() {
 }
 
 bool Beelance::BeelanceClass::mustSleep() const {
-  return !Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE);
-  // return !Mycila::Config.getBool(KEY_NO_SLEEP_ENABLE) && Mycila::PMU.isBatteryPowered();
+  return !config.getBool(KEY_NO_SLEEP_ENABLE);
+  // return !config.getBool(KEY_NO_SLEEP_ENABLE) && Mycila::PMU.isBatteryPowered();
 }
 
 void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const float temperature, const int32_t weight) {

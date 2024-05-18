@@ -32,6 +32,8 @@
 extern AsyncWebServer webServer;
 extern ESPDash dashboard;
 
+extern Mycila::Config config;
+
 extern Mycila::HX711 hx711;
 extern Mycila::DS18 temperatureSensor;
 

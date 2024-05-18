@@ -36,7 +36,7 @@ void Beelance::WebsiteClass::init() {
 
   // dashboard
 
-  dashboard.setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD).c_str());
+  dashboard.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
   webServer.rewrite("/", "/dashboard").setFilter([](AsyncWebServerRequest* request) { return ESPConnect.getState() != ESPConnectState::PORTAL_STARTED; });
 
   // config
@@ -47,7 +47,7 @@ void Beelance::WebsiteClass::init() {
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
 
   // ota
 
@@ -61,11 +61,11 @@ void Beelance::WebsiteClass::init() {
     }
     restartTask.resume();
   });
-  ElegantOTA.begin(&webServer, BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD).c_str());
+  ElegantOTA.begin(&webServer, BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
 
   // web console
 
-  WebSerial.begin(webServer, "/console", BEELANCE_ADMIN_USERNAME, Mycila::Config.get(KEY_ADMIN_PASSWORD));
+  WebSerial.begin(webServer, "/console", BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
   WebSerial.onMessage([](AsyncWebSocketClient*, const String& msg) {
     if (msg.startsWith("AT+"))
       Mycila::Modem.enqueueAT(msg);
@@ -139,7 +139,7 @@ void Beelance::WebsiteClass::_boolConfig(Card* card, const char* key) {
   card->attachCallback([key, card, this](int value) {
     card->update(value);
     dashboard.refreshCard(card);
-    Mycila::Config.setBool(key, value);
+    config.setBool(key, value);
   });
 }
 
