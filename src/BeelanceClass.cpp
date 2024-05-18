@@ -107,12 +107,12 @@ void Beelance::BeelanceClass::sleep(uint32_t seconds) {
 
 bool Beelance::BeelanceClass::sendMeasurements() {
   if (!Mycila::Modem.isReady()) {
-    Mycila::Logger.error(TAG, "Unable to send measurements: modem not ready");
+    logger.error(TAG, "Unable to send measurements: modem not ready");
     return false;
   }
 
   if (config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
-    Mycila::Logger.error(TAG, "Unable to send measurements: no URL defined");
+    logger.error(TAG, "Unable to send measurements: no URL defined");
     return false;
   }
 
@@ -127,46 +127,46 @@ bool Beelance::BeelanceClass::sendMeasurements() {
 
   if (!config.get(KEY_SEND_URL).isEmpty()) {
     const String url = config.get(KEY_SEND_URL);
-    Mycila::Logger.info(TAG, "Sending measurements to %s...", url.c_str());
+    logger.info(TAG, "Sending measurements to %s...", url.c_str());
     switch (Mycila::Modem.httpPOST(url, payload)) {
       case ESP_OK:
-        Mycila::Logger.info(TAG, "Measurements sent successfully");
+        logger.info(TAG, "Measurements sent successfully");
         return true;
       case ESP_ERR_INVALID_ARG:
-        Mycila::Logger.error(TAG, "Unable to send measurements: invalid URL %s", url.c_str());
+        logger.error(TAG, "Unable to send measurements: invalid URL %s", url.c_str());
         return false;
       case ESP_ERR_TIMEOUT:
-        Mycila::Logger.error(TAG, "Unable to send measurements: timeout connecting to %s", url.c_str());
+        logger.error(TAG, "Unable to send measurements: timeout connecting to %s", url.c_str());
         return false;
       case ESP_ERR_INVALID_STATE:
-        Mycila::Logger.error(TAG, "Unable to send measurements: unable to connect");
+        logger.error(TAG, "Unable to send measurements: unable to connect");
         return false;
       case ESP_ERR_INVALID_RESPONSE:
-        Mycila::Logger.error(TAG, "Unable to send measurements: invalid response from server");
+        logger.error(TAG, "Unable to send measurements: invalid response from server");
         return false;
       default:
-        Mycila::Logger.error(TAG, "Unable to send measurements: unknown error");
+        logger.error(TAG, "Unable to send measurements: unknown error");
         return false;
     }
   }
 
   if (Mycila::Modem.getAPN() == "onomondo") {
-    Mycila::Logger.info(TAG, "Sending measurements using Onomondo Connector...");
+    logger.info(TAG, "Sending measurements using Onomondo Connector...");
     switch (Mycila::Modem.sendTCP("1.2.3.4", 1234, payload)) {
       case ESP_OK:
-        Mycila::Logger.info(TAG, "Measurements sent successfully using Onomondo Connector");
+        logger.info(TAG, "Measurements sent successfully using Onomondo Connector");
         return true;
       case ESP_ERR_TIMEOUT:
-        Mycila::Logger.error(TAG, "Unable to send measurements: timeout connecting to Onomondo Platform");
+        logger.error(TAG, "Unable to send measurements: timeout connecting to Onomondo Platform");
         return false;
       case ESP_ERR_INVALID_STATE:
-        Mycila::Logger.error(TAG, "Unable to send measurements: unable to connect");
+        logger.error(TAG, "Unable to send measurements: unable to connect");
         return false;
       case ESP_ERR_INVALID_RESPONSE:
-        Mycila::Logger.error(TAG, "Unable to send measurements: invalid response from server");
+        logger.error(TAG, "Unable to send measurements: invalid response from server");
         return false;
       default:
-        Mycila::Logger.error(TAG, "Unable to send measurements: unknown error");
+        logger.error(TAG, "Unable to send measurements: unknown error");
         return false;
     }
   }
@@ -243,7 +243,7 @@ bool Beelance::BeelanceClass::mustSleep() const {
 }
 
 void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const float temperature, const int32_t weight) {
-  Mycila::Logger.info(TAG, "Record measurement: temperature = %.2f C, weight = %d g", temperature, weight);
+  logger.info(TAG, "Record measurement: temperature = %.2f C, weight = %d g", temperature, weight);
 
   const String dt = Mycila::Time::toLocalStr(timestamp); // 2024-04-12 15:02:17
   const String hhmm = dt.substring(11, 16);              // 15:02
@@ -307,7 +307,7 @@ void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const f
 void Beelance::BeelanceClass::_loadHistory() {
   std::lock_guard<std::mutex> lck(_mutex);
 
-  Mycila::Logger.info(TAG, "Load history...");
+  logger.info(TAG, "Load history...");
 
   JsonDocument doc;
   JsonObject root = doc.to<JsonObject>();
@@ -338,11 +338,11 @@ void Beelance::BeelanceClass::_loadHistory() {
         dailyHistory.push_back({daily[i]["time"].as<String>(), daily[i]["temp"].as<float>(), daily[i]["wt"].as<int32_t>()});
 
     } else {
-      Mycila::Logger.error(TAG, "Unable to open file: " FILE_HISTORY);
+      logger.error(TAG, "Unable to open file: " FILE_HISTORY);
     }
 
   } else {
-    Mycila::Logger.warn(TAG, "File not found: " FILE_HISTORY);
+    logger.warn(TAG, "File not found: " FILE_HISTORY);
   }
 
   Beelance::Website.requestChartUpdate();
@@ -351,7 +351,7 @@ void Beelance::BeelanceClass::_loadHistory() {
 void Beelance::BeelanceClass::_saveHistory() {
   std::lock_guard<std::mutex> lck(_mutex);
 
-  Mycila::Logger.info(TAG, "Save history...");
+  logger.info(TAG, "Save history...");
 
   JsonDocument doc;
   historyToJson(doc.to<JsonObject>());
@@ -361,7 +361,7 @@ void Beelance::BeelanceClass::_saveHistory() {
     serializeJson(doc.as<JsonObject>(), file);
     file.close();
   } else {
-    Mycila::Logger.error(TAG, "Unable to save file: " FILE_HISTORY);
+    logger.error(TAG, "Unable to save file: " FILE_HISTORY);
   }
 }
 

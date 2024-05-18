@@ -55,9 +55,9 @@ void Beelance::WebsiteClass::init() {
   ElegantOTA.onStart([this]() { otaPrepareTask.resume(); });
   ElegantOTA.onEnd([this](bool success) {
     if (success) {
-      Mycila::Logger.info(TAG, "OTA Update Success! Restarting...");
+      logger.info(TAG, "OTA Update Success! Restarting...");
     } else {
-      Mycila::Logger.error(TAG, "OTA Failed! Restarting...");
+      logger.error(TAG, "OTA Failed! Restarting...");
     }
     restartTask.resume();
   });
@@ -70,7 +70,7 @@ void Beelance::WebsiteClass::init() {
     if (msg.startsWith("AT+"))
       Mycila::Modem.enqueueAT(msg);
   });
-  Mycila::Logger.forwardTo(&WebSerial);
+  logger.forwardTo(&WebSerial);
 
   // app stats
 

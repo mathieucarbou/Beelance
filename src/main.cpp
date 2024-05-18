@@ -15,6 +15,7 @@
 AsyncWebServer webServer(80);
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 
+Mycila::Logger logger;
 Mycila::Config config;
 
 Mycila::TaskManager hx711TaskManager("hx711", 3);
@@ -42,9 +43,9 @@ void setup() {
 #endif
 
   // logger
-  Mycila::Logger.getOutputs().reserve(2);
-  Mycila::Logger.forwardTo(&Serial);
-  Mycila::Logger.info(TAG, "Booting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.getOutputs().reserve(2);
+  logger.forwardTo(&Serial);
+  logger.info(TAG, "Booting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
 
   // system
   Mycila::System.begin();
@@ -52,35 +53,35 @@ void setup() {
   // load config and initialize
   Beelance::Beelance.begin();
 
-  Mycila::Logger.info(TAG, "Starting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.info(TAG, "Starting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
 
   // PMU
-  Mycila::Logger.info(TAG, "Configure PMU...");
+  logger.info(TAG, "Configure PMU...");
   Mycila::PMU.begin();
   Mycila::PMU.enableDCPins();
   Mycila::PMU.setChargingLedMode(XPOWERS_CHG_LED_ON);
   Mycila::PMU.setChargingCurrent(config.get(KEY_PMU_CHARGING_CURRENT).toInt());
-  Mycila::Logger.info(TAG, "Powering Modem...");
+  logger.info(TAG, "Powering Modem...");
   Mycila::PMU.enableModem();
-  Mycila::Logger.info(TAG, "Powering GPS...");
+  logger.info(TAG, "Powering GPS...");
   Mycila::PMU.enableGPS();
 
   // Temperature
-  Mycila::Logger.info(TAG, "Configure Temperature Sensor...");
+  logger.info(TAG, "Configure Temperature Sensor...");
   temperatureSensor.begin(config.get(KEY_TEMPERATURE_PIN).toInt());
   if (!temperatureSensor.isEnabled()) {
     Beelance::Website.disableTemperature();
   }
 
   // HX711
-  Mycila::Logger.info(TAG, "Configure HX711...");
+  logger.info(TAG, "Configure HX711...");
   hx711.setOffset(config.get(KEY_HX711_OFFSET).toInt());
   hx711.setScale(config.get(KEY_HX711_SCALE).toFloat());
   hx711.setExpirationDelay(10);
   hx711.begin(config.get(KEY_HX711_DATA_PIN).toInt(), config.get(KEY_HX711_CLOCK_PIN).toInt());
 
   // stack monitor
-  Mycila::Logger.info(TAG, "Configure Task Stack Monitor...");
+  logger.info(TAG, "Configure Task Stack Monitor...");
   Mycila::TaskMonitor.begin(5);
   Mycila::TaskMonitor.addTask("async_tcp"); // ESPAsyncTCP
   Mycila::TaskMonitor.addTask("loopTask");  // Arduino
@@ -88,11 +89,11 @@ void setup() {
   Mycila::TaskMonitor.addTask("hx711");     // HX711
 
   // network
-  Mycila::Logger.info(TAG, "Configure Network...");
+  logger.info(TAG, "Configure Network...");
   webServer.end();
   mdns_service_remove("_http", "_tcp");
   ESPConnect.end();
-  Mycila::Logger.info(TAG, "Hostname: %s", config.get(KEY_HOSTNAME).c_str());
+  logger.info(TAG, "Hostname: %s", config.get(KEY_HOSTNAME).c_str());
   ESPConnect.setAutoRestart(false);
   ESPConnect.setBlocking(false);
   ESPConnect.setCaptivePortalTimeout(config.get(KEY_CAPTURE_PORTAL_TIMEOUT).toInt());
@@ -103,7 +104,7 @@ void setup() {
   assert(hx711TaskManager.asyncStart(BEELANCE_HX711_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
 
   // STARTUP READY!
-  Mycila::Logger.info(TAG, "Started %s %s %s", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.info(TAG, "Started %s %s %s", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
 }
 
 void loop() {

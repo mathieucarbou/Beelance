@@ -9,7 +9,7 @@
 #define TAG "BEELANCE"
 
 void Beelance::BeelanceClass::_initConfig() {
-  Mycila::Logger.info(TAG, "Initializing Config System...");
+  logger.info(TAG, "Initializing Config System...");
 
   config.begin(28);
 

@@ -7,10 +7,10 @@
 #define TAG "BEELANCE"
 
 static const Mycila::TaskPredicate DEBUG_ENABLED = []() {
-  return Mycila::Logger.isDebugEnabled();
+  return logger.isDebugEnabled();
 };
 static const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
-  Mycila::Logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
+  logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
 };
 
 Mycila::Task espConnectTask("ESPConnect.loop()", [](void* params) { ESPConnect.loop(); });
@@ -51,18 +51,18 @@ Mycila::Task sendTask("Beelance.sendMeasurements()", [](void* params) {
   if (Mycila::Modem.activateData() && Beelance::Beelance.sendMeasurements()) {
     Mycila::Modem.activateGPS();
   } else {
-    Mycila::Logger.error(TAG, "Failed to send measurements. Restarting...");
+    logger.error(TAG, "Failed to send measurements. Restarting...");
     restartTask.resume();
   }
 });
 
 Mycila::Task restartTask("restartTask", [](void* params) {
-  Mycila::Logger.warn(TAG, "Restarting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.warn(TAG, "Restarting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
   Mycila::System.restart(500);
 });
 
 Mycila::Task resetTask("resetTask", [](void* params) {
-  Mycila::Logger.warn(TAG, "Resetting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.warn(TAG, "Resetting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
   Beelance::Beelance.clearHistory();
   config.clear();
   Mycila::PMU.reset();
@@ -88,13 +88,13 @@ Mycila::Task startModemTask("startModemTask", [](void* params) {
   Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.get(KEY_MODEM_BANDS_NB_IOT));
   // start modem
   if (Mycila::Modem.getState() == Mycila::ModemState::MODEM_OFF) {
-    Mycila::Logger.info(TAG, "Enable Modem...");
+    logger.info(TAG, "Enable Modem...");
     Mycila::Modem.begin();
   }
 });
 
 Mycila::Task startNetworkServicesTask("startNetworkServicesTask", [](void* params) {
-  Mycila::Logger.info(TAG, "Enable Web Server...");
+  logger.info(TAG, "Enable Web Server...");
   webServer.onNotFound([](AsyncWebServerRequest* request) {
     request->send(404);
   });
@@ -103,27 +103,27 @@ Mycila::Task startNetworkServicesTask("startNetworkServicesTask", [](void* param
 });
 
 Mycila::Task stopNetworkServicesTask("stopNetworkServicesTask", [](void* params) {
-  Mycila::Logger.info(TAG, "Disable Web Server...");
+  logger.info(TAG, "Disable Web Server...");
   webServer.end();
   mdns_service_remove("_http", "_tcp");
 });
 
 Mycila::Task otaPrepareTask("otaPrepareTask", [](void* params) {
-  Mycila::Logger.info(TAG, "Preparing OTA update...");
+  logger.info(TAG, "Preparing OTA update...");
   watchdogTask.pause();
 });
 
 Mycila::Task watchdogTask("watchdogTask", [](void* params) {
   if (!Mycila::Modem.isReady()) {
-    Mycila::Logger.error(TAG, "Watchdog triggered: restarting...");
+    logger.error(TAG, "Watchdog triggered: restarting...");
     restartTask.resume();
   }
 });
 
 Mycila::Task configureDebugTask("configureDebugTask", [](void* params) {
-  Mycila::Logger.info(TAG, "Configure Debug Level...");
-  Mycila::Logger.setLevel(config.getBool(KEY_DEBUG_ENABLE) ? ARDUHAL_LOG_LEVEL_DEBUG : ARDUHAL_LOG_LEVEL_INFO);
-  esp_log_level_set("*", static_cast<esp_log_level_t>(Mycila::Logger.getLevel()));
+  logger.info(TAG, "Configure Debug Level...");
+  logger.setLevel(config.getBool(KEY_DEBUG_ENABLE) ? ARDUHAL_LOG_LEVEL_DEBUG : ARDUHAL_LOG_LEVEL_INFO);
+  esp_log_level_set("*", static_cast<esp_log_level_t>(logger.getLevel()));
   Mycila::Modem.setDebug(config.getBool(KEY_DEBUG_ENABLE));
 });
 
@@ -197,13 +197,13 @@ void Beelance::BeelanceClass::_initTasks() {
   sendTask.setManager(modemTaskManager);
   sendTask.setEnabled(false);
   sendTask.setCallback([](const Mycila::Task& me, const uint32_t elapsed) {
-    Mycila::Logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
+    logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
     const uint32_t delay = Beelance::Beelance.getDelayUntilNextSend();
     if (Beelance::Beelance.mustSleep()) {
-      Mycila::Logger.info(TAG, "Going to sleep for %u seconds...", delay);
+      logger.info(TAG, "Going to sleep for %u seconds...", delay);
       Beelance::Beelance.sleep(delay); // after sleep, ESP will be restarted
     } else {
-      Mycila::Logger.info(TAG, "Sending next measurements in %u seconds...", delay);
+      logger.info(TAG, "Sending next measurements in %u seconds...", delay);
       sendTask.resume(delay * Mycila::TaskDuration::SECONDS);
     }
   });

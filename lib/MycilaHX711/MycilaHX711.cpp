@@ -7,6 +7,8 @@
 
 #define TAG "HX711"
 
+extern Mycila::Logger logger;
+
 void Mycila::HX711::begin(const uint8_t dataPin, const uint8_t clockPin) {
   if (_enabled)
     return;
@@ -14,7 +16,7 @@ void Mycila::HX711::begin(const uint8_t dataPin, const uint8_t clockPin) {
   if (GPIO_IS_VALID_GPIO(dataPin)) {
     _dataPin = (gpio_num_t)dataPin;
   } else {
-    Logger.error(TAG, "Disable HX711: Invalid DATA pin: %u", dataPin);
+    logger.error(TAG, "Disable HX711: Invalid DATA pin: %u", dataPin);
     _dataPin = GPIO_NUM_NC;
     return;
   }
@@ -22,21 +24,21 @@ void Mycila::HX711::begin(const uint8_t dataPin, const uint8_t clockPin) {
   if (GPIO_IS_VALID_GPIO(clockPin)) {
     _clockPin = (gpio_num_t)clockPin;
   } else {
-    Logger.error(TAG, "Disable HX711: Invalid CLOCK pin: %u", clockPin);
+    logger.error(TAG, "Disable HX711: Invalid CLOCK pin: %u", clockPin);
     _clockPin = GPIO_NUM_NC;
     return;
   }
 
   _hx711.begin(_dataPin, _clockPin, true);
 
-  Logger.info(TAG, "Enable HX711...");
+  logger.info(TAG, "Enable HX711...");
 
   _enabled = true;
 }
 
 void Mycila::HX711::end() {
   if (_enabled) {
-    Logger.info(TAG, "Disable HX711...");
+    logger.info(TAG, "Disable HX711...");
     _enabled = false;
     _weight = 0;
     _lastUpdate = 0;

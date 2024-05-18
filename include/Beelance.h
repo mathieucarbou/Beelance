@@ -32,6 +32,7 @@
 extern AsyncWebServer webServer;
 extern ESPDash dashboard;
 
+extern Mycila::Logger logger;
 extern Mycila::Config config;
 
 extern Mycila::HX711 hx711;

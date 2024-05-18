@@ -16,13 +16,15 @@ TinyGPSPlus tinyGPS;
 
 #define TAG "MODEM"
 
+extern Mycila::Logger logger;
+
 Mycila::ModemClass::ModemClass() : _spy(MYCILA_MODEM_SERIAL), _modem(_spy) {}
 
 void Mycila::ModemClass::begin() {
   if (_state != MODEM_OFF)
     return;
 
-  Mycila::Logger.info(TAG, "Starting modem...");
+  logger.info(TAG, "Starting modem...");
 
 #ifdef TINY_GSM_MODEM_A7670
   // Set modem reset pin ,reset modem
@@ -40,7 +42,7 @@ void Mycila::ModemClass::begin() {
   MYCILA_MODEM_SERIAL.begin(115200, SERIAL_8N1, MYCILA_MODEM_RX_PIN, MYCILA_MODEM_TX_PIN);
 
 #ifdef TINY_GSM_MODEM_A7670G
-  Mycila::Logger.info(TAG, "Starting GPS...");
+  logger.info(TAG, "Starting GPS...");
   Serial2.setRxBufferSize(1024);
   Serial2.begin(9600, SERIAL_8N1, MYCILA_GPS_RX_PIN, MYCILA_GPS_TX_PIN);
 #endif
@@ -50,10 +52,10 @@ void Mycila::ModemClass::begin() {
 
 void Mycila::ModemClass::loop() {
   if (_state == MODEM_STARTING) {
-    Mycila::Logger.info(TAG, "Init SIM...");
+    logger.info(TAG, "Init SIM...");
 
     if (_modem.init(_pin.c_str())) {
-      Mycila::Logger.info(TAG, "SIM Ready!");
+      logger.info(TAG, "SIM Ready!");
       _error = emptyString;
 
 #ifdef TINY_GSM_MODEM_SIM7080
@@ -103,18 +105,18 @@ void Mycila::ModemClass::loop() {
             _error = "SIM Error";
             break;
         }
-        Mycila::Logger.error(TAG, "Init SIM Error: %s", _error.c_str());
+        logger.error(TAG, "Init SIM Error: %s", _error.c_str());
         _powerModem();
       }
     }
   }
 
   if (_state == MODEM_WAIT_REGISTRATION && millis() - _registrationCheckLastTime >= 2000) {
-    Mycila::Logger.info(TAG, "Check registration...");
+    logger.info(TAG, "Check registration...");
     _registrationCheckCount--;
 
     if (_modem.isNetworkConnected()) {
-      Mycila::Logger.info(TAG, "Registered!");
+      logger.info(TAG, "Registered!");
 
       activateGPS();
       _gpsSyncStartTime = millis();
@@ -123,39 +125,39 @@ void Mycila::ModemClass::loop() {
 
     } else if (_registrationCheckCount <= 0) {
       if (!_candidate) {
-        Mycila::Logger.warn(TAG, "Timeout registering with any operator");
+        logger.warn(TAG, "Timeout registering with any operator");
         _setState(MODEM_SEARCHING);
 
       } else {
-        Mycila::Logger.warn(TAG, "Timeout registering with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+        logger.warn(TAG, "Timeout registering with %s (%d)", _candidate->name.c_str(), _candidate->mode);
 
         while (true) {
           _candidateIndex++;
           _candidate = _candidateIndex < _operators.size() ? &_operators[_candidateIndex] : nullptr;
 
           if (!_candidate) {
-            Mycila::Logger.warn(TAG, "No more operator to try");
+            logger.warn(TAG, "No more operator to try");
             _setState(MODEM_SEARCHING);
             break;
           }
 
-          Mycila::Logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
+          logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
           _setMode(_candidate->mode);
           _modem.sendAT("+COPS=0,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
 
           if (_modem.waitResponse(60000) == 1) {
-            Mycila::Logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+            logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
             _registrationCheckCount = 7;
             _setState(MODEM_WAIT_REGISTRATION);
             break;
 
           } else {
-            Mycila::Logger.warn(TAG, "Failed to associate with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+            logger.warn(TAG, "Failed to associate with %s (%d)", _candidate->name.c_str(), _candidate->mode);
           }
         }
       }
     } else {
-      Mycila::Logger.info(TAG, "Not registered yet.");
+      logger.info(TAG, "Not registered yet.");
     }
 
     _sync();
@@ -163,7 +165,7 @@ void Mycila::ModemClass::loop() {
   }
 
   if (_state == MODEM_SEARCHING) {
-    Mycila::Logger.info(TAG, "Searching for operators...");
+    logger.info(TAG, "Searching for operators...");
 
     // de-register
     _modem.sendAT("+COPS=2");
@@ -201,9 +203,9 @@ void Mycila::ModemClass::loop() {
 
         if (!op.name.isEmpty()) {
           if (op.state == MODEM_OPERATOR_FORBIDDEN) {
-            Mycila::Logger.warn(TAG, "Skipping forbidden operator %s (%d)", op.name.c_str(), op.mode);
+            logger.warn(TAG, "Skipping forbidden operator %s (%d)", op.name.c_str(), op.mode);
           } else {
-            Mycila::Logger.info(TAG, "Found operator %s (%d) code=%s, state=%d", op.name.c_str(), op.mode, op.code.c_str(), op.state);
+            logger.info(TAG, "Found operator %s (%d) code=%s, state=%d", op.name.c_str(), op.mode, op.code.c_str(), op.state);
             _operators.push_back(op);
           }
         }
@@ -213,19 +215,19 @@ void Mycila::ModemClass::loop() {
       for (_candidateIndex = 0; _candidateIndex < _operators.size(); _candidateIndex++) {
         _candidate = &_operators[_candidateIndex];
 
-        Mycila::Logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
+        logger.info(TAG, "Try associate with %s (%d)...", _candidate->name.c_str(), _candidate->mode);
 
         _setMode(_candidate->mode);
         _modem.sendAT("+COPS=0,0,\"", _candidate->name.c_str(), "\",", _candidate->mode);
 
         if (_modem.waitResponse(60000) == 1) {
-          Mycila::Logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+          logger.info(TAG, "Associated with %s (%d)", _candidate->name.c_str(), _candidate->mode);
           _registrationCheckCount = 7;
           _setState(MODEM_WAIT_REGISTRATION);
           break;
 
         } else {
-          Mycila::Logger.warn(TAG, "Failed to associate with %s (%d)", _candidate->name.c_str(), _candidate->mode);
+          logger.warn(TAG, "Failed to associate with %s (%d)", _candidate->name.c_str(), _candidate->mode);
         }
       }
     } else {
@@ -242,7 +244,7 @@ void Mycila::ModemClass::loop() {
       _setState(MODEM_CONNECTING);
 
     } else if (millis() - _gpsSyncStartTime >= _gpsSyncTimeout * 1000) {
-      Mycila::Logger.error(TAG, "GPS Sync timeout!");
+      logger.error(TAG, "GPS Sync timeout!");
       _gpsState = MODEM_GPS_TIMEOUT;
       _setState(MODEM_CONNECTING);
 
@@ -257,7 +259,7 @@ void Mycila::ModemClass::loop() {
       activateGPS();
       _setState(MODEM_READY);
     } else {
-      Mycila::Logger.error(TAG, "Failed to activate data!");
+      logger.error(TAG, "Failed to activate data!");
       _setState(MODEM_STARTING);
     }
   }
@@ -454,7 +456,7 @@ void Mycila::ModemClass::_onRead(const uint8_t* buffer, size_t size) {
     _readBuffer += String((const char*)buffer, size);
     if (_readBuffer.endsWith("\n")) {
       size = _readBuffer.endsWith("\r\n") ? _readBuffer.length() - 2 : _readBuffer.length() - 1;
-      Mycila::Logger.debug(TAG, "%.*s", size, _readBuffer.c_str());
+      logger.debug(TAG, "%.*s", size, _readBuffer.c_str());
       _readBuffer.clear();
       _readBuffer += "<< ";
     }
@@ -466,7 +468,7 @@ void Mycila::ModemClass::_onWrite(const uint8_t* buffer, size_t size) {
     _writeBuffer += String((const char*)buffer, size);
     if (_writeBuffer.endsWith("\n")) {
       size = _writeBuffer.endsWith("\r\n") ? _writeBuffer.length() - 2 : _writeBuffer.length() - 1;
-      Mycila::Logger.debug(TAG, "%.*s", size, _writeBuffer.c_str());
+      logger.debug(TAG, "%.*s", size, _writeBuffer.c_str());
       _writeBuffer.clear();
       _writeBuffer += ">> ";
     }
@@ -522,7 +524,7 @@ bool Mycila::ModemClass::_syncGPS() {
           _gpsData.time.tm_hour = tinyGPS.time.hour();
           _gpsData.time.tm_min = tinyGPS.time.minute();
           _gpsData.time.tm_sec = tinyGPS.time.second();
-          Mycila::Logger.info(TAG, "GPS Synced!");
+          logger.info(TAG, "GPS Synced!");
           return true;
         }
       }
@@ -535,7 +537,7 @@ bool Mycila::ModemClass::_syncGPS() {
   if (_modem.getGPS(&status, &_gpsData.latitude, &_gpsData.longitude, nullptr, &_gpsData.altitude, nullptr, nullptr, &_gpsData.accuracy, &_gpsData.time.tm_year, &_gpsData.time.tm_mon, &_gpsData.time.tm_mday, &_gpsData.time.tm_hour, &_gpsData.time.tm_min, &_gpsData.time.tm_sec) && _gpsData.altitude >= 0) {
     _gpsData.time.tm_year -= 1900;
     _gpsData.time.tm_mon -= 1;
-    Mycila::Logger.info(TAG, "GPS Synced!");
+    logger.info(TAG, "GPS Synced!");
     return true;
   }
 #endif
@@ -562,7 +564,7 @@ bool Mycila::ModemClass::_syncTime() {
 
     String time = Mycila::Time::getLocalStr();
     if (!time.isEmpty()) {
-      Mycila::Logger.info(TAG, "Time synced from GPS: %s", time.c_str());
+      logger.info(TAG, "Time synced from GPS: %s", time.c_str());
       return true;
     }
   }
@@ -586,7 +588,7 @@ bool Mycila::ModemClass::_syncTime() {
 
     String time = Mycila::Time::getLocalStr();
     if (!time.isEmpty()) {
-      Mycila::Logger.info(TAG, "Time synced from cellular network: %s", time.c_str());
+      logger.info(TAG, "Time synced from cellular network: %s", time.c_str());
       return true;
     }
   }
@@ -626,7 +628,7 @@ void Mycila::ModemClass::_sync() {
 void Mycila::ModemClass::_dequeueATCommands() {
   if (_commands.size()) {
     for (size_t i = 0; i < _commands.size(); i++) {
-      Mycila::Logger.info(TAG, "Execute command: %s", _commands[i].c_str());
+      logger.info(TAG, "Execute command: %s", _commands[i].c_str());
       if (_commands[i].startsWith("AT+"))
         _modem.sendAT(_commands[i].substring(2).c_str());
       else
@@ -643,20 +645,20 @@ void Mycila::ModemClass::_dequeueATCommands() {
 
 bool Mycila::ModemClass::activateData() {
 #ifdef TINY_GSM_MODEM_A7670
-  Mycila::Logger.info(TAG, "Activate Data...");
+  logger.info(TAG, "Activate Data...");
   _modem.gprsConnect(_apn.c_str());
 #endif
 #ifdef TINY_GSM_MODEM_SIM7080
-  Mycila::Logger.info(TAG, "Disable GPS...");
+  logger.info(TAG, "Disable GPS...");
   _modem.disableGPS(); // GPS is incompatible with networking for SIM7080
-  Mycila::Logger.info(TAG, "Activate Data...");
+  logger.info(TAG, "Activate Data...");
   _modem.sendAT("+CNACT=0,1");
 #endif
   return _modem.waitForNetwork();
 }
 
 void Mycila::ModemClass::activateGPS() {
-  Mycila::Logger.info(TAG, "Enable GPS...");
+  logger.info(TAG, "Enable GPS...");
 #ifdef TINY_GSM_MODEM_SIM7080
   _modem.enableGPS(); // GPS is incompatible with networking for SIM7080
 #endif
