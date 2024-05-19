@@ -7,7 +7,7 @@
 #include <Esp.h>
 
 #ifndef APP_NAME
-#define APP_NAME "Beelance"
+#define APP_NAME "YaSolR"
 #endif
 
 #ifndef APP_MANUFACTURER
@@ -40,7 +40,7 @@ Mycila::AppInfoClass::AppInfoClass() : id(_getEspId()),
                                        firmware(String(APP_NAME) + "-" + (version.indexOf("_") >= 0 ? version.substring(0, version.indexOf("_")) : version) + "-" + __COMPILED_BUILD_NAME__ + ".bin"),
                                        buildBranch(__COMPILED_BUILD_BRANCH__),
                                        buildHash(__COMPILED_BUILD_HASH__),
-                                       buildDate(strlen(__COMPILED_BUILD_TIMESTAMP__) == 0 ? __DATE__ " " __TIME__ : __COMPILED_BUILD_TIMESTAMP__),
+                                       buildDate(__COMPILED_BUILD_TIMESTAMP__),
                                        debug(firmware.indexOf("debug") >= 0),
                                        trial(firmware.indexOf("trial") >= 0) {}
 
