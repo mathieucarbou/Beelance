@@ -24,11 +24,14 @@ namespace Mycila {
       const String buildBranch;
       const String buildHash;
       const String buildDate;
+      const String defaultHostname;
+      const String defaultMqttTopic;
       const bool debug;
       const bool trial;
 
     private:
-      String _getEspId() const;
+      static String _getEspId();
+      static String _lower(const String& s);
   };
 
   extern AppInfoClass AppInfo;

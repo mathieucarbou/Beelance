@@ -41,6 +41,8 @@ Mycila::AppInfoClass::AppInfoClass() : id(_getEspId()),
                                        buildBranch(__COMPILED_BUILD_BRANCH__),
                                        buildHash(__COMPILED_BUILD_HASH__),
                                        buildDate(__COMPILED_BUILD_TIMESTAMP__),
+                                       defaultHostname(_lower(name + "-" + id)),
+                                       defaultMqttTopic(_lower(name + "_" + id)),
                                        debug(firmware.indexOf("debug") >= 0),
                                        trial(firmware.indexOf("trial") >= 0) {}
 
@@ -57,7 +59,7 @@ void Mycila::AppInfoClass::toJson(const JsonObject& root) const {
   root["version"] = version;
 }
 
-String Mycila::AppInfoClass::_getEspId() const {
+String Mycila::AppInfoClass::_getEspId() {
   uint32_t chipId = 0;
   for (int i = 0; i < 17; i += 8) {
     chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
@@ -65,6 +67,12 @@ String Mycila::AppInfoClass::_getEspId() const {
   String espId = String(chipId, HEX);
   espId.toUpperCase();
   return espId;
+}
+
+String Mycila::AppInfoClass::_lower(const String& s) {
+  String lower = s;
+  lower.toLowerCase();
+  return lower;
 }
 
 namespace Mycila {

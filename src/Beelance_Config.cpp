@@ -13,15 +13,12 @@ void Beelance::BeelanceClass::_initConfig() {
 
   config.begin(28);
 
-  String hostname = String(Mycila::AppInfo.name + "-" + Mycila::AppInfo.id);
-  hostname.toLowerCase();
-
   config.configure(KEY_ADMIN_PASSWORD);
   config.configure(KEY_AP_MODE_ENABLE, "true");
-  config.configure(KEY_BEEHIVE_NAME, hostname);
+  config.configure(KEY_BEEHIVE_NAME, Mycila::AppInfo.defaultHostname);
   config.configure(KEY_CAPTURE_PORTAL_TIMEOUT, String(ESPCONNECT_PORTAL_TIMEOUT));
   config.configure(KEY_DEBUG_ENABLE, "false");
-  config.configure(KEY_HOSTNAME, hostname);
+  config.configure(KEY_HOSTNAME, Mycila::AppInfo.defaultHostname);
   config.configure(KEY_HX711_CLOCK_PIN, String(BEELANCE_HX711_CLOCK_PIN));
   config.configure(KEY_HX711_DATA_PIN, String(BEELANCE_HX711_DATA_PIN));
   config.configure(KEY_HX711_OFFSET, "0");
