@@ -48,7 +48,7 @@ namespace Mycila {
         return time.substring(0, i).toInt() * 60 + time.substring(i + 1).toInt();
       }
 
-      static int timeInRange(struct tm* timeInfo, const String& start, const String& end, char sep = ':') {
+      static int timeInRange(const struct tm& timeInfo, const String& start, const String& end, char sep = ':') {
         const int startMinutes = toMinutes(start, sep);
         if (startMinutes == -1)
           return -1;
@@ -60,7 +60,7 @@ namespace Mycila {
         if (startMinutes == stopMinutes)
           return false; // range is empty
 
-        const uint16_t timeMinutes = timeInfo->tm_hour * 60 + timeInfo->tm_min;
+        const uint16_t timeMinutes = timeInfo.tm_hour * 60 + timeInfo.tm_min;
 
         // cases:
         // startMinutes < stopMinutes : i.e. 06:00 -> 22:00
