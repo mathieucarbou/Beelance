@@ -42,7 +42,7 @@ Mycila::AppInfoClass::AppInfoClass() : id(_getEspId()),
                                        buildHash(__COMPILED_BUILD_HASH__),
                                        buildDate(__COMPILED_BUILD_TIMESTAMP__),
                                        defaultHostname(_lower(name + "-" + id)),
-                                       defaultMqttTopic(_lower(name + "_" + id)),
+                                       defaultMqttClientId(_lower(name + "_" + id)),
                                        debug(firmware.indexOf("debug") >= 0),
                                        trial(firmware.indexOf("trial") >= 0) {}
 
