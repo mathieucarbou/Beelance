@@ -88,6 +88,8 @@ void Beelance::WebsiteClass::init() {
   _bootCountStat.set(String(Mycila::System.getBootCount()).c_str());
   _heapMemoryTotalStat.set((String(ESP.getHeapSize()) + " bytes").c_str());
 
+  _hostnameStat.set(Mycila::AppInfo.defaultHostname.c_str());
+
   // home callbacks
 
   _restart.attachCallback([this](uint32_t value) {

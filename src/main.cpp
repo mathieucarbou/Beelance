@@ -18,9 +18,9 @@ ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 Mycila::Logger logger;
 Mycila::Config config;
 
-Mycila::TaskManager hx711TaskManager("hx711", 3);
-Mycila::TaskManager loopTaskManager("loopTask", 12);
-Mycila::TaskManager modemTaskManager("modemTask", 5);
+Mycila::TaskManager hx711TaskManager("hx711");
+Mycila::TaskManager loopTaskManager("loopTask");
+Mycila::TaskManager modemTaskManager("modemTask");
 
 Mycila::HX711 hx711;
 Mycila::DS18 temperatureSensor;
@@ -43,9 +43,8 @@ void setup() {
 #endif
 
   // logger
-  logger.getOutputs().reserve(2);
   logger.forwardTo(&Serial);
-  logger.info(TAG, "Booting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.info(TAG, "Booting %s...", Mycila::AppInfo.nameModelVersion.c_str());
 
   // system
   Mycila::System.begin();
@@ -53,7 +52,7 @@ void setup() {
   // load config and initialize
   Beelance::Beelance.begin();
 
-  logger.info(TAG, "Starting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.info(TAG, "Starting %s...", Mycila::AppInfo.nameModelVersion.c_str());
 
   // PMU
   logger.info(TAG, "Configure PMU...");
@@ -90,18 +89,15 @@ void setup() {
   webServer.end();
   mdns_service_remove("_http", "_tcp");
   ESPConnect.end();
-  logger.info(TAG, "Hostname: %s", config.get(KEY_HOSTNAME).c_str());
-  ESPConnect.setAutoRestart(false);
+  ESPConnect.setAutoRestart(true);
   ESPConnect.setBlocking(false);
-  ESPConnect.setCaptivePortalTimeout(config.get(KEY_CAPTURE_PORTAL_TIMEOUT).toInt());
-  ESPConnect.setConnectTimeout(config.get(KEY_WIFI_CONNECTION_TIMEOUT).toInt());
-  ESPConnect.begin(webServer, config.get(KEY_HOSTNAME), Mycila::AppInfo.name + "-" + Mycila::AppInfo.id, config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
+  ESPConnect.begin(webServer, Mycila::AppInfo.defaultHostname, Mycila::AppInfo.defaultSSID, config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
 
   assert(modemTaskManager.asyncStart(BEELANCE_MODEM_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
   assert(hx711TaskManager.asyncStart(BEELANCE_HX711_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
 
   // STARTUP READY!
-  logger.info(TAG, "Started %s %s %s", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.info(TAG, "Started %s", Mycila::AppInfo.nameModelVersion.c_str());
 }
 
 void loop() {

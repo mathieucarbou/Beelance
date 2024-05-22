@@ -57,12 +57,12 @@ Mycila::Task sendTask("Beelance.sendMeasurements()", [](void* params) {
 });
 
 Mycila::Task restartTask("restartTask", [](void* params) {
-  logger.warn(TAG, "Restarting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.warn(TAG, "Restarting %s...", Mycila::AppInfo.nameModelVersion.c_str());
   Mycila::System.restart(500);
 });
 
 Mycila::Task resetTask("resetTask", [](void* params) {
-  logger.warn(TAG, "Resetting %s %s %s...", Mycila::AppInfo.name.c_str(), Mycila::AppInfo.model.c_str(), Mycila::AppInfo.version.c_str());
+  logger.warn(TAG, "Resetting %s...", Mycila::AppInfo.nameModelVersion.c_str());
   Beelance::Beelance.clearHistory();
   config.clear();
   Mycila::PMU.reset();

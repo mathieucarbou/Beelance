@@ -28,6 +28,7 @@ namespace Mycila {
       const String buildDate;
       const String defaultHostname;
       const String defaultMqttClientId;
+      const String defaultSSID;
       const bool debug;
       const bool trial;
 

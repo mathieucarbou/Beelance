@@ -36,7 +36,6 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _modemNBIoTBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_NB_IOT).c_str());
   _modemIpStat.set(Mycila::Modem.getLocalIP().c_str());
 
-  _hostnameStat.set(config.get(KEY_HOSTNAME).c_str());
   _apIPStat.set(ESPConnect.getIPAddress(ESPConnectMode::AP).toString().c_str());
   _apMACStat.set(ESPConnect.getMACAddress(ESPConnectMode::AP).c_str());
   _wifiIPStat.set(ESPConnect.getIPAddress(ESPConnectMode::STA).toString().c_str());

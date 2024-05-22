@@ -16,9 +16,7 @@ void Beelance::BeelanceClass::_initConfig() {
   config.configure(KEY_ADMIN_PASSWORD);
   config.configure(KEY_AP_MODE_ENABLE, "true");
   config.configure(KEY_BEEHIVE_NAME, Mycila::AppInfo.defaultHostname);
-  config.configure(KEY_CAPTURE_PORTAL_TIMEOUT, String(ESPCONNECT_PORTAL_TIMEOUT));
   config.configure(KEY_DEBUG_ENABLE, "false");
-  config.configure(KEY_HOSTNAME, Mycila::AppInfo.defaultHostname);
   config.configure(KEY_HX711_CLOCK_PIN, String(BEELANCE_HX711_CLOCK_PIN));
   config.configure(KEY_HX711_DATA_PIN, String(BEELANCE_HX711_DATA_PIN));
   config.configure(KEY_HX711_OFFSET, "0");
@@ -37,7 +35,6 @@ void Beelance::BeelanceClass::_initConfig() {
   config.configure(KEY_SEND_URL);
   config.configure(KEY_TEMPERATURE_PIN, String(BEELANCE_TEMPERATURE_PIN));
   config.configure(KEY_TIMEZONE_INFO, "CET-1CEST,M3.5.0,M10.5.0/3");
-  config.configure(KEY_WIFI_CONNECTION_TIMEOUT, String(ESPCONNECT_CONNECTION_TIMEOUT));
   config.configure(KEY_WIFI_PASSWORD);
   config.configure(KEY_WIFI_SSID);
 
