@@ -17,8 +17,10 @@ namespace Mycila {
     public:
       const String id;
       const String name;
-      const String version;
       const String model;
+      const String version;
+      const String nameModel;
+      const String nameModelVersion;
       const String manufacturer;
       const String firmware;
       const String buildBranch;

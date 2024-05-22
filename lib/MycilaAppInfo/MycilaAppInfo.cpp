@@ -34,8 +34,10 @@ extern const char* __COMPILED_BUILD_TIMESTAMP__;
 
 Mycila::AppInfoClass::AppInfoClass() : id(_getEspId()),
                                        name(APP_NAME),
-                                       version(__COMPILED_APP_VERSION__),
                                        model(APP_MODEL),
+                                       version(__COMPILED_APP_VERSION__),
+                                       nameModel(name + " " + model),
+                                       nameModelVersion(name + " " + model + " " + version),
                                        manufacturer(APP_MANUFACTURER),
                                        firmware(String(APP_NAME) + "-" + (version.indexOf("_") >= 0 ? version.substring(0, version.indexOf("_")) : version) + "-" + __COMPILED_BUILD_NAME__ + ".bin"),
                                        buildBranch(__COMPILED_BUILD_BRANCH__),
