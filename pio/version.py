@@ -52,7 +52,7 @@ def do_main():
         version += "_modified"
 
     # version = "v2.40.2_rc1"
-    tagPattern = re.compile("^v[0-9]+.[0-9]+.[0-9]+(_[a-zA-Z0-9]+)?$")
+    tagPattern = re.compile("^v[0-9]+.[0-9]+.[0-9]+([_-][a-zA-Z0-9]+)?$")
     constantFile = os.path.join(env.subst("$BUILD_DIR"), "__compiled_constants.c")
     with open(constantFile, "w") as f:
         f.write(
