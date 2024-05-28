@@ -210,7 +210,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   }
   _volt.update(Mycila::PMU.getBatteryVoltage());
 
-  _uptime.update(String(Mycila::System.getUptime()));
+  _uptime.update(Mycila::Time::toDHHMMSS(Mycila::System.getUptime()).c_str());
   _restart.update(!restartTask.isPaused());
 
   _sendNow.update(sendTask.isRunning() || (sendTask.isEnabled() && !sendTask.isPaused() && sendTask.isEarlyRunRequested()));
