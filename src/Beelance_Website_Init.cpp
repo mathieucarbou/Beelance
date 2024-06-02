@@ -65,12 +65,12 @@ void Beelance::WebsiteClass::init() {
 
   // web console
 
-  WebSerial.begin(webServer, "/console", BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
-  WebSerial.onMessage([](AsyncWebSocketClient*, const String& msg) {
+  WebSerialLite.begin(webServer, "/console", BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+  WebSerialLite.onMessage([](const String& msg) {
     if (msg.startsWith("AT+"))
       Mycila::Modem.enqueueAT(msg);
   });
-  logger.forwardTo(&WebSerial);
+  logger.forwardTo(&WebSerialLite);
 
   // app stats
 
