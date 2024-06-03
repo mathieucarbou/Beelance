@@ -11,7 +11,7 @@
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPDash.h>
-#include <WebSerialLite.h>
+#include <WebSerial.h>
 
 #include <MycilaAppInfo.h>
 #include <MycilaConfig.h>

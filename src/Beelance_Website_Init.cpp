@@ -5,7 +5,7 @@
 #include <BeelanceWebsite.h>
 
 #include <ElegantOTA.h>
-#include <WebSerialLite.h>
+#include <WebSerial.h>
 
 #define TAG "WEBSITE"
 
@@ -65,13 +65,13 @@ void Beelance::WebsiteClass::init() {
 
   // web console
 
-  WebSerialLite.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
-  WebSerialLite.begin(&webServer, "/console");
-  WebSerialLite.onMessage([](const String& msg) {
+  WebSerial.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
+  WebSerial.begin(&webServer, "/console");
+  WebSerial.onMessage([](const String& msg) {
     if (msg.startsWith("AT+"))
       Mycila::Modem.enqueueAT(msg);
   });
-  logger.forwardTo(&WebSerialLite);
+  logger.forwardTo(&WebSerial);
 
   // app stats
 
