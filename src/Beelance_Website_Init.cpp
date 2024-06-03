@@ -65,7 +65,8 @@ void Beelance::WebsiteClass::init() {
 
   // web console
 
-  WebSerialLite.begin(webServer, "/console", BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+  WebSerialLite.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
+  WebSerialLite.begin(webServer, "/console");
   WebSerialLite.onMessage([](const String& msg) {
     if (msg.startsWith("AT+"))
       Mycila::Modem.enqueueAT(msg);
