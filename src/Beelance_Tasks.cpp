@@ -99,13 +99,11 @@ Mycila::Task startNetworkServicesTask("startNetworkServicesTask", [](void* param
     request->send(404);
   });
   webServer.begin();
-  MDNS.addService("http", "tcp", 80);
 });
 
 Mycila::Task stopNetworkServicesTask("stopNetworkServicesTask", [](void* params) {
   logger.info(TAG, "Disable Web Server...");
   webServer.end();
-  mdns_service_remove("_http", "_tcp");
 });
 
 Mycila::Task otaPrepareTask("otaPrepareTask", [](void* params) {

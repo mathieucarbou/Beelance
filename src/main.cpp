@@ -87,7 +87,6 @@ void setup() {
 
   // network
   webServer.end();
-  mdns_service_remove("_http", "_tcp");
   ESPConnect.end();
   ESPConnect.setAutoRestart(true);
   ESPConnect.setBlocking(false);
