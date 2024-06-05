@@ -152,7 +152,7 @@ float Mycila::PMUClass::read() {
 #endif
 #ifdef MYCILA_PMU_BATTERY_ADC_PIN
   esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
   _batteryVoltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
 #endif
   return _batteryVoltage;
