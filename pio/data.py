@@ -2,7 +2,7 @@ import gzip
 import os
 
 os.makedirs('.pio/data', exist_ok=True)
-for filename in ['config.html', 'logo.png']:
+for filename in ['config.html', 'logo.jpeg']:
     skip = False
     if os.path.isfile('.pio/data/' + filename + '.timestamp'):
         with open('.pio/data/' + filename + '.timestamp', 'r', -1, 'utf-8') as timestampFile:

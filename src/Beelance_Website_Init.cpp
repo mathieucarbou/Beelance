@@ -9,19 +9,14 @@
 
 #define TAG "WEBSITE"
 
-extern const uint8_t logo_png_gz_start[] asm("_binary__pio_data_logo_png_gz_start");
-extern const uint8_t logo_png_gz_end[] asm("_binary__pio_data_logo_png_gz_end");
+extern const uint8_t logo_jpeg_gz_start[] asm("_binary__pio_data_logo_jpeg_gz_start");
+extern const uint8_t logo_jpeg_gz_end[] asm("_binary__pio_data_logo_jpeg_gz_end");
 extern const uint8_t config_html_gz_start[] asm("_binary__pio_data_config_html_gz_start");
 extern const uint8_t config_html_gz_end[] asm("_binary__pio_data_config_html_gz_end");
 
 void Beelance::WebsiteClass::init() {
-  webServer.rewrite("/dash/assets/logo/large", "/logo");
-  webServer.rewrite("/dash/assets/logo", "/logo");
-  webServer.rewrite("/ota/logo/dark", "/logo");
-  webServer.rewrite("/ota/logo/light", "/logo");
-
-  webServer.on("/api/logo", HTTP_GET, [](AsyncWebServerRequest* request) {
-    AsyncWebServerResponse* response = request->beginResponse_P(200, "image/png", logo_png_gz_start, logo_png_gz_end - logo_png_gz_start);
+  webServer.on("/logo", HTTP_GET, [](AsyncWebServerRequest* request) {
+    AsyncWebServerResponse* response = request->beginResponse_P(200, "image/jpeg", logo_jpeg_gz_start, logo_jpeg_gz_end - logo_jpeg_gz_start);
     response->addHeader("Content-Encoding", "gzip");
     response->addHeader("Cache-Control", "public, max-age=900");
     request->send(response);
