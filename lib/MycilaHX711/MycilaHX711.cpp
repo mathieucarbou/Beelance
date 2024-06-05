@@ -7,6 +7,11 @@
 
 #define TAG "HX711"
 
+#ifndef GPIO_IS_VALID_GPIO
+#define GPIO_IS_VALID_GPIO(gpio_num) ((gpio_num >= 0) && \
+                                      (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
+#endif
+
 extern Mycila::Logger logger;
 
 void Mycila::HX711::begin(const uint8_t dataPin, const uint8_t clockPin) {
