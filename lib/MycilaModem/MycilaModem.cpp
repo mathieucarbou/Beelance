@@ -64,13 +64,13 @@ void Mycila::ModemClass::loop() {
 
       // NB-IoT bands
       String nbiotBands = "+CBANDCFG=\"NB-IOT\",";
-      nbiotBands += _bands[MODEM_MODE_NB_IOT];
+      nbiotBands.concat(_bands[MODEM_MODE_NB_IOT]);
       _modem.sendAT(nbiotBands.c_str());
       _modem.waitResponse();
 
       // LTE-M bands
       String ltemBands = "+CBANDCFG=\"CAT-M\",";
-      ltemBands += _bands[MODEM_MODE_LTE_M];
+      ltemBands.concat(_bands[MODEM_MODE_LTE_M]);
       _modem.sendAT(ltemBands.c_str());
       _modem.waitResponse();
 
@@ -296,8 +296,8 @@ void Mycila::ModemClass::setDebug(bool debug) {
   if (debug) {
     _readBuffer.reserve(512);
     _writeBuffer.reserve(512);
-    _readBuffer += "<< ";
-    _writeBuffer += ">> ";
+    _readBuffer.concat("<< ");
+    _writeBuffer.concat(">> ");
     _spy.onRead(std::bind(&Mycila::ModemClass::_onRead, this, std::placeholders::_1, std::placeholders::_2));
     _spy.onWrite(std::bind(&Mycila::ModemClass::_onWrite, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -367,12 +367,12 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
         if (url[i] == ':')
           state = URLParseState::SEPERATOR;
         else
-          protocol += url[i];
+          protocol.concat(url[i]);
         break;
       case URLParseState::SEPERATOR:
         if (url[i] != '/') {
           state = HOST;
-          host += url[i];
+          host.concat(url[i]);
         }
         break;
       case URLParseState::HOST:
@@ -381,16 +381,16 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
         else if (url[i] == '/')
           state = PATH;
         else
-          host += url[i];
+          host.concat(url[i]);
         break;
       case URLParseState::PORT:
         if (url[i] == '/')
           state = PATH;
         else
-          port += url[i];
+          port.concat(url[i]);
         break;
       case URLParseState::PATH:
-        path += url[i];
+        path.concat(url[i]);
         break;
       default:
         assert(false);
@@ -453,24 +453,24 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
 
 void Mycila::ModemClass::_onRead(const uint8_t* buffer, size_t size) {
   if (size) {
-    _readBuffer += String((const char*)buffer, size);
+    _readBuffer.concat((const char*)buffer, size);
     if (_readBuffer.endsWith("\n")) {
       size = _readBuffer.endsWith("\r\n") ? _readBuffer.length() - 2 : _readBuffer.length() - 1;
       logger.debug(TAG, "%.*s", size, _readBuffer.c_str());
       _readBuffer.clear();
-      _readBuffer += "<< ";
+      _readBuffer.concat("<< ");
     }
   }
 }
 
 void Mycila::ModemClass::_onWrite(const uint8_t* buffer, size_t size) {
   if (size) {
-    _writeBuffer += String((const char*)buffer, size);
+    _writeBuffer.concat((const char*)buffer, size);
     if (_writeBuffer.endsWith("\n")) {
       size = _writeBuffer.endsWith("\r\n") ? _writeBuffer.length() - 2 : _writeBuffer.length() - 1;
       logger.debug(TAG, "%.*s", size, _writeBuffer.c_str());
       _writeBuffer.clear();
-      _writeBuffer += ">> ";
+      _writeBuffer.concat(">> ");
     }
   }
 }
