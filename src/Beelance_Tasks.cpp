@@ -36,18 +36,18 @@ Mycila::Task pmuTask("Mycila::PMU.read()", [](void* params) { Mycila::PMU.read()
 
 Mycila::Task hx711Task("hx711.read()", [](void* params) { hx711.read(); });
 
-Mycila::Task hx711TareTask("hx711.tare()", [](void* params) {
+Mycila::Task hx711TareTask("hx711.tare()", Mycila::TaskType::ONCE, [](void* params) {
   hx711.tare();
   config.set(KEY_HX711_OFFSET, String(hx711.getOffset()));
   config.set(KEY_HX711_SCALE, String(hx711.getScale()));
 });
 
-Mycila::Task hx711ScaleTask("hx711.calibrate()", [](void* params) {
+Mycila::Task hx711ScaleTask("hx711.calibrate()", Mycila::TaskType::ONCE, [](void* params) {
   config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6));
   calibrationWeight = 0;
 });
 
-Mycila::Task sendTask("Beelance.sendMeasurements()", [](void* params) {
+Mycila::Task sendTask("Beelance.sendMeasurements()", Mycila::TaskType::ONCE, [](void* params) {
   if (Mycila::Modem.activateData() && Beelance::Beelance.sendMeasurements()) {
     Mycila::Modem.activateGPS();
   } else {
@@ -56,12 +56,12 @@ Mycila::Task sendTask("Beelance.sendMeasurements()", [](void* params) {
   }
 });
 
-Mycila::Task restartTask("restartTask", [](void* params) {
+Mycila::Task restartTask("restartTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.warn(TAG, "Restarting %s...", Mycila::AppInfo.nameModelVersion.c_str());
   Mycila::System.restart(500);
 });
 
-Mycila::Task resetTask("resetTask", [](void* params) {
+Mycila::Task resetTask("resetTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.warn(TAG, "Resetting %s...", Mycila::AppInfo.nameModelVersion.c_str());
   Beelance::Beelance.clearHistory();
   config.clear();
@@ -69,7 +69,7 @@ Mycila::Task resetTask("resetTask", [](void* params) {
   Mycila::System.restart(500);
 });
 
-Mycila::Task startModemTask("startModemTask", [](void* params) {
+Mycila::Task startModemTask("startModemTask", Mycila::TaskType::ONCE, [](void* params) {
   Mycila::Modem.setPIN(config.get(KEY_MODEM_PIN));
   Mycila::Modem.setAPN(config.get(KEY_MODEM_APN));
   Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
@@ -93,7 +93,7 @@ Mycila::Task startModemTask("startModemTask", [](void* params) {
   }
 });
 
-Mycila::Task startNetworkServicesTask("startNetworkServicesTask", [](void* params) {
+Mycila::Task startNetworkServicesTask("startNetworkServicesTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Enable Web Server...");
   webServer.onNotFound([](AsyncWebServerRequest* request) {
     request->send(404);
@@ -101,24 +101,24 @@ Mycila::Task startNetworkServicesTask("startNetworkServicesTask", [](void* param
   webServer.begin();
 });
 
-Mycila::Task stopNetworkServicesTask("stopNetworkServicesTask", [](void* params) {
+Mycila::Task stopNetworkServicesTask("stopNetworkServicesTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Disable Web Server...");
   webServer.end();
 });
 
-Mycila::Task otaPrepareTask("otaPrepareTask", [](void* params) {
+Mycila::Task otaPrepareTask("otaPrepareTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Preparing OTA update...");
   watchdogTask.pause();
 });
 
-Mycila::Task watchdogTask("watchdogTask", [](void* params) {
+Mycila::Task watchdogTask("watchdogTask", Mycila::TaskType::ONCE, [](void* params) {
   if (!Mycila::Modem.isReady()) {
     logger.error(TAG, "Watchdog triggered: restarting...");
     restartTask.resume();
   }
 });
 
-Mycila::Task configureDebugTask("configureDebugTask", [](void* params) {
+Mycila::Task configureDebugTask("configureDebugTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Configure logging...");
   logger.setLevel(config.getBool(KEY_DEBUG_ENABLE) ? ARDUHAL_LOG_LEVEL_DEBUG : ARDUHAL_LOG_LEVEL_INFO);
   esp_log_level_set("*", static_cast<esp_log_level_t>(logger.getLevel()));
@@ -126,73 +126,46 @@ Mycila::Task configureDebugTask("configureDebugTask", [](void* params) {
 });
 
 void Beelance::BeelanceClass::_initTasks() {
-  espConnectTask.setType(Mycila::TaskType::FOREVER);
+  // loopTaskManager
+  configureDebugTask.setManager(loopTaskManager);
   espConnectTask.setManager(loopTaskManager);
-
-  websiteTask.setType(Mycila::TaskType::FOREVER);
+  otaPrepareTask.setManager(loopTaskManager);
+  pmuTask.setManager(loopTaskManager);
+  resetTask.setManager(loopTaskManager);
+  restartTask.setManager(loopTaskManager);
+  stackMonitorTask.setManager(loopTaskManager);
+  startNetworkServicesTask.setManager(loopTaskManager);
+  stopNetworkServicesTask.setManager(loopTaskManager);
+  temperatureTask.setManager(loopTaskManager);
+  watchdogTask.setManager(loopTaskManager);
   websiteTask.setManager(loopTaskManager);
+
+  // hx711TaskManager
+  hx711ScaleTask.setManager(hx711TaskManager);
+  hx711TareTask.setManager(hx711TaskManager);
+  hx711Task.setManager(hx711TaskManager);
+
+  // modemTaskManager
+  modemLoopTask.setManager(modemTaskManager);
+  sendTask.setManager(modemTaskManager);
+  serialDebugATTask.setManager(modemTaskManager);
+  startModemTask.setManager(modemTaskManager);
+
+  // config
+
   websiteTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   websiteTask.setInterval(1 * Mycila::TaskDuration::SECONDS);
 
-  stackMonitorTask.setType(Mycila::TaskType::FOREVER);
-  stackMonitorTask.setManager(loopTaskManager);
   stackMonitorTask.setEnabledWhen(DEBUG_ENABLED);
   stackMonitorTask.setInterval(10 * Mycila::TaskDuration::SECONDS);
 
-  temperatureTask.setType(Mycila::TaskType::FOREVER);
-  temperatureTask.setManager(loopTaskManager);
+  temperatureTask.setInterval(1 * Mycila::TaskDuration::SECONDS);
 
-  restartTask.setType(Mycila::TaskType::ONCE);
-  restartTask.setManager(loopTaskManager);
-
-  resetTask.setType(Mycila::TaskType::ONCE);
-  resetTask.setManager(loopTaskManager);
-
-  startNetworkServicesTask.setType(Mycila::TaskType::ONCE);
-  startNetworkServicesTask.setManager(loopTaskManager);
-
-  stopNetworkServicesTask.setType(Mycila::TaskType::ONCE);
-  stopNetworkServicesTask.setManager(loopTaskManager);
-
-  otaPrepareTask.setType(Mycila::TaskType::ONCE);
-  otaPrepareTask.setManager(loopTaskManager);
-
-  watchdogTask.setType(Mycila::TaskType::ONCE);
-  watchdogTask.setManager(loopTaskManager);
-
-  configureDebugTask.setType(Mycila::TaskType::ONCE);
-  configureDebugTask.setManager(loopTaskManager);
-
-  pmuTask.setType(Mycila::TaskType::FOREVER);
-  pmuTask.setManager(loopTaskManager);
   pmuTask.setInterval(500 * Mycila::TaskDuration::MILLISECONDS);
 
-  // hx711
-
-  hx711Task.setType(Mycila::TaskType::FOREVER);
-  hx711Task.setManager(hx711TaskManager);
   hx711Task.setEnabledWhen([]() { return hx711.isEnabled(); });
   hx711Task.setInterval(500 * Mycila::TaskDuration::MILLISECONDS);
 
-  hx711TareTask.setType(Mycila::TaskType::ONCE);
-  hx711TareTask.setManager(hx711TaskManager);
-
-  hx711ScaleTask.setType(Mycila::TaskType::ONCE);
-  hx711ScaleTask.setManager(hx711TaskManager);
-
-  // modem
-
-  startModemTask.setType(Mycila::TaskType::ONCE);
-  startModemTask.setManager(modemTaskManager);
-
-  serialDebugATTask.setType(Mycila::TaskType::FOREVER);
-  serialDebugATTask.setManager(modemTaskManager);
-
-  modemLoopTask.setType(Mycila::TaskType::FOREVER);
-  modemLoopTask.setManager(modemTaskManager);
-
-  sendTask.setType(Mycila::TaskType::ONCE);
-  sendTask.setManager(modemTaskManager);
   sendTask.setEnabled(false);
   sendTask.setCallback([](const Mycila::Task& me, const uint32_t elapsed) {
     logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
