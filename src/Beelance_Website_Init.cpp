@@ -16,7 +16,7 @@ extern const uint8_t config_html_gz_end[] asm("_binary__pio_data_config_html_gz_
 
 void Beelance::WebsiteClass::init() {
   webServer.on("/logo", HTTP_GET, [](AsyncWebServerRequest* request) {
-    AsyncWebServerResponse* response = request->beginResponse_P(200, "image/jpeg", logo_jpeg_gz_start, logo_jpeg_gz_end - logo_jpeg_gz_start);
+    AsyncWebServerResponse* response = request->beginResponse(200, "image/jpeg", logo_jpeg_gz_start, logo_jpeg_gz_end - logo_jpeg_gz_start);
     response->addHeader("Content-Encoding", "gzip");
     response->addHeader("Cache-Control", "public, max-age=900");
     request->send(response);
@@ -38,7 +38,7 @@ void Beelance::WebsiteClass::init() {
 
   webServer
     .on("/config", HTTP_GET, [](AsyncWebServerRequest* request) {
-      AsyncWebServerResponse* response = request->beginResponse_P(200, "text/html", config_html_gz_start, config_html_gz_end - config_html_gz_start);
+      AsyncWebServerResponse* response = request->beginResponse(200, "text/html", config_html_gz_start, config_html_gz_end - config_html_gz_start);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     })
