@@ -63,8 +63,10 @@ void Beelance::WebsiteClass::init() {
   WebSerial.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
   WebSerial.begin(&webServer, "/console");
   WebSerial.onMessage([](const String& msg) {
-    if (msg.startsWith("AT+"))
+    if (msg.startsWith("AT+")) {
+      logger.info(TAG, "Enqueue AT Command: %s...", msg.c_str());
       Mycila::Modem.enqueueAT(msg);
+    }
   });
   logger.forwardTo(&WebSerial);
 
