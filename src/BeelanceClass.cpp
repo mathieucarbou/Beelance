@@ -178,7 +178,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) const {
   // beehive
   root["bh"] = config.get(KEY_BEEHIVE_NAME);
   // sensors
-  root["temp"] = _round2(temperatureSensor.getLastTemperature());
+  root["temp"] = _round2(temperatureSensor.getTemperature().value_or(0));
   root["wt"] = hx711.isValid() ? static_cast<int32_t>(hx711.getWeight()) : 0;
   // gps
   root["lat"] = Mycila::Modem.getGPSData().latitude;

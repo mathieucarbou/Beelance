@@ -68,10 +68,10 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   // temperature
   if (!temperatureSensor.isEnabled()) {
     _temperature.update("Disabled", "");
-  } else if (temperatureSensor.getLastTime() == 0) {
+  } else if (!temperatureSensor.isValid()) {
     _temperature.update("Pending...", "");
   } else {
-    _temperature.update(temperatureSensor.getLastTemperature(), "°C");
+    _temperature.update(temperatureSensor.getTemperature().value_or(0), "°C");
   }
 
   // next update
