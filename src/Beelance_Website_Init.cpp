@@ -5,7 +5,7 @@
 #include <BeelanceWebsite.h>
 
 #include <ElegantOTA.h>
-#include <WebSerial.h>
+#include <MycilaWebSerial.h>
 
 #define TAG "WEBSITE"
 

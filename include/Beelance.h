@@ -10,7 +10,7 @@
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPDash.h>
-#include <WebSerial.h>
+#include <MycilaWebSerial.h>
 
 #include <MycilaAppInfo.h>
 #include <MycilaConfig.h>
