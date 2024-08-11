@@ -33,6 +33,7 @@ extern ESPDash dashboard;
 
 extern Mycila::Logger logger;
 extern Mycila::Config config;
+extern Mycila::ESPConnect espConnect;
 
 extern Mycila::HX711 hx711;
 extern Mycila::DS18 temperatureSensor;

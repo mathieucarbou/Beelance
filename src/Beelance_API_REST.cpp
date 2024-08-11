@@ -88,7 +88,7 @@ void Beelance::BeelanceClass::_initREST() {
   webServer
     .on("/api/network", HTTP_GET, [](AsyncWebServerRequest* request) {
       AsyncJsonResponse* response = new AsyncJsonResponse();
-      ESPConnect.toJson(response->getRoot());
+      espConnect.toJson(response->getRoot());
       response->setLength();
       request->send(response);
     })
@@ -179,7 +179,7 @@ void Beelance::BeelanceClass::_initREST() {
       // config
       config.toJson(root["config"].to<JsonObject>());
       // network
-      ESPConnect.toJson(root["network"].to<JsonObject>());
+      espConnect.toJson(root["network"].to<JsonObject>());
       // system
       Mycila::System.toJson(root["system"].to<JsonObject>());
       hx711.toJson(root["system"]["hx711"].to<JsonObject>());

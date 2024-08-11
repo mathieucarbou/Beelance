@@ -8,6 +8,7 @@
 #define TAG "BEELANCE"
 
 AsyncWebServer webServer(80);
+Mycila::ESPConnect espConnect(webServer);
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 
 Mycila::Logger logger;
@@ -78,10 +79,10 @@ void setup() {
 
   // network
   webServer.end();
-  ESPConnect.end();
-  ESPConnect.setAutoRestart(true);
-  ESPConnect.setBlocking(false);
-  ESPConnect.begin(webServer, Mycila::AppInfo.defaultHostname, Mycila::AppInfo.defaultSSID, config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
+  espConnect.end();
+  espConnect.setAutoRestart(true);
+  espConnect.setBlocking(false);
+  espConnect.begin(Mycila::AppInfo.defaultHostname, Mycila::AppInfo.defaultSSID, config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
 
   assert(modemTaskManager.asyncStart(BEELANCE_MODEM_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
   assert(hx711TaskManager.asyncStart(BEELANCE_HX711_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));

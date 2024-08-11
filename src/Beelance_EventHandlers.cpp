@@ -13,58 +13,58 @@ void refresh() {
 }
 
 void Beelance::BeelanceClass::_initEventHandlers() {
-  ESPConnect.listen([this](ESPConnectState previous, ESPConnectState state) {
-    logger.debug(TAG, "NetworkState: %s => %s", ESPConnect.getStateName(previous), ESPConnect.getStateName(state));
+  espConnect.listen([this](Mycila::ESPConnect::State previous, Mycila::ESPConnect::State state) {
+    logger.debug(TAG, "NetworkState: %s => %s", espConnect.getStateName(previous), espConnect.getStateName(state));
     switch (state) {
-      case ESPConnectState::NETWORK_CONNECTED:
-        logger.info(TAG, "Connected with IP address %s", ESPConnect.getIPAddress().toString().c_str());
+      case Mycila::ESPConnect::State::NETWORK_CONNECTED:
+        logger.info(TAG, "Connected with IP address %s", espConnect.getIPAddress().toString().c_str());
         startNetworkServicesTask.resume();
         startModemTask.resume();
         break;
-      case ESPConnectState::AP_STARTED:
-        logger.info(TAG, "Access Point %s started with IP address %s", ESPConnect.getWiFiSSID().c_str(), ESPConnect.getIPAddress().toString().c_str());
+      case Mycila::ESPConnect::State::AP_STARTED:
+        logger.info(TAG, "Access Point %s started with IP address %s", espConnect.getWiFiSSID().c_str(), espConnect.getIPAddress().toString().c_str());
         startNetworkServicesTask.resume();
         startModemTask.resume();
         break;
-      case ESPConnectState::NETWORK_DISCONNECTED:
+      case Mycila::ESPConnect::State::NETWORK_DISCONNECTED:
         logger.warn(TAG, "Disconnected!");
         stopNetworkServicesTask.resume();
         break;
-      case ESPConnectState::NETWORK_DISABLED:
+      case Mycila::ESPConnect::State::NETWORK_DISABLED:
         logger.info(TAG, "Disable Network...");
         break;
-      case ESPConnectState::NETWORK_CONNECTING:
+      case Mycila::ESPConnect::State::NETWORK_CONNECTING:
         logger.info(TAG, "Connecting to network...");
         break;
-      case ESPConnectState::AP_STARTING:
-        logger.info(TAG, "Starting Access Point %s...", ESPConnect.getAccessPointSSID().c_str());
+      case Mycila::ESPConnect::State::AP_STARTING:
+        logger.info(TAG, "Starting Access Point %s...", espConnect.getAccessPointSSID().c_str());
         break;
-      case ESPConnectState::PORTAL_STARTING:
-        logger.info(TAG, "Starting Captive Portal %s for %u seconds...", ESPConnect.getAccessPointSSID().c_str(), ESPConnect.getCaptivePortalTimeout());
+      case Mycila::ESPConnect::State::PORTAL_STARTING:
+        logger.info(TAG, "Starting Captive Portal %s for %u seconds...", espConnect.getAccessPointSSID().c_str(), espConnect.getCaptivePortalTimeout());
         break;
-      case ESPConnectState::PORTAL_STARTED:
-        logger.info(TAG, "Captive Portal started at %s with IP address %s", ESPConnect.getWiFiSSID().c_str(), ESPConnect.getIPAddress().toString().c_str());
+      case Mycila::ESPConnect::State::PORTAL_STARTED:
+        logger.info(TAG, "Captive Portal started at %s with IP address %s", espConnect.getWiFiSSID().c_str(), espConnect.getIPAddress().toString().c_str());
         break;
-      case ESPConnectState::PORTAL_COMPLETE: {
-        bool ap = ESPConnect.hasConfiguredAPMode();
+      case Mycila::ESPConnect::State::PORTAL_COMPLETE: {
+        bool ap = espConnect.hasConfiguredAPMode();
         if (ap) {
           logger.info(TAG, "Captive Portal: Access Point configured");
           config.setBool(KEY_AP_MODE_ENABLE, true);
         } else {
           logger.info(TAG, "Captive Portal: WiFi configured");
           config.setBool(KEY_AP_MODE_ENABLE, false);
-          config.set(KEY_WIFI_SSID, ESPConnect.getConfiguredWiFiSSID());
-          config.set(KEY_WIFI_PASSWORD, ESPConnect.getConfiguredWiFiPassword());
+          config.set(KEY_WIFI_SSID, espConnect.getConfiguredWiFiSSID());
+          config.set(KEY_WIFI_PASSWORD, espConnect.getConfiguredWiFiPassword());
         }
         break;
       }
-      case ESPConnectState::PORTAL_TIMEOUT:
+      case Mycila::ESPConnect::State::PORTAL_TIMEOUT:
         logger.warn(TAG, "Captive Portal: timed out.");
         break;
-      case ESPConnectState::NETWORK_TIMEOUT:
+      case Mycila::ESPConnect::State::NETWORK_TIMEOUT:
         logger.warn(TAG, "Unable to connect!");
         break;
-      case ESPConnectState::NETWORK_RECONNECTING:
+      case Mycila::ESPConnect::State::NETWORK_RECONNECTING:
         logger.info(TAG, "Trying to reconnect...");
         break;
       default:
@@ -74,7 +74,7 @@ void Beelance::BeelanceClass::_initEventHandlers() {
 
   config.listen([this](const String& key, const String& oldValue, const String& newValue) {
     logger.info(TAG, "Set %s: '%s' => '%s'", key.c_str(), oldValue.c_str(), newValue.c_str());
-    if (key == KEY_AP_MODE_ENABLE && (ESPConnect.getState() == ESPConnectState::AP_STARTED || ESPConnect.getState() == ESPConnectState::NETWORK_CONNECTING || ESPConnect.getState() == ESPConnectState::NETWORK_CONNECTED || ESPConnect.getState() == ESPConnectState::NETWORK_TIMEOUT || ESPConnect.getState() == ESPConnectState::NETWORK_DISCONNECTED || ESPConnect.getState() == ESPConnectState::NETWORK_RECONNECTING)) {
+    if (key == KEY_AP_MODE_ENABLE && (espConnect.getState() == Mycila::ESPConnect::State::AP_STARTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTING || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_TIMEOUT || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_DISCONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_RECONNECTING)) {
       restartTask.resume();
 
     } else if (key == KEY_DEBUG_ENABLE) {

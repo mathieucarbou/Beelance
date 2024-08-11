@@ -36,13 +36,13 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _modemNBIoTBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_NB_IOT).c_str());
   _modemIpStat.set(Mycila::Modem.getLocalIP().c_str());
 
-  _apIPStat.set(ESPConnect.getIPAddress(ESPConnectMode::AP).toString().c_str());
-  _apMACStat.set(ESPConnect.getMACAddress(ESPConnectMode::AP).c_str());
-  _wifiIPStat.set(ESPConnect.getIPAddress(ESPConnectMode::STA).toString().c_str());
-  _wifiMACStat.set(ESPConnect.getMACAddress(ESPConnectMode::STA).c_str());
-  _wifiSSIDStat.set(ESPConnect.getWiFiSSID().c_str());
-  _wifiRSSIStat.set((String(ESPConnect.getWiFiRSSI()) + " dBm").c_str());
-  _wifiSignalStat.set((String(ESPConnect.getWiFiSignalQuality()) + " %").c_str());
+  _apIPStat.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::AP).toString().c_str());
+  _apMACStat.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP).c_str());
+  _wifiIPStat.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::STA).toString().c_str());
+  _wifiMACStat.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA).c_str());
+  _wifiSSIDStat.set(espConnect.getWiFiSSID().c_str());
+  _wifiRSSIStat.set((String(espConnect.getWiFiRSSI()) + " dBm").c_str());
+  _wifiSignalStat.set((String(espConnect.getWiFiSignalQuality()) + " %").c_str());
   _hx711WeightStat.set((String(hx711.getWeight(), 0) + " g").c_str());
   _hx711TareStat.set((String(hx711.getTare(), 0) + " g").c_str());
   _hx711OffsetStat.set(String(hx711.getOffset()).c_str());

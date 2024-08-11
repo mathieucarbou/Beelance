@@ -13,7 +13,7 @@ static const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me,
   logger.debug(TAG, "%s in %u us", me.getName(), elapsed);
 };
 
-Mycila::Task espConnectTask("ESPConnect.loop()", [](void* params) { ESPConnect.loop(); });
+Mycila::Task espConnectTask("espConnect.loop()", [](void* params) { espConnect.loop(); });
 Mycila::Task stackMonitorTask("TaskMonitor.log()", [](void* params) { Mycila::TaskMonitor.log(); });
 Mycila::Task websiteTask("Beelance.updateWebsite()", [](void* params) { Beelance::Beelance.updateWebsite(); });
 Mycila::Task modemLoopTask("Modem.loop()", [](void* params) { Mycila::Modem.loop(); });
@@ -153,7 +153,7 @@ void Beelance::BeelanceClass::_initTasks() {
 
   // config
 
-  websiteTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
+  websiteTask.setEnabledWhen([]() { return espConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   websiteTask.setInterval(1 * Mycila::TaskDuration::SECONDS);
 
   stackMonitorTask.setEnabledWhen(DEBUG_ENABLED);
