@@ -26,7 +26,8 @@ namespace Beelance {
       Statistic _deviceIdStat = Statistic(&dashboard, "Device: Id");
       Statistic _cpuModelStat = Statistic(&dashboard, "Device: CPU Model");
       Statistic _cpuCoresStat = Statistic(&dashboard, "Device: CPU Cores");
-      Statistic _bootCountStat = Statistic(&dashboard, "Device: Boot Count");
+      Statistic _bootCountStat = Statistic(&dashboard, "Device: Reboot Count");
+      Statistic _bootReasonStat = Statistic(&dashboard, "Device: Reboot Reason");
       Statistic _heapMemoryTotalStat = Statistic(&dashboard, "Device: Heap Memory Total");
       Statistic _heapMemoryUsageStat = Statistic(&dashboard, "Device: Heap Memory Usage");
       Statistic _heapMemoryUsedStat = Statistic(&dashboard, "Device: Heap Memory Used");

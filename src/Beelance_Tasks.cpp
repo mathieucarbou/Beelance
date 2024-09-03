@@ -58,7 +58,7 @@ Mycila::Task sendTask("Beelance.sendMeasurements()", Mycila::TaskType::ONCE, [](
 
 Mycila::Task restartTask("restartTask", Mycila::TaskType::ONCE, [](void* params) {
   logger.warn(TAG, "Restarting %s...", Mycila::AppInfo.nameModelVersion.c_str());
-  Mycila::System.restart(500);
+  Mycila::System::restart(500);
 });
 
 Mycila::Task resetTask("resetTask", Mycila::TaskType::ONCE, [](void* params) {
@@ -66,7 +66,7 @@ Mycila::Task resetTask("resetTask", Mycila::TaskType::ONCE, [](void* params) {
   Beelance::Beelance.clearHistory();
   config.clear();
   Mycila::PMU.reset();
-  Mycila::System.restart(500);
+  Mycila::System::restart(500);
 });
 
 Mycila::Task startModemTask("startModemTask", Mycila::TaskType::ONCE, [](void* params) {

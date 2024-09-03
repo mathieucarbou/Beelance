@@ -13,7 +13,8 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   // stats
 
-  Mycila::SystemMemory memory = Mycila::System.getMemory();
+  Mycila::System::Memory memory;
+  Mycila::System::getMemory(memory);
   _heapMemoryUsageStat.set((String(memory.usage) + " %").c_str());
   _heapMemoryUsedStat.set((String(memory.used) + " bytes").c_str());
 
@@ -210,7 +211,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   }
   _volt.update(Mycila::PMU.getBatteryVoltage());
 
-  _uptime.update(Mycila::Time::toDHHMMSS(Mycila::System.getUptime()).c_str());
+  _uptime.update(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()).c_str());
   _restart.update(!restartTask.isPaused());
 
   _sendNow.update(sendTask.isRunning() || (sendTask.isEnabled() && !sendTask.isPaused() && sendTask.isEarlyRunRequested()));

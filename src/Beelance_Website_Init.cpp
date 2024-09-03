@@ -80,10 +80,11 @@ void Beelance::WebsiteClass::init() {
   _firmHashStat.set(Mycila::AppInfo.buildHash.c_str());
   _firmTimeStat.set(Mycila::AppInfo.buildDate.c_str());
 
-  _deviceIdStat.set(Mycila::AppInfo.id.c_str());
+  _deviceIdStat.set(Mycila::System::getChipIDStr().c_str());
   _cpuModelStat.set(ESP.getChipModel());
   _cpuCoresStat.set(String(ESP.getChipCores()).c_str());
-  _bootCountStat.set(String(Mycila::System.getBootCount()).c_str());
+  _bootCountStat.set(String(Mycila::System::getBootCount()).c_str());
+  _bootReasonStat.set(Mycila::System::getLastRebootReason());
   _heapMemoryTotalStat.set((String(ESP.getHeapSize()) + " bytes").c_str());
 
   _hostnameStat.set(Mycila::AppInfo.defaultHostname.c_str());

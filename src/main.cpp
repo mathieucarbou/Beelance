@@ -39,7 +39,7 @@ void setup() {
   logger.info(TAG, "Booting %s...", Mycila::AppInfo.nameModelVersion.c_str());
 
   // system
-  Mycila::System.begin();
+  Mycila::System::init();
 
   // load config and initialize
   Beelance::Beelance.begin();

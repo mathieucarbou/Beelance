@@ -99,7 +99,7 @@ void Beelance::BeelanceClass::sleep(uint32_t seconds) {
   Mycila::Modem.powerOff();
   Mycila::PMU.powerOff();
 
-  Mycila::System.deepSleep(seconds * (uint64_t)1000000ULL);
+  Mycila::System::deepSleep(seconds * (uint64_t)1000000ULL);
 }
 
 bool Beelance::BeelanceClass::sendMeasurements() {
@@ -188,10 +188,10 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) const {
   root["sim"] = Mycila::Modem.getICCID();
   root["op"] = Mycila::Modem.getOperator();
   // device
-  root["dev"] = Mycila::AppInfo.id;
-  root["boot"] = Mycila::System.getBootCount();
+  root["dev"] = Mycila::System::getChipIDStr();
+  root["boot"] = Mycila::System::getBootCount();
   root["ver"] = Mycila::AppInfo.version;
-  root["up"] = Mycila::System.getUptime();
+  root["up"] = Mycila::System::getUptime();
   // power
   root["pow"] = Mycila::PMU.isBatteryDischarging() ? "bat" : "ext";
   root["bat"] = _round2(Mycila::PMU.getBatteryLevel());

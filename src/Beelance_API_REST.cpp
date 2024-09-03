@@ -114,7 +114,7 @@ void Beelance::BeelanceClass::_initREST() {
     .on("/api/system", HTTP_GET, [this](AsyncWebServerRequest* request) {
       AsyncJsonResponse* response = new AsyncJsonResponse();
       JsonObject root = response->getRoot();
-      Mycila::System.toJson(root);
+      Mycila::System::toJson(root);
       hx711.toJson(root["hx711"].to<JsonObject>());
       Mycila::PMU.toJson(root["pmu"].to<JsonObject>());
       Mycila::TaskMonitor.toJson(root["stack"].to<JsonObject>());
@@ -181,7 +181,7 @@ void Beelance::BeelanceClass::_initREST() {
       // network
       espConnect.toJson(root["network"].to<JsonObject>());
       // system
-      Mycila::System.toJson(root["system"].to<JsonObject>());
+      Mycila::System::toJson(root["system"].to<JsonObject>());
       hx711.toJson(root["system"]["hx711"].to<JsonObject>());
       Mycila::PMU.toJson(root["system"]["pmu"].to<JsonObject>());
       Mycila::TaskMonitor.toJson(root["system"]["stack"].to<JsonObject>());
