@@ -1,8 +1,8 @@
 .DS_Store
 .lh
 /.pio
-/.vscode/*
-!/.vscode/settings.json
+/.vscode
+
 /logs
 /platformio_override.ini
 /platformio_override.ini
