@@ -15,6 +15,13 @@ extern const uint8_t config_html_gz_start[] asm("_binary__pio_data_config_html_g
 extern const uint8_t config_html_gz_end[] asm("_binary__pio_data_config_html_gz_end");
 
 void Beelance::WebsiteClass::init() {
+  authMiddleware.setAuthType(AuthenticationMiddleware::AuthType::AUTH_DIGEST);
+  authMiddleware.setRealm("YaSolR");
+  authMiddleware.setUsername(BEELANCE_ADMIN_USERNAME);
+  authMiddleware.setPassword(config.get(KEY_ADMIN_PASSWORD).c_str());
+
+  webServer.addMiddleware(&authMiddleware);
+
   webServer.on("/logo", HTTP_GET, [](AsyncWebServerRequest* request) {
     AsyncWebServerResponse* response = request->beginResponse(200, "image/jpeg", logo_jpeg_gz_start, logo_jpeg_gz_end - logo_jpeg_gz_start);
     response->addHeader("Content-Encoding", "gzip");
@@ -31,7 +38,6 @@ void Beelance::WebsiteClass::init() {
 
   // dashboard
 
-  dashboard.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
   webServer.rewrite("/", "/dashboard").setFilter([](AsyncWebServerRequest* request) { return espConnect.getState() != Mycila::ESPConnect::State::PORTAL_STARTED; });
 
   // config
@@ -41,8 +47,7 @@ void Beelance::WebsiteClass::init() {
       AsyncWebServerResponse* response = request->beginResponse(200, "text/html", config_html_gz_start, config_html_gz_end - config_html_gz_start);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   // ota
 
@@ -56,11 +61,10 @@ void Beelance::WebsiteClass::init() {
     }
     restartTask.resume();
   });
-  ElegantOTA.begin(&webServer, BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
+  ElegantOTA.begin(&webServer);
 
   // web console
 
-  WebSerial.setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD).c_str());
   WebSerial.begin(&webServer, "/console");
   WebSerial.onMessage([](const String& msg) {
     if (msg.startsWith("AT+")) {

@@ -8,6 +8,7 @@
 #define TAG "BEELANCE"
 
 AsyncWebServer webServer(80);
+AuthenticationMiddleware authMiddleware;
 Mycila::ESPConnect espConnect(webServer);
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 

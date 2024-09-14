@@ -29,6 +29,7 @@
 #include <BeelanceMacros.h>
 
 extern AsyncWebServer webServer;
+extern AuthenticationMiddleware authMiddleware;
 extern ESPDash dashboard;
 
 extern Mycila::Logger logger;

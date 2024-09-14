@@ -19,8 +19,7 @@ void Beelance::BeelanceClass::_initREST() {
       Mycila::AppInfo.toJson(response->getRoot());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   // config
 
@@ -29,8 +28,7 @@ void Beelance::BeelanceClass::_initREST() {
       AsyncWebServerResponse* response = request->beginResponse(200, "text/plain", config.backup());
       response->addHeader("Content-Disposition", "attachment; filename=\"config.txt\"");
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on(
@@ -56,8 +54,7 @@ void Beelance::BeelanceClass::_initREST() {
           request->_tempFile.write(data, len);
         if (final)
           request->_tempFile.close();
-      })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+      });
 
   webServer
     .on("/api/config", HTTP_POST, [](AsyncWebServerRequest* request) {
@@ -71,8 +68,7 @@ void Beelance::BeelanceClass::_initREST() {
       }
       request->send(200);
       config.set(settings);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on("/api/config", HTTP_GET, [](AsyncWebServerRequest* request) {
@@ -80,8 +76,7 @@ void Beelance::BeelanceClass::_initREST() {
       config.toJson(response->getRoot());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   // network
 
@@ -91,8 +86,7 @@ void Beelance::BeelanceClass::_initREST() {
       espConnect.toJson(response->getRoot());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   // system
 
@@ -100,15 +94,13 @@ void Beelance::BeelanceClass::_initREST() {
     .on("/api/system/restart", HTTP_ANY, [=](AsyncWebServerRequest* request) {
       restartTask.resume();
       request->send(200);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on("/api/system/reset", HTTP_ANY, [=](AsyncWebServerRequest* request) {
       resetTask.resume();
       request->send(200);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on("/api/system", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -122,8 +114,7 @@ void Beelance::BeelanceClass::_initREST() {
       temperatureSensor.toJson(root["temp_sensor"].to<JsonObject>());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   // beelance
 
@@ -135,15 +126,13 @@ void Beelance::BeelanceClass::_initREST() {
       } else {
         request->send(404);
       }
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on("/api/beelance/history/reset", HTTP_ANY, [this](AsyncWebServerRequest* request) {
       Beelance::Beelance.clearHistory();
       request->send(200);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on("/api/beelance/history", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -151,8 +140,7 @@ void Beelance::BeelanceClass::_initREST() {
       Beelance::Beelance.historyToJson(response->getRoot());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   webServer
     .on("/api/beelance", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -162,8 +150,7 @@ void Beelance::BeelanceClass::_initREST() {
       Beelance::Beelance.historyToJson(root["history"].to<JsonObject>());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 
   // root
 
@@ -189,6 +176,5 @@ void Beelance::BeelanceClass::_initREST() {
       temperatureSensor.toJson(root["system"]["temp_sensor"].to<JsonObject>());
       response->setLength();
       request->send(response);
-    })
-    .setAuthentication(BEELANCE_ADMIN_USERNAME, config.get(KEY_ADMIN_PASSWORD));
+    });
 }
