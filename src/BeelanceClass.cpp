@@ -37,7 +37,7 @@ bool Beelance::BeelanceClass::isNightModeActive() const {
     return false;
   }
 
-  const int inRange = Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME), config.get(KEY_NIGHT_STOP_TIME));
+  const int inRange = Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME).c_str(), config.get(KEY_NIGHT_STOP_TIME).c_str());
   return inRange != -1 && inRange;
 }
 
@@ -63,7 +63,7 @@ uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
       total += itvl;
       time_t unixTime = now + total;
       localtime_r(&unixTime, &timeInfo);
-    } while (Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME), config.get(KEY_NIGHT_STOP_TIME)) == 1);
+    } while (Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME).c_str(), config.get(KEY_NIGHT_STOP_TIME).c_str()) == 1);
 
     if (total == itvl) {
       // the next send time is not within the night time range
@@ -73,7 +73,7 @@ uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
 
   // total is after the night time range
   // total - itvl is still within the night time range
-  const int stopTimeMins = Mycila::Time::toMinutes(config.get(KEY_NIGHT_STOP_TIME));
+  const int stopTimeMins = Mycila::Time::toMinutes(config.get(KEY_NIGHT_STOP_TIME).c_str());
 
   const time_t unixTime = now + total - itvl;
   struct tm timeInfo;
