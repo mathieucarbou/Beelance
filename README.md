@@ -126,7 +126,7 @@ Firmware downloads are available in the [Releases](https://github.com/mathieucar
 
 Firmware files are named as follow:
 
-- `Beelance-<VERSION>-<BOARD>.UPDATE.bin`: the firmware used to update through web interface
+- `Beelance-<VERSION>-<BOARD>.OTA.bin`: the firmware used to update through web interface
 - `Beelance-<VERSION>-<BOARD>.FACTORY.bin`: the firmware used to flash for the first time
 
 Where:
@@ -301,22 +301,13 @@ Pick the right firmware for the right board.
 1. Erase the flash
 
 ```bash
-esptool.py --port /dev/ttyUSB0 \
-  erase_flash
+esptool.py erase_flash
 ```
 
 2. Flash the firmware
 
 ```bash
-esptool.py --port /dev/ttyUSB0 \
-  --chip esp32 \
-  --before default_reset \
-  --after hard_reset \
-  write_flash \
-  --flash_mode dout \
-  --flash_freq 40m \
-  --flash_size detect \
-  0x0 Beelance-VERSION-CHIP.FACTORY.bin
+esptool.py write_flash 0x0 Beelance-VERSION-CHIP.FACTORY.bin
 ```
 
 On Windows, you can use the official [ESP32 Flash Download Tool](https://www.espressif.com/en/support/download/other-tools).
@@ -558,14 +549,19 @@ Other pages are available:
 
 ## Update the firmware
 
+**The firmware file to use for the OTA Update is the one ending with `.OTA.bin`.**
+
 It is always recommended to update the firmware to the latest version.
 Download the latest version on your mobile phone or computer, then connect to each device on their WiFi access point.
-Then go to `http://192.168.4.1/update` and upload the firmware.
-The device will automatically reboot after the upload.
+Then go to `http://192.168.4.1/` and click on the button called `Update Firmware` in the Web interface.
 
-**The firmware file to use for the OTA Update is the one ending with `.UPDATE.bin`.**
+The device will automatically reboot in a `SafeBoot` mode (you can [read more about the special SafeBoot more here](https://oss.carbou.me/MycilaSafeBoot/)).
 
-![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-ota-update.png)
+Try to find an access point name `SafeBoot-XXXXXX` and connect to it: you should see the [SafeBoot interface](https://oss.carbou.me/MycilaSafeBoot/).
+
+Go to `http://192.168.4.1/` to open the SafeBoot interface allowing you to update the firmware.
+
+[![](https://oss.carbou.me/MycilaSafeBoot/safeboot-ota.jpeg)](https://oss.carbou.me/MycilaSafeBoot/safeboot-ota.jpeg)
 
 ## Configuration reset, backup and restore
 

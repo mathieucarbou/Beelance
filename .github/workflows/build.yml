@@ -90,12 +90,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade platformio
+          pip install --upgrade cryptography
           pio run -e ${{ matrix.environment }}
           ref="${{ github.ref_name }}"
           ref="${ref//\//}"
           ref="${ref//-/}"
           ref="${ref//_/}"
-          mv .pio/build/${{ matrix.environment }}/firmware.bin ./${{ needs.pio_envs.outputs.pio_name }}-$ref-${{ matrix.environment }}.UPDATE.bin
+          mv .pio/build/${{ matrix.environment }}/firmware.bin ./${{ needs.pio_envs.outputs.pio_name }}-$ref-${{ matrix.environment }}.OTA.bin
           mv .pio/build/${{ matrix.environment }}/firmware.factory.bin ./${{ needs.pio_envs.outputs.pio_name }}-$ref-${{ matrix.environment }}.FACTORY.bin
 
       - name: Upload

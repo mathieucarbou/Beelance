@@ -83,8 +83,9 @@ namespace Beelance {
 
       Card _sendNow = Card(&dashboard, BUTTON_CARD, "Send now and sleep!");
       Card _noSleepMode = Card(&dashboard, BUTTON_CARD, "Prevent Sleep");
-      Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
       Card _resetHistory = Card(&dashboard, BUTTON_CARD, "Reset Graph History");
+      Card _restart = Card(&dashboard, BUTTON_CARD, "Restart");
+      Card _safeBoot = Card(&dashboard, BUTTON_CARD, "Update Firmware");
 
       // graphs
 

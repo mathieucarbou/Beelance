@@ -4,7 +4,6 @@
  */
 #include <BeelanceWebsite.h>
 
-#include <ElegantOTA.h>
 #include <MycilaWebSerial.h>
 
 #define TAG "WEBSITE"
@@ -49,20 +48,6 @@ void Beelance::WebsiteClass::init() {
       request->send(response);
     });
 
-  // ota
-
-  ElegantOTA.setAutoReboot(false);
-  ElegantOTA.onStart([this]() { otaPrepareTask.resume(); });
-  ElegantOTA.onEnd([this](bool success) {
-    if (success) {
-      logger.info(TAG, "OTA Update Success! Restarting...");
-    } else {
-      logger.error(TAG, "OTA Failed! Restarting...");
-    }
-    restartTask.resume();
-  });
-  ElegantOTA.begin(&webServer);
-
   // web console
 
   WebSerial.begin(&webServer, "/console");
@@ -99,6 +84,12 @@ void Beelance::WebsiteClass::init() {
     restartTask.resume();
     _restart.update(!restartTask.isPaused());
     dashboard.refreshCard(&_restart);
+  });
+
+  _safeBoot.attachCallback([this](uint32_t value) {
+    Mycila::System::restartFactory("safeboot");
+    _safeBoot.update(true);
+    dashboard.refreshCard(&_safeBoot);
   });
 
   _sendNow.attachCallback([this](uint32_t value) {
