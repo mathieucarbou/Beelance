@@ -14,10 +14,11 @@ extern const uint8_t config_html_gz_start[] asm("_binary__pio_data_config_html_g
 extern const uint8_t config_html_gz_end[] asm("_binary__pio_data_config_html_gz_end");
 
 void Beelance::WebsiteClass::init() {
-  authMiddleware.setAuthType(AuthenticationMiddleware::AuthType::AUTH_DIGEST);
+  authMiddleware.setAuthType(AsyncAuthType::AUTH_DIGEST);
   authMiddleware.setRealm("YaSolR");
   authMiddleware.setUsername(BEELANCE_ADMIN_USERNAME);
   authMiddleware.setPassword(config.get(KEY_ADMIN_PASSWORD).c_str());
+  authMiddleware.generateHash();
 
   webServer.addMiddleware(&authMiddleware);
 
