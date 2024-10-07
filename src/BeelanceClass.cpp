@@ -99,7 +99,7 @@ void Beelance::BeelanceClass::sleep(uint32_t seconds) {
   Mycila::Modem.powerOff();
   Mycila::PMU.powerOff();
 
-  Mycila::System::deepSleep(seconds * (uint64_t)1000000ULL);
+  Mycila::System::deepSleep(seconds * static_cast<uint64_t>(1000000));
 }
 
 bool Beelance::BeelanceClass::sendMeasurements() {
