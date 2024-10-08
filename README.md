@@ -555,13 +555,13 @@ It is always recommended to update the firmware to the latest version.
 Download the latest version on your mobile phone or computer, then connect to each device on their WiFi access point.
 Then go to `http://192.168.4.1/` and click on the button called `Update Firmware` in the Web interface.
 
-The device will automatically reboot in a `SafeBoot` mode (you can [read more about the special SafeBoot more here](https://oss.carbou.me/MycilaSafeBoot/)).
+The device will automatically reboot in a `SafeBoot` mode (you can [read more about the special SafeBoot more here](https://mathieu.carbou.me/MycilaSafeBoot/)).
 
-Try to find an access point name `SafeBoot-XXXXXX` and connect to it: you should see the [SafeBoot interface](https://oss.carbou.me/MycilaSafeBoot/).
+Try to find an access point name `SafeBoot-XXXXXX` and connect to it: you should see the [SafeBoot interface](https://mathieu.carbou.me/MycilaSafeBoot/).
 
 Go to `http://192.168.4.1/` to open the SafeBoot interface allowing you to update the firmware.
 
-[![](https://oss.carbou.me/MycilaSafeBoot/safeboot-ota.jpeg)](https://oss.carbou.me/MycilaSafeBoot/safeboot-ota.jpeg)
+[![](https://mathieu.carbou.me/MycilaSafeBoot/safeboot-ota.jpeg)](https://mathieu.carbou.me/MycilaSafeBoot/safeboot-ota.jpeg)
 
 ## Configuration reset, backup and restore
 
