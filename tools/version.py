@@ -1,6 +1,7 @@
 import subprocess
 import os
 import re
+import sys
 from datetime import datetime, timezone
 
 Import("env")
@@ -15,23 +16,31 @@ def do_main():
     short_hash = full_hash[:7]
 
     # branch
-    ret = subprocess.run(
-        ["git", "symbolic-ref", "--short", "HEAD"],
-        stdout=subprocess.PIPE,
-        text=True,
-        check=False,
-    )  # retrieve branch name
-    branch = ret.stdout.strip()
-    ref_name = os.environ.get("GITHUB_REF_NAME")
+    ref_name = os.environ.get("REF_NAME")
     if ref_name:
-        # on GitHub CI
         branch = ref_name
-    branch = branch.replace("/", "")
-    branch = branch.replace("-", "")
-    branch = branch.replace("_", "")
+    else:
+        ret = subprocess.run(
+            ["git", "symbolic-ref", "--short", "HEAD"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=False,
+        )  # retrieve branch name
+        branch = ret.stdout.strip()
+        branch = branch.replace("/", "")
+        branch = branch.replace("-", "")
+        branch = branch.replace("_", "")
+
+    if branch == "":
+        raise Exception("No branch name found")
 
     # is_tag ?
-    is_tag = branch.startswith("v") and len(branch) == 6
+    tagPattern = re.compile("^v[0-9]+.[0-9]+.[0-9]+([_-][a-zA-Z0-9]+)?$")
+    is_tag = branch.startswith("v") and len(branch) >= 6 and tagPattern.match(branch)
+
+    version = branch
+    if not is_tag:
+        version += "_" + short_hash
 
     # local modifications ?
     has_local_modifications = False
@@ -45,14 +54,10 @@ def do_main():
         )
         has_local_modifications = ret.returncode != 0
 
-    version = branch
-    if not is_tag:
-        version += "_" + short_hash
     if has_local_modifications:
         version += "_modified"
 
-    # version = "v2.40.2_rc1"
-    tagPattern = re.compile("^v[0-9]+.[0-9]+.[0-9]+([_-][a-zA-Z0-9]+)?$")
+    # version = "v2.40.2-rc1"
     constantFile = os.path.join(env.subst("$BUILD_DIR"), "__compiled_constants.c")
     with open(constantFile, "w") as f:
         f.write(
@@ -62,7 +67,17 @@ def do_main():
             f'const char* __COMPILED_BUILD_NAME__ = "{env["PIOENV"]}";\n'
             f'const char* __COMPILED_BUILD_TIMESTAMP__ = "{datetime.now(timezone.utc).isoformat()}";\n'
         )
+        sys.stderr.write(
+            f"version.py: APP_VERSION: {version[1:] if tagPattern.match(version)  else version}\n"
+        )
+        sys.stderr.write(f"version.py: BUILD_BRANCH: {branch}\n")
+        sys.stderr.write(f"version.py: BUILD_HASH: {short_hash}\n")
+        sys.stderr.write(f"version.py: BUILD_NAME: {env['PIOENV']}\n")
+        sys.stderr.write(
+            f"version.py: BUILD_TIMESTAMP: {datetime.now(timezone.utc).isoformat()}\n"
+        )
 
     env.AppendUnique(PIOBUILDFILES=[constantFile])
+
 
 do_main()
