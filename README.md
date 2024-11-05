@@ -527,9 +527,9 @@ For there you can see the device status and access some basic buttons.
 ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/screenshot-dashboard-overview.png)
 
 - `Send now and sleep!`: will send the data now and go to sleep for the configured amount of time (`send_delay`) if sleep is not prevented
-- `Scan Operators`: Trigger a new operator scan and new GPS search
 - `Prevent Sleep`: Keeps the device active and prevents it from going to sleep after a push
 - `Restart`: Restart the device
+- `Reset Graph History`: Reset the graph history
 
 The statistics menu shows some metrics regarding the device itself.
 
