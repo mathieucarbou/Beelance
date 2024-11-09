@@ -29,7 +29,7 @@ void Beelance::BeelanceClass::_initConfig() {
   config.configure(KEY_MODEM_PIN);
   config.configure(KEY_NIGHT_START_TIME, "23:00");
   config.configure(KEY_NIGHT_STOP_TIME, "05:00");
-  config.configure(KEY_NO_SLEEP_ENABLE, "true");
+  config.configure(KEY_PREVENT_SLEEP_ENABLE, "true");
   config.configure(KEY_PMU_CHARGING_CURRENT, "500");
   config.configure(KEY_SEND_INTERVAL, "3600");
   config.configure(KEY_SEND_URL);

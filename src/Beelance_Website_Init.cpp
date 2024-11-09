@@ -121,7 +121,7 @@ void Beelance::WebsiteClass::init() {
     dashboard.refreshCard(&_resetHistory);
   });
 
-  _boolConfig(&_noSleepMode, KEY_NO_SLEEP_ENABLE);
+  _boolConfig(&_noSleepMode, KEY_PREVENT_SLEEP_ENABLE);
 
   _update(true);
 }

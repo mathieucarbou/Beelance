@@ -215,7 +215,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   _restart.update(!restartTask.isPaused());
 
   _sendNow.update(sendTask.isRunning() || (sendTask.isEnabled() && !sendTask.isPaused() && sendTask.isEarlyRunRequested()));
-  _noSleepMode.update(config.getBool(KEY_NO_SLEEP_ENABLE));
+  _noSleepMode.update(config.getBool(KEY_PREVENT_SLEEP_ENABLE));
   _tare.update(hx711TareTask.isRunning() || (hx711TareTask.isEnabled() && !hx711TareTask.isPaused()));
 
   if (_requestChartUpdate || skipWebSocketPush) {

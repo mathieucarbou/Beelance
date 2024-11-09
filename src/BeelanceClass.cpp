@@ -197,6 +197,7 @@ void Beelance::BeelanceClass::toJson(const JsonObject& root) const {
   root["pow"] = Mycila::PMU.isBatteryDischarging() ? "bat" : "ext";
   root["bat"] = _round2(Mycila::PMU.getBatteryLevel());
   root["volt"] = _round2(Mycila::PMU.getBatteryVoltage());
+  root["eco"] = !config.getBool(KEY_PREVENT_SLEEP_ENABLE);
 }
 
 void Beelance::BeelanceClass::historyToJson(const JsonObject& root) const {
@@ -236,8 +237,8 @@ void Beelance::BeelanceClass::clearHistory() {
 }
 
 bool Beelance::BeelanceClass::mustSleep() const {
-  return !config.getBool(KEY_NO_SLEEP_ENABLE);
-  // return !config.getBool(KEY_NO_SLEEP_ENABLE) && Mycila::PMU.isBatteryPowered();
+  return !config.getBool(KEY_PREVENT_SLEEP_ENABLE);
+  // return !config.getBool(KEY_PREVENT_SLEEP_ENABLE) && Mycila::PMU.isBatteryPowered();
 }
 
 void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const float temperature, const int32_t weight) {
