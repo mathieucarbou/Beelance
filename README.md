@@ -170,7 +170,7 @@ Beelance works with a SIM card, so you need to select your carrier:
   - Supports all major carriers
   - Compatible with T-SIM7080G-S3 for LTE-M and NB-IOT
   - Compatible with T-A7670G R2 for 4G / LTE
-  - €0.01 / day / SIM + €0.005 / MB
+  - €0.01 / day / SIM + €0.005 / MB (Only pay for active SIMs. Disable or enable anytime, free of charge.)
 
 - [Transatel](https://www.transatel.com/fr/iot/cartes-sim-m2m-multi-operateurs/)
 
