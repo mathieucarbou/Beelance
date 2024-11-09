@@ -15,6 +15,7 @@
   - [Downloads](#downloads)
 - [How to build](#how-to-build)
   - [Connectivity provider](#connectivity-provider)
+    - [Beelance DATA consumption](#beelance-data-consumption)
   - [Shopping list](#shopping-list)
   - [Wiring](#wiring)
     - [Default GPIO Pinout](#default-gpio-pinout)
@@ -192,12 +193,29 @@ Beelance works with a SIM card, so you need to select your carrier:
   - Only 700 Mhz band
   - Compatible with T-A7670G R2 for 4G / LTE
 
-**How to know the Beelance consumption?**
+## Beelance DATA consumption
 
-When Beelance sends some data, the size of the payload sent is displayed in the statistics view in: `Modem: Last data sent`.
+The JSON payload sent from Beelance is more or less **250 bytes**.
 
-The payload is more or less 250 bytes.
-You need to add the HTTP/HTTPS overhead, plus headers:
+```json
+{"ts":1731147105,"bh":"beelance-73fadc","temp":24.56,"wt":0,"lat":0,"long":0,"alt":0,"sim":"8944501905220523406f","op":"Orange F","dev":"73FADC","boot":36,"ver":"main_9203b08_modified","up":103,"pow":"ext","bat":0,"volt":4.23,"eco":false}
+```
+
+You also need to add the HTTP/HTTPS headers overhead, which can easily be at least **100 bytes**.
+
+```
+content-length	238
+content-type	application/json
+user-agent	Arduino/2.2.0
+host	webhook.site
+```
+
+HTTPS will also add more overhead because of the handshake and encryption. **So it is recommended to use HTTP.**
+
+Beelance will send the data every 1 hour by default, and only between 5:00 AM and 11:00 PM.
+All these settings are configurable.
+
+With the default settings on HTTP, **Beelance will consume about 6300 bytes / day, so less than 200 Kb / month, so less than 3 Mb / year**.
 
 ## Shopping list
 
