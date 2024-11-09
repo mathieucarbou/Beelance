@@ -33,14 +33,15 @@
     - [Offset Calibration](#offset-calibration)
     - [Scale Calibration](#scale-calibration)
     - [Under the hood](#under-the-hood)
-  - [Receiving the data](#receiving-the-data)
-    - [JSON Payload](#json-payload)
-    - [IFTTT Integration](#ifttt-integration)
 - [How to use](#how-to-use)
   - [Dashboard](#dashboard)
   - [Update the firmware](#update-the-firmware)
   - [Configuration reset, backup and restore](#configuration-reset-backup-and-restore)
   - [Debugging and logging](#debugging-and-logging)
+  - [Receiving the data](#receiving-the-data)
+    - [JSON Payload](#json-payload)
+    - [webhook.site](#webhooksite)
+    - [IFTTT Integration](#ifttt-integration)
 - [Developer guide](#developer-guide)
   - [Project structure](#project-structure)
   - [Building and uploading the firmware](#building-and-uploading-the-firmware)
@@ -190,6 +191,13 @@ Beelance works with a SIM card, so you need to select your carrier:
   - €2.00 / month (free for Freebox users) + limit of 50 Mb / month
   - Only 700 Mhz band
   - Compatible with T-A7670G R2 for 4G / LTE
+
+**How to know the Beelance consumption?**
+
+When Beelance sends some data, the size of the payload sent is displayed in the statistics view in: `Modem: Last data sent`.
+
+The payload is more or less 250 bytes.
+You need to add the HTTP/HTTPS overhead, plus headers:
 
 ## Shopping list
 
@@ -459,82 +467,6 @@ You can even manually adjust these values.
 
 ![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/cal-conf.jpeg)
 
-## Receiving the data
-
-### JSON Payload
-
-Here is below a sample of the JSON payload that the device will send to the configured URL in a `POST` request.
-
-```json
-{
-  "ts": 1712578315,
-  "bh": "Ruche-01",
-  "temp": 24.25,
-  "wt": 15000,
-  "lat": 44.1234,
-  "long": -2.1234,
-  "alt": 7.4,
-  "sim": "89457300000014000000",
-  "op": "20801",
-  "dev": "73FADC",
-  "boot": 1358,
-  "ver": "v1.2.3",
-  "up": 10,
-  "pow": "bat",
-  "bat": 93,
-  "volt": 4.13
-}
-```
-
-- `ts`: the UTC timestamp as [Unix time](https://en.wikipedia.org/wiki/Unix_time) in seconds. Most systems support such timestamp. I.e. in Javascript: `d=new Date(); d.setTime(ts*1000);`
-- `bh`: the name of the beehive
-- `temp`: the temperature in Celsius, 0 if not activated
-- `wt`: the weight **in grams** of the beehive. Note that the weight is not accurate because what is important is to track the evolution over time
-- `lat`: the latitude, 0 if GPS fix failed
-- `long`: the longitude, 0 if GPS fix failed
-- `alt`: the altitude in meters, 0 if GPS fix failed
-- `sim`: the SIM ID (ICCID)
-- `op`: the name or code of the current operator
-- `dev`: the ESP32 device ID
-- `boot`: the device boot count, useful to know if the device reboots often because of a bug
-- `ver`: the firmware version
-- `up`: the device uptime in seconds, useful to know if the device reboots often because of a bug
-- `pow`: `bat` (for battery powered) or `ext` (when powered by USB-C / Solar Panel)
-- `bat`: the battery level in percentage, or 0 if not able to determine
-- `volt`: the battery voltage, or the external supplied voltage
-
-Here are the possible combinations for `pow`, `bat` and `volt`:
-
-- `pow == "bat" && bat > 0`: the device is powered by the battery and the battery level is known. `volt` will display the battery voltage.
-- `pow == "ext" && bat > 0`: the device is powered by the battery and the battery level is known. `volt` will display the battery voltage.
-  The battery is charging a little bit: not enough to power the device and charging at the same time, but enough to charge while in deep sleep.
-  This state is only for the `T-SIM7080G` because the `T-A7670G` does not have a PMU allowing to observe the battery voltage while charging with USB-C and being in use.
-- `pow == "ext" && bat == 0`: the device is powered by the USB-C (Solar Panel or else).
-  The battery voltage and level are not knows because the battery is charging at the same time the device is powered.
-  `volt` will display the battery voltage during charge which will usually be >= 4.2V.
-
-### IFTTT Integration
-
-If you have an [IFTTT](https://ifttt.com/) account, you can create an IFTTT applet to receive the JSON payload and insert it in a a new row in a Google Sheet spreadsheet.
-To do that, create a new applet with a webhook. The URL of the webhook has to be configured in the device configuration page in the `send_url` parameter (try use `http` instead of `https`).
-
-Here is the filter code you can use to transform the JSON data into cell values. This is optional: you can also receive the JSON in Google Sheet and process it in Google Sheet.
-
-```js
-var payload = JSON.parse(MakerWebhooks.jsonEvent.JsonPayload);
-var formattedRow = "";
-for (var k in payload) formattedRow += `|||${payload[k]}`;
-GoogleSheets.appendToGoogleSpreadsheet.setFormattedRow(
-  formattedRow.substring(3)
-);
-```
-
-| [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-1.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-1.jpeg) | [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-2.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-2.jpeg) |
-
-Once the applet is in place, every push from the device will reach IFTTT which will feed the Google Sheet. From there, you can create graphs and process the data as you wish.
-
-[![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-3.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-3.jpeg)
-
 # How to use
 
 ## Dashboard
@@ -601,6 +533,96 @@ To see more verbose logging including the modem AT commands, you can activate th
 
 **WARNING**: the console allows you to interact with the Modem internals (called `AT commands`).
 **DO NOT SEND ANY DATA UNLESS YOU KNOW WHAT YOU ARE DOING.**
+
+## Receiving the data
+
+### JSON Payload
+
+Here is below a sample of the JSON payload that the device will send to the configured URL in a `POST` request.
+
+```json
+{
+  "ts": 1712578315,
+  "bh": "Ruche-01",
+  "temp": 24.25,
+  "wt": 15000,
+  "lat": 44.1234,
+  "long": -2.1234,
+  "alt": 7.4,
+  "sim": "89457300000014000000",
+  "op": "20801",
+  "dev": "73FADC",
+  "boot": 1358,
+  "ver": "v1.2.3",
+  "up": 10,
+  "pow": "bat",
+  "bat": 93,
+  "volt": 4.13,
+  "eco": true
+}
+```
+
+The payload is about 250 bytes.
+
+- `ts`: the UTC timestamp as [Unix time](https://en.wikipedia.org/wiki/Unix_time) in seconds. Most systems support such timestamp. I.e. in Javascript: `d=new Date(); d.setTime(ts*1000);`
+- `bh`: the name of the beehive
+- `temp`: the temperature in Celsius, 0 if not activated
+- `wt`: the weight **in grams** of the beehive. Note that the weight is not accurate because what is important is to track the evolution over time
+- `lat`: the latitude, 0 if GPS fix failed
+- `long`: the longitude, 0 if GPS fix failed
+- `alt`: the altitude in meters, 0 if GPS fix failed
+- `sim`: the SIM ID (ICCID)
+- `op`: the name or code of the current operator
+- `dev`: the ESP32 device ID
+- `boot`: the device boot count, useful to know if the device reboots often because of a bug
+- `ver`: the firmware version
+- `up`: the device uptime in seconds, useful to know if the device reboots often because of a bug
+- `pow`: `bat` (for battery powered) or `ext` (when powered by USB-C / Solar Panel)
+- `bat`: the battery level in percentage, or 0 if not able to determine
+- `volt`: the battery voltage, or the external supplied voltage
+- `eco`: `true` if the device sleep mode is activated (which means the device deep sleeps between each push)
+
+Here are the possible combinations for `pow`, `bat` and `volt`:
+
+- `pow == "bat" && bat > 0`: the device is powered by the battery and the battery level is known. `volt` will display the battery voltage.
+- `pow == "ext" && bat > 0`: the device is powered by the battery and the battery level is known. `volt` will display the battery voltage.
+  The battery is charging a little bit: not enough to power the device and charging at the same time, but enough to charge while in deep sleep.
+  This state is only for the `T-SIM7080G` because the `T-A7670G` does not have a PMU allowing to observe the battery voltage while charging with USB-C and being in use.
+- `pow == "ext" && bat == 0`: the device is powered by the USB-C (Solar Panel or else).
+  The battery voltage and level are not knows because the battery is charging at the same time the device is powered.
+  `volt` will display the battery voltage during charge which will usually be >= 4.2V.
+
+### webhook.site
+
+[https://webhook.site](https://webhook.site) allows to capture the JSON payload and see it in a nice interface.
+
+Copy your unique hook URL (example: `https://webhook.site/53cc6f4b-145d-49b2-8518-7cb177b0166f`) and paste it in the Beelance configuration page in the `send_url`.
+
+When Beelance sends some data, you will see the full HTTP request in the webhook.site interface.
+
+[![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/webhook.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/webhook.jpeg)
+
+### IFTTT Integration
+
+If you have an [IFTTT](https://ifttt.com/) account, you can create an IFTTT applet to receive the JSON payload and insert it in a a new row in a Google Sheet spreadsheet.
+To do that, create a new applet with a webhook. The URL of the webhook has to be configured in the device configuration page in the `send_url` parameter (try use `http` instead of `https`).
+
+Here is the filter code you can use to transform the JSON data into cell values. This is optional: you can also receive the JSON in Google Sheet and process it in Google Sheet.
+
+```js
+var payload = JSON.parse(MakerWebhooks.jsonEvent.JsonPayload);
+var formattedRow = "";
+for (var k in payload) formattedRow += `|||${payload[k]}`;
+GoogleSheets.appendToGoogleSpreadsheet.setFormattedRow(
+  formattedRow.substring(3)
+);
+```
+
+| [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-1.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-1.jpeg) | [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-2.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-2.jpeg) |
+
+Once the applet is in place, every push from the device will reach IFTTT which will feed the Google Sheet. From there, you can create graphs and process the data as you wish.
+
+[![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-3.jpeg)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/ifttt-3.jpeg)
 
 # Developer guide
 
