@@ -153,7 +153,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: ${{steps.github_release.outputs.changelog}}
+          make_latest: true
           draft: false
+          prerelease: false
           files: artifacts/*.bin
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
