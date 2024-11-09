@@ -138,7 +138,7 @@ Where:
 
 ## Connectivity provider
 
-You need to choose if you go with:
+Beelance works with a SIM card, so you need to select your carrier:
 
 - A IoT / M2M SIM card (with `LILYGO® T-SIM7080G S3 with GPS`)
   - Cheaper if you have several beehives
@@ -148,27 +148,48 @@ You need to choose if you go with:
   - Easier to setup (i.e. in France a cheap Free Mobile SIM card could work)
   - Won't scale with many beehives, and can be more expensive
 
-Here is a matrix of tested LTE-M / NB-IOT provider for France and boards:
+**Here is a list of LTE-M / NB-IOT providers for France amd Europe:**
 
-| Provider                                      | T-SIM7080G-S3 | T-A7670G R2 |
-| :-------------------------------------------- | :-----------: | :---------: |
-| [Things Mobile](https://www.thingsmobile.com) |      ✅       |     ✅      |
-| [Onomondo](https://onomondo.com)              |      ✅       |     ✅      |
-| [Free Mobile](https://mobile.free.fr)         |      ❌       | Should work |
+- [Onomondo](https://onomondo.com)
 
-**[Onomondo](https://onomondo.com) is the recommended communication provider**.
-It has been tested extensively during development and works very well with the `T-SIM7080G S3` board.
-Onomondo also has accessible pricing, very good technical support, and provides connectors, a way to optimize the traffic in order to reduce cost even more.
-This is the way to go if you have several beehives.
-**Beelance supports Onomondo connectors**, which is a way to considerably reduce costly data traffic and decouple the device from the website collecting the data.
+  - Supports all major carriers
+  - Compatible with T-SIM7080G-S3 for LTE-M and NB-IOT
+  - Compatible with T-A7670G R2 for 4G / LTE
 
-**[Things Mobile](https://www.thingsmobile.com)** has been tested during development and works well with the `T-SIM7080G S3` board.
-Things Mobile should should cost around 1-2 euros per month per SIM card (beehive), but the solution is not scalable: it's not possible to order a batch of SIM cards, and each SIM card costs 5 euros to ship, 1.5 euros to activate, and the minimal balance to add on the platform is 30 euros.
-Also, the platform is a mere web interface where we can manage SIM card. There is no connector API like Onomondo, and no details and logs about the connections and traffic.
-This solution is good if you have a few connected beehives.
+- [Things Mobile](https://www.thingsmobile.com)
 
-**[Free Mobile](https://mobile.free.fr)** provides cheap SIM cards at 2 euros (or free for people having a Freebox), with 200MB of data per month, which should be enough for a beehive.
-Since it works on traditional frequencies (700 MHz band 28), it _should_ work with the `T-A7670G R2` board.
+  - Supports all major carriers
+  - Compatible with T-SIM7080G-S3 for LTE-M and NB-IOT
+  - Compatible with T-A7670G R2 for 4G / LTE
+  - €1.60 / month / SIM + €0.30 / MB
+
+- [simbase](https://www.simbase.com/eu/pricing)
+
+  - Supports all major carriers
+  - Compatible with T-SIM7080G-S3 for LTE-M and NB-IOT
+  - Compatible with T-A7670G R2 for 4G / LTE
+  - €0.01 / day / SIM + €0.005 / MB
+
+- [Transatel](https://www.transatel.com/fr/iot/cartes-sim-m2m-multi-operateurs/)
+
+  - Supports all major carriers
+  - Compatible with T-SIM7080G-S3 for LTE-M and NB-IOT
+  - Compatible with T-A7670G R2 for 4G / LTE
+  - €1.10 / month / SIM + limit of 10 Mb/ month
+
+- [1NCE](https://1nce.com/fr-fr/1nce-connect/10-pour-10-ans)
+
+  - Supports all major carriers
+  - Compatible with T-SIM7080G-S3 for LTE-M and NB-IOT
+  - Compatible with T-A7670G R2 for 4G / LTE
+  - €10.00 once / SIM, once, valid for 10 years, includes 500 Mb
+
+**Here is a list of cheap standard mobile carrier providers for France amd Europe:**
+
+- [Free Mobile](https://mobile.free.fr)
+  - €2.00 / month (free for Freebox users) + limit of 50 Mb / month
+  - Only 700 Mhz band
+  - Compatible with T-A7670G R2 for 4G / LTE
 
 ## Shopping list
 
@@ -323,8 +344,8 @@ On Windows, you can use the official [ESP32 Flash Download Tool](https://www.esp
 
 - Set the following **mandatory** settings:
 
-  - `modem_apn`: The APN of your connectivity provider (`TM` for Things Mobile, `onomondo` for Onomondo)
-  - `send_url` (**ONLY IF YOU DO NOT USE an Onomondo Connector**): The URL to send the data to.
+  - `modem_apn`: The APN of your connectivity provider (example: `TM` for Things Mobile, `onomondo` for Onomondo, etc)
+  - `send_url`: The URL to send the data to.
     Must be an HTTP endpoint that will receive a Json payload, like an IFTTT webhook.
     HTTPS sometimes work, but is not recommended because https calls from a little device like that take a lot of memory, CPU, are slower and have a larger payload.
     So it will cost more money and use more battery power.
@@ -497,13 +518,10 @@ Here are the possible combinations for `pow`, `bat` and `volt`:
 If you have an [IFTTT](https://ifttt.com/) account, you can create an IFTTT applet to receive the JSON payload and insert it in a a new row in a Google Sheet spreadsheet.
 To do that, create a new applet with a webhook. The URL of the webhook has to be configured in the device configuration page in the `send_url` parameter (try use `http` instead of `https`).
 
-If you use an Onomondo Connector, the webhook URL has to be configured in your Onomondo connector page.
-
 Here is the filter code you can use to transform the JSON data into cell values. This is optional: you can also receive the JSON in Google Sheet and process it in Google Sheet.
 
 ```js
 var payload = JSON.parse(MakerWebhooks.jsonEvent.JsonPayload);
-payload = payload.payload || payload; // this line is to unwrap the payload from the Onomondo JSON envelope
 var formattedRow = "";
 for (var k in payload) formattedRow += `|||${payload[k]}`;
 GoogleSheets.appendToGoogleSpreadsheet.setFormattedRow(
@@ -620,10 +638,6 @@ If you want to contact me for a partnership or schedule an assembly session, ple
 If you would like to buy a pre-assembled box (optionally setup with IFTTT and Google Sheet), please send an email to `beelance@carbou.me`.
 But I strongly suggest you to build it yourself.
 Since I do not maintain any stock and don't have a way to cut cost, building a box for you will be 1.5-2x more expensive than doing it yourself.
-
-# Sponsors and partners
-
-[![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/onomondo-community-2.png)](https://onomondo.com)
 
 # Related projects, guides and articles
 

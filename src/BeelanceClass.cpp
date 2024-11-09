@@ -108,7 +108,8 @@ bool Beelance::BeelanceClass::sendMeasurements() {
     return false;
   }
 
-  if (config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
+  // if (config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
+  if (config.get(KEY_SEND_URL).isEmpty()) {
     logger.error(TAG, "Unable to send measurements: no URL defined");
     return false;
   }
@@ -147,26 +148,26 @@ bool Beelance::BeelanceClass::sendMeasurements() {
     }
   }
 
-  if (Mycila::Modem.getAPN() == "onomondo") {
-    logger.info(TAG, "Sending measurements using Onomondo Connector...");
-    switch (Mycila::Modem.sendTCP("1.2.3.4", 1234, payload)) {
-      case ESP_OK:
-        logger.info(TAG, "Measurements sent successfully using Onomondo Connector");
-        return true;
-      case ESP_ERR_TIMEOUT:
-        logger.error(TAG, "Unable to send measurements: timeout connecting to Onomondo Platform");
-        return false;
-      case ESP_ERR_INVALID_STATE:
-        logger.error(TAG, "Unable to send measurements: unable to connect");
-        return false;
-      case ESP_ERR_INVALID_RESPONSE:
-        logger.error(TAG, "Unable to send measurements: invalid response from server");
-        return false;
-      default:
-        logger.error(TAG, "Unable to send measurements: unknown error");
-        return false;
-    }
-  }
+  // if (Mycila::Modem.getAPN() == "onomondo") {
+  //   logger.info(TAG, "Sending measurements using Onomondo Connector...");
+  //   switch (Mycila::Modem.sendTCP("1.2.3.4", 1234, payload)) {
+  //     case ESP_OK:
+  //       logger.info(TAG, "Measurements sent successfully using Onomondo Connector");
+  //       return true;
+  //     case ESP_ERR_TIMEOUT:
+  //       logger.error(TAG, "Unable to send measurements: timeout connecting to Onomondo Platform");
+  //       return false;
+  //     case ESP_ERR_INVALID_STATE:
+  //       logger.error(TAG, "Unable to send measurements: unable to connect");
+  //       return false;
+  //     case ESP_ERR_INVALID_RESPONSE:
+  //       logger.error(TAG, "Unable to send measurements: invalid response from server");
+  //       return false;
+  //     default:
+  //       logger.error(TAG, "Unable to send measurements: unknown error");
+  //       return false;
+  //   }
+  // }
 
   assert(false); // Should never happen
   return false;
