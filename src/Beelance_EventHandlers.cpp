@@ -72,8 +72,10 @@ void Beelance::BeelanceClass::_initEventHandlers() {
     }
   });
 
-  config.listen([this](const String& key, const String& oldValue, const String& newValue) {
-    logger.info(TAG, "Set %s: '%s' => '%s'", key.c_str(), oldValue.c_str(), newValue.c_str());
+  config.listen([this](const char* k, const String& newValue) {
+    logger.info(TAG, "'%s' => '%s'", k, newValue.c_str());
+    const String key = k;
+
     if (key == KEY_AP_MODE_ENABLE && (espConnect.getState() == Mycila::ESPConnect::State::AP_STARTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTING || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_TIMEOUT || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_DISCONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_RECONNECTING)) {
       restartTask.resume();
 
@@ -104,25 +106,25 @@ void Beelance::BeelanceClass::_initEventHandlers() {
       }
 
     } else if (key == KEY_MODEM_GPS_SYNC_TIMEOUT) {
-      Mycila::Modem.setGpsSyncTimeout(config.get(KEY_MODEM_GPS_SYNC_TIMEOUT).toInt());
+      Mycila::Modem.setGpsSyncTimeout(config.getLong(KEY_MODEM_GPS_SYNC_TIMEOUT));
 
     } else if (key == KEY_TIMEZONE_INFO) {
-      logger.info(TAG, "Setting timezone to %s", config.get(KEY_TIMEZONE_INFO).c_str());
+      logger.info(TAG, "Setting timezone to %s", config.get(KEY_TIMEZONE_INFO));
       Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
-      setenv("TZ", config.get(KEY_TIMEZONE_INFO).c_str(), 1);
+      setenv("TZ", config.get(KEY_TIMEZONE_INFO), 1);
       tzset();
 
     } else if (key == KEY_HX711_OFFSET) {
-      logger.info(TAG, "Setting HX711 offset to %d", config.get(KEY_HX711_OFFSET).toInt());
-      hx711.setOffset(config.get(KEY_HX711_OFFSET).toInt());
+      logger.info(TAG, "Setting HX711 offset to %d", config.getLong(KEY_HX711_OFFSET));
+      hx711.setOffset(config.getLong(KEY_HX711_OFFSET));
 
     } else if (key == KEY_HX711_SCALE) {
-      logger.info(TAG, "Setting HX711 scale to %f", config.get(KEY_HX711_SCALE).toFloat());
-      hx711.setScale(config.get(KEY_HX711_SCALE).toFloat());
+      logger.info(TAG, "Setting HX711 scale to %f", config.getFloat(KEY_HX711_SCALE));
+      hx711.setScale(config.getFloat(KEY_HX711_SCALE));
 
     } else if (key == KEY_PMU_CHARGING_CURRENT) {
-      logger.info(TAG, "Setting charging current to %d mA", config.get(KEY_PMU_CHARGING_CURRENT).toInt());
-      Mycila::PMU.setChargingCurrent(config.get(KEY_PMU_CHARGING_CURRENT).toInt());
+      logger.info(TAG, "Setting charging current to %d mA", config.getLong(KEY_PMU_CHARGING_CURRENT));
+      Mycila::PMU.setChargingCurrent(config.getLong(KEY_PMU_CHARGING_CURRENT));
     }
   });
 

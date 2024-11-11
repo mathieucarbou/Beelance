@@ -53,7 +53,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   // home
 
-  _bhName.update(config.get(KEY_BEEHIVE_NAME).c_str());
+  _bhName.update(config.get(KEY_BEEHIVE_NAME));
 
   // weight
   if (!hx711.isEnabled()) {

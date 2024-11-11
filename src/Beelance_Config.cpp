@@ -11,7 +11,7 @@
 void Beelance::BeelanceClass::_initConfig() {
   logger.info(TAG, "Initializing Config System...");
 
-  config.begin(28);
+  config.begin("BEELANCE");
 
   config.configure(KEY_ADMIN_PASSWORD);
   config.configure(KEY_AP_MODE_ENABLE, "true");

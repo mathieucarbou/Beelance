@@ -37,12 +37,12 @@ bool Beelance::BeelanceClass::isNightModeActive() const {
     return false;
   }
 
-  const int inRange = Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME).c_str(), config.get(KEY_NIGHT_STOP_TIME).c_str());
+  const int inRange = Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME), config.get(KEY_NIGHT_STOP_TIME));
   return inRange != -1 && inRange;
 }
 
 uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
-  const int itvl = config.get(KEY_SEND_INTERVAL).toInt() < BEELANCE_MIN_SEND_DELAY ? BEELANCE_MIN_SEND_DELAY : config.get(KEY_SEND_INTERVAL).toInt();
+  const int itvl = config.getLong(KEY_SEND_INTERVAL) < BEELANCE_MIN_SEND_DELAY ? BEELANCE_MIN_SEND_DELAY : config.getLong(KEY_SEND_INTERVAL);
 
   if (!Mycila::Modem.isTimeSynced()) {
     // modem time not synced
@@ -63,7 +63,7 @@ uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
       total += itvl;
       time_t unixTime = now + total;
       localtime_r(&unixTime, &timeInfo);
-    } while (Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME).c_str(), config.get(KEY_NIGHT_STOP_TIME).c_str()) == 1);
+    } while (Mycila::Time::timeInRange(timeInfo, config.get(KEY_NIGHT_START_TIME), config.get(KEY_NIGHT_STOP_TIME)) == 1);
 
     if (total == itvl) {
       // the next send time is not within the night time range
@@ -73,7 +73,7 @@ uint32_t Beelance::BeelanceClass::getDelayUntilNextSend() const {
 
   // total is after the night time range
   // total - itvl is still within the night time range
-  const int stopTimeMins = Mycila::Time::toMinutes(config.get(KEY_NIGHT_STOP_TIME).c_str());
+  const int stopTimeMins = Mycila::Time::toMinutes(config.get(KEY_NIGHT_STOP_TIME));
 
   const time_t unixTime = now + total - itvl;
   struct tm timeInfo;
@@ -109,7 +109,7 @@ bool Beelance::BeelanceClass::sendMeasurements() {
   }
 
   // if (config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
-  if (config.get(KEY_SEND_URL).isEmpty()) {
+  if (config.isEmpty(KEY_SEND_URL)) {
     logger.error(TAG, "Unable to send measurements: no URL defined");
     return false;
   }
@@ -123,7 +123,7 @@ bool Beelance::BeelanceClass::sendMeasurements() {
   _recordMeasurement(doc["ts"].as<time_t>(), doc["temp"].as<float>(), doc["wt"].as<int32_t>());
   _saveHistory();
 
-  if (!config.get(KEY_SEND_URL).isEmpty()) {
+  if (!config.isEmpty(KEY_SEND_URL)) {
     const String url = config.get(KEY_SEND_URL);
     logger.info(TAG, "Sending measurements to %s...", url.c_str());
     switch (Mycila::Modem.httpPOST(url, payload)) {

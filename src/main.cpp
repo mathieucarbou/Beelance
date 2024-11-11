@@ -52,24 +52,24 @@ void setup() {
   Mycila::PMU.begin();
   Mycila::PMU.enableDCPins();
   Mycila::PMU.setChargingLedMode(XPOWERS_CHG_LED_ON);
-  Mycila::PMU.setChargingCurrent(config.get(KEY_PMU_CHARGING_CURRENT).toInt());
+  Mycila::PMU.setChargingCurrent(config.getLong(KEY_PMU_CHARGING_CURRENT));
   logger.info(TAG, "Powering Modem...");
   Mycila::PMU.enableModem();
   logger.info(TAG, "Powering GPS...");
   Mycila::PMU.enableGPS();
 
   // Temperature
-  temperatureSensor.begin(config.get(KEY_TEMPERATURE_PIN).toInt());
+  temperatureSensor.begin(config.getLong(KEY_TEMPERATURE_PIN));
   if (!temperatureSensor.isEnabled()) {
     Beelance::Website.disableTemperature();
   }
 
   // HX711
   logger.info(TAG, "Configure HX711...");
-  hx711.setOffset(config.get(KEY_HX711_OFFSET).toInt());
-  hx711.setScale(config.get(KEY_HX711_SCALE).toFloat());
+  hx711.setOffset(config.getLong(KEY_HX711_OFFSET));
+  hx711.setScale(config.getFloat(KEY_HX711_SCALE));
   hx711.setExpirationDelay(10);
-  hx711.begin(config.get(KEY_HX711_DATA_PIN).toInt(), config.get(KEY_HX711_CLOCK_PIN).toInt());
+  hx711.begin(config.getLong(KEY_HX711_DATA_PIN), config.getLong(KEY_HX711_CLOCK_PIN));
 
   // stack monitor
   Mycila::TaskMonitor.begin(5);
@@ -83,7 +83,7 @@ void setup() {
   espConnect.end();
   espConnect.setAutoRestart(true);
   espConnect.setBlocking(false);
-  espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), Mycila::AppInfo.defaultSSID.c_str(), config.get(KEY_ADMIN_PASSWORD).c_str(), {config.get(KEY_WIFI_SSID).c_str(), config.get(KEY_WIFI_PASSWORD).c_str(), config.getBool(KEY_AP_MODE_ENABLE)});
+  espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), Mycila::AppInfo.defaultSSID.c_str(), config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
 
   assert(modemTaskManager.asyncStart(BEELANCE_MODEM_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
   assert(hx711TaskManager.asyncStart(BEELANCE_HX711_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));

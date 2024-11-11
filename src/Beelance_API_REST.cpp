@@ -6,6 +6,8 @@
 
 #include <AsyncJson.h>
 #include <LittleFS.h>
+#include <StreamString.h>
+
 #include <map>
 
 #define TAG "BEELANCE"
@@ -25,7 +27,7 @@ void Beelance::BeelanceClass::_initREST() {
 
   webServer
     .on("/api/config/backup", HTTP_GET, [](AsyncWebServerRequest* request) {
-      String body;
+      StreamString body;
       body.reserve(4096);
       config.backup(body);
       AsyncWebServerResponse* response = request->beginResponse(200, "text/plain", body);
@@ -42,7 +44,7 @@ void Beelance::BeelanceClass::_initREST() {
           return request->send(400, "text/plain", "No config file uploaded");
         }
         StreamString* buffer = reinterpret_cast<StreamString*>(request->_tempObject);
-        config.restore(*buffer);
+        config.restore((*buffer).c_str());
         delete buffer;
         request->_tempObject = nullptr;
         request->send(200, "text/plain", "OK");

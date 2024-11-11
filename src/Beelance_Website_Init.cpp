@@ -17,7 +17,7 @@ void Beelance::WebsiteClass::init() {
   authMiddleware.setAuthType(AsyncAuthType::AUTH_DIGEST);
   authMiddleware.setRealm("YaSolR");
   authMiddleware.setUsername(BEELANCE_ADMIN_USERNAME);
-  authMiddleware.setPassword(config.get(KEY_ADMIN_PASSWORD).c_str());
+  authMiddleware.setPassword(config.get(KEY_ADMIN_PASSWORD));
   authMiddleware.generateHash();
 
   webServer.addMiddleware(&authMiddleware);

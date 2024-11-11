@@ -73,7 +73,7 @@ Mycila::Task startModemTask("startModemTask", Mycila::TaskType::ONCE, [](void* p
   Mycila::Modem.setPIN(config.get(KEY_MODEM_PIN));
   Mycila::Modem.setAPN(config.get(KEY_MODEM_APN));
   Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
-  Mycila::Modem.setGpsSyncTimeout(config.get(KEY_MODEM_GPS_SYNC_TIMEOUT).toInt());
+  Mycila::Modem.setGpsSyncTimeout(config.getLong(KEY_MODEM_GPS_SYNC_TIMEOUT));
   // mode
   String tech = config.get(KEY_MODEM_MODE);
   if (tech == "LTE-M") {
