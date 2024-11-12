@@ -9,6 +9,7 @@
 #include <StreamString.h>
 
 #include <map>
+#include <string>
 
 #define TAG "BEELANCE"
 
@@ -65,12 +66,12 @@ void Beelance::BeelanceClass::_initREST() {
 
   webServer
     .on("/api/config", HTTP_POST, [](AsyncWebServerRequest* request) {
-      std::map<const char*, String> settings;
+      std::map<const char*, std::string> settings;
       for (size_t i = 0, max = request->params(); i < max; i++) {
         const AsyncWebParameter* p = request->getParam(i);
         if (p->isPost() && !p->isFile()) {
           const char* keyRef = config.keyRef(p->name().c_str());
-          settings[keyRef] = p->value();
+          settings[keyRef] = p->value().c_str();
         }
       }
       request->send(200);
