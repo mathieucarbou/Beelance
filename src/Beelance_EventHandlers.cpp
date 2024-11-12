@@ -53,8 +53,8 @@ void Beelance::BeelanceClass::_initEventHandlers() {
         } else {
           logger.info(TAG, "Captive Portal: WiFi configured");
           config.setBool(KEY_AP_MODE_ENABLE, false);
-          config.set(KEY_WIFI_SSID, espConnect.getConfiguredWiFiSSID());
-          config.set(KEY_WIFI_PASSWORD, espConnect.getConfiguredWiFiPassword());
+          config.set(KEY_WIFI_SSID, espConnect.getConfiguredWiFiSSID().c_str());
+          config.set(KEY_WIFI_PASSWORD, espConnect.getConfiguredWiFiPassword().c_str());
         }
         break;
       }
@@ -72,8 +72,8 @@ void Beelance::BeelanceClass::_initEventHandlers() {
     }
   });
 
-  config.listen([this](const char* k, const String& newValue) {
-    logger.info(TAG, "'%s' => '%s'", k, newValue.c_str());
+  config.listen([this](const char* k, const char* newValue) {
+    logger.info(TAG, "'%s' => '%s'", k, newValue);
     const String key = k;
 
     if (key == KEY_AP_MODE_ENABLE && (espConnect.getState() == Mycila::ESPConnect::State::AP_STARTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTING || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_TIMEOUT || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_DISCONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_RECONNECTING)) {

@@ -38,12 +38,12 @@ Mycila::Task hx711Task("hx711.read()", [](void* params) { hx711.read(); });
 
 Mycila::Task hx711TareTask("hx711.tare()", Mycila::TaskType::ONCE, [](void* params) {
   hx711.tare();
-  config.set(KEY_HX711_OFFSET, String(hx711.getOffset()));
-  config.set(KEY_HX711_SCALE, String(hx711.getScale()));
+  config.set(KEY_HX711_OFFSET, String(hx711.getOffset()).c_str());
+  config.set(KEY_HX711_SCALE, String(hx711.getScale()).c_str());
 });
 
 Mycila::Task hx711ScaleTask("hx711.calibrate()", Mycila::TaskType::ONCE, [](void* params) {
-  config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6));
+  config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6).c_str());
   calibrationWeight = 0;
 });
 

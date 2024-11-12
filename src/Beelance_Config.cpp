@@ -15,16 +15,16 @@ void Beelance::BeelanceClass::_initConfig() {
 
   config.configure(KEY_ADMIN_PASSWORD);
   config.configure(KEY_AP_MODE_ENABLE, "true");
-  config.configure(KEY_BEEHIVE_NAME, Mycila::AppInfo.defaultHostname);
+  config.configure(KEY_BEEHIVE_NAME, Mycila::AppInfo.defaultHostname.c_str());
   config.configure(KEY_DEBUG_ENABLE, "false");
-  config.configure(KEY_HX711_CLOCK_PIN, String(BEELANCE_HX711_CLOCK_PIN));
-  config.configure(KEY_HX711_DATA_PIN, String(BEELANCE_HX711_DATA_PIN));
+  config.configure(KEY_HX711_CLOCK_PIN, String(BEELANCE_HX711_CLOCK_PIN).c_str());
+  config.configure(KEY_HX711_DATA_PIN, String(BEELANCE_HX711_DATA_PIN).c_str());
   config.configure(KEY_HX711_OFFSET, "0");
   config.configure(KEY_HX711_SCALE, "1");
   config.configure(KEY_MODEM_APN);
   config.configure(KEY_MODEM_BANDS_LTE_M, "1,3,8,20,28");
   config.configure(KEY_MODEM_BANDS_NB_IOT, "3,8,20");
-  config.configure(KEY_MODEM_GPS_SYNC_TIMEOUT, String(MYCILA_MODEM_GPS_SYNC_TIMEOUT));
+  config.configure(KEY_MODEM_GPS_SYNC_TIMEOUT, String(MYCILA_MODEM_GPS_SYNC_TIMEOUT).c_str());
   config.configure(KEY_MODEM_MODE, "AUTO");
   config.configure(KEY_MODEM_PIN);
   config.configure(KEY_NIGHT_START_TIME, "23:00");
@@ -33,7 +33,7 @@ void Beelance::BeelanceClass::_initConfig() {
   config.configure(KEY_PMU_CHARGING_CURRENT, "500");
   config.configure(KEY_SEND_INTERVAL, "3600");
   config.configure(KEY_SEND_URL);
-  config.configure(KEY_TEMPERATURE_PIN, String(BEELANCE_TEMPERATURE_PIN));
+  config.configure(KEY_TEMPERATURE_PIN, String(BEELANCE_TEMPERATURE_PIN).c_str());
   config.configure(KEY_TIMEZONE_INFO, "CET-1CEST,M3.5.0,M10.5.0/3");
   config.configure(KEY_WIFI_PASSWORD);
   config.configure(KEY_WIFI_SSID);
