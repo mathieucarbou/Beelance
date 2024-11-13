@@ -8,6 +8,7 @@
 #include <LittleFS.h>
 
 #include <algorithm>
+#include <string>
 
 #define TAG "BEELANCE"
 
@@ -108,14 +109,13 @@ bool Beelance::BeelanceClass::sendMeasurements() {
     return false;
   }
 
-  // if (config.get(KEY_SEND_URL).isEmpty() && Mycila::Modem.getAPN() != "onomondo") {
   if (config.isEmpty(KEY_SEND_URL)) {
     logger.error(TAG, "Unable to send measurements: no URL defined");
     return false;
   }
 
   JsonDocument doc;
-  String payload;
+  std::string payload;
   payload.reserve(512);
   toJson(doc.to<JsonObject>());
   serializeJson(doc, payload);
@@ -124,7 +124,7 @@ bool Beelance::BeelanceClass::sendMeasurements() {
   _saveHistory();
 
   if (!config.isEmpty(KEY_SEND_URL)) {
-    const String url = config.get(KEY_SEND_URL);
+    const std::string url = config.get(KEY_SEND_URL);
     logger.info(TAG, "Sending measurements to %s...", url.c_str());
     switch (Mycila::Modem.httpPOST(url, payload)) {
       case ESP_OK:
@@ -244,10 +244,10 @@ bool Beelance::BeelanceClass::mustSleep() const {
 void Beelance::BeelanceClass::_recordMeasurement(const time_t timestamp, const float temperature, const int32_t weight) {
   logger.info(TAG, "Record measurement: temperature = %.2f C, weight = %d g", temperature, weight);
 
-  const String dt = Mycila::Time::toLocalStr(timestamp); // 2024-04-12 15:02:17
-  const String hhmm = dt.substring(11, 16);              // 15:02
-  const String hour = dt.substring(11, 13) + ":00";      // 15:00
-  const String day = dt.substring(5, 10);                // 2024-04-12
+  const std::string dt = Mycila::Time::toLocalStr(timestamp); // 2024-04-12 15:02:17
+  const std::string hhmm = dt.substr(11, 16);              // 15:02
+  const std::string hour = dt.substr(11, 13) + ":00";      // 15:00
+  const std::string day = dt.substr(5, 10);                // 2024-04-12
 
   bool found = false;
   for (auto& entry : latestHistory) {
@@ -322,19 +322,19 @@ void Beelance::BeelanceClass::_loadHistory() {
       latestHistory.clear();
       JsonArray latest = root["latest"].as<JsonArray>();
       for (int len = latest.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
-        latestHistory.push_back({latest[i]["time"].as<String>(), latest[i]["temp"].as<float>(), latest[i]["wt"].as<int32_t>()});
+        latestHistory.push_back({latest[i]["time"].as<std::string>(), latest[i]["temp"].as<float>(), latest[i]["wt"].as<int32_t>()});
 
       // hourlyHistory
       hourlyHistory.clear();
       JsonArray hourly = root["hourly"].as<JsonArray>();
       for (int len = hourly.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
-        hourlyHistory.push_back({hourly[i]["time"].as<String>(), hourly[i]["temp"].as<float>(), hourly[i]["wt"].as<int32_t>()});
+        hourlyHistory.push_back({hourly[i]["time"].as<std::string>(), hourly[i]["temp"].as<float>(), hourly[i]["wt"].as<int32_t>()});
 
       // dailyHistory
       dailyHistory.clear();
       JsonArray daily = root["daily"].as<JsonArray>();
       for (int len = daily.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
-        dailyHistory.push_back({daily[i]["time"].as<String>(), daily[i]["temp"].as<float>(), daily[i]["wt"].as<int32_t>()});
+        dailyHistory.push_back({daily[i]["time"].as<std::string>(), daily[i]["temp"].as<float>(), daily[i]["wt"].as<int32_t>()});
 
     } else {
       logger.error(TAG, "Unable to open file: " FILE_HISTORY);

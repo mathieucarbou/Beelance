@@ -7,11 +7,12 @@
 #include <Beelance.h>
 
 #include <mutex>
+#include <string>
 #include <vector>
 
 namespace Beelance {
   typedef struct {
-      String time;
+      std::string time;
       float temperature;
       int32_t weight;
   } Measurement;

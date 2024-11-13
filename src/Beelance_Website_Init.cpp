@@ -55,7 +55,7 @@ void Beelance::WebsiteClass::init() {
 
   WebSerial.begin(&webServer, "/console");
   WebSerial.onMessage([](const std::string& msg) {
-    if (msg.rfind("AT+", 0) == 0) {
+    if (Mycila::string::startsWith(msg, "AT+")) {
       logger.info(TAG, "Enqueue AT Command: %s...", msg.c_str());
       Mycila::Modem.enqueueAT(msg.c_str());
     }
@@ -74,10 +74,10 @@ void Beelance::WebsiteClass::init() {
 
   _deviceIdStat.set(Mycila::System::getChipIDStr().c_str());
   _cpuModelStat.set(ESP.getChipModel());
-  _cpuCoresStat.set(String(ESP.getChipCores()).c_str());
-  _bootCountStat.set(String(Mycila::System::getBootCount()).c_str());
+  _cpuCoresStat.set(std::to_string(ESP.getChipCores()).c_str());
+  _bootCountStat.set(std::to_string(Mycila::System::getBootCount()).c_str());
   _bootReasonStat.set(Mycila::System::getLastRebootReason());
-  _heapMemoryTotalStat.set((String(ESP.getHeapSize()) + " bytes").c_str());
+  _heapMemoryTotalStat.set((std::to_string(ESP.getHeapSize()) + " bytes").c_str());
 
   _hostnameStat.set(Mycila::AppInfo.defaultHostname.c_str());
 

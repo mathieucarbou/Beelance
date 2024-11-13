@@ -20,6 +20,7 @@
 #include <MycilaLogger.h>
 #include <MycilaModem.h>
 #include <MycilaPMU.h>
+#include <MycilaString.h>
 #include <MycilaSystem.h>
 #include <MycilaTaskManager.h>
 #include <MycilaTaskMonitor.h>

@@ -6,11 +6,15 @@
 
 #include <ArduinoHttpClient.h>
 #include <MycilaLogger.h>
+#include <MycilaString.h>
 #include <MycilaTime.h>
 
+#include <algorithm>
+#include <string>
+
 #if defined(TINY_GSM_MODEM_A7670) && defined(MYCILA_GPS_RX_PIN) && defined(MYCILA_GPS_TX_PIN)
-#define TINY_GSM_MODEM_A7670G 1
-#include <TinyGPS++.h>
+  #define TINY_GSM_MODEM_A7670G 1
+  #include <TinyGPS++.h>
 TinyGPSPlus tinyGPS;
 #endif
 
@@ -56,31 +60,31 @@ void Mycila::ModemClass::loop() {
 
     if (_modem.init(_pin.c_str())) {
       logger.info(TAG, "SIM Ready!");
-      _error = emptyString;
+      _error = std::string();
 
 #ifdef TINY_GSM_MODEM_SIM7080
       // 2 Automatic
       _modem.setNetworkMode(2);
 
       // NB-IoT bands
-      String nbiotBands = "+CBANDCFG=\"NB-IOT\",";
-      nbiotBands.concat(_bands[MODEM_MODE_NB_IOT]);
+      std::string nbiotBands = "+CBANDCFG=\"NB-IOT\",";
+      nbiotBands += _bands[MODEM_MODE_NB_IOT];
       _modem.sendAT(nbiotBands.c_str());
       _modem.waitResponse();
 
       // LTE-M bands
-      String ltemBands = "+CBANDCFG=\"CAT-M\",";
-      ltemBands.concat(_bands[MODEM_MODE_LTE_M]);
+      std::string ltemBands = "+CBANDCFG=\"CAT-M\",";
+      ltemBands += _bands[MODEM_MODE_LTE_M];
       _modem.sendAT(ltemBands.c_str());
       _modem.waitResponse();
 
       // APN
-      _modem.sendAT("+CNCFG=0,1,\"", _apn, "\"");
+      _modem.sendAT("+CNCFG=0,1,\"", _apn.c_str(), "\"");
       _modem.waitResponse();
 #endif
 
       // APN
-      _modem.sendAT("+CGDCONT=1,\"IP\",\"", _apn, "\"");
+      _modem.sendAT("+CGDCONT=1,\"IP\",\"", _apn.c_str(), "\"");
       _modem.waitResponse();
 
       // go to registration
@@ -170,7 +174,7 @@ void Mycila::ModemClass::loop() {
     // de-register
     _modem.sendAT("+COPS=2");
     _modem.waitResponse();
-    _operator = emptyString;
+    _operator = std::string();
 
     // https://help.onomondo.com/en/how-to-clear-the-fplmn-list
     // Query state: AT+CRSM=176,28539,0,0,12AT+CRSM=176,28539,0,0,12
@@ -191,17 +195,15 @@ void Mycila::ModemClass::loop() {
         ModemOperatorSearchResult op;
         op.state = static_cast<ModemOperatorState>(_spy.parseInt());
         _spy.readStringUntil('"');
-        op.name = _spy.readStringUntil('"');
-        op.name.trim();
+        op.name = Mycila::string::trim(_spy.readStringUntil('"').c_str());
         _spy.readStringUntil('"');
         _spy.readStringUntil('"');
         _spy.readStringUntil('"');
-        op.code = _spy.readStringUntil('"');
-        op.code.trim();
+        op.code = Mycila::string::trim(_spy.readStringUntil('"').c_str());
         _spy.readStringUntil(',');
         op.mode = _spy.parseInt();
 
-        if (!op.name.isEmpty()) {
+        if (!op.name.empty()) {
           if (op.state == MODEM_OPERATOR_FORBIDDEN) {
             logger.warn(TAG, "Skipping forbidden operator %s (%d)", op.name.c_str(), op.mode);
           } else {
@@ -296,25 +298,25 @@ void Mycila::ModemClass::setDebug(bool debug) {
   if (debug) {
     _readBuffer.reserve(512);
     _writeBuffer.reserve(512);
-    _readBuffer.concat("<< ");
-    _writeBuffer.concat(">> ");
+    _readBuffer += "<< ";
+    _writeBuffer += ">> ";
     _spy.onRead(std::bind(&Mycila::ModemClass::_onRead, this, std::placeholders::_1, std::placeholders::_2));
     _spy.onWrite(std::bind(&Mycila::ModemClass::_onWrite, this, std::placeholders::_1, std::placeholders::_2));
 
   } else {
     _spy.onRead(nullptr);
     _spy.onWrite(nullptr);
-    _readBuffer = emptyString;
-    _writeBuffer = emptyString;
+    _readBuffer = std::string();
+    _writeBuffer = std::string();
   }
 }
 
-int Mycila::ModemClass::sendTCP(const String& host, uint16_t port, const String& payload, const uint16_t connectTimeoutSec) {
+int Mycila::ModemClass::sendTCP(const std::string& host, uint16_t port, const std::string& payload, const uint16_t connectTimeoutSec) {
   TinyGsmClient client(_modem);
   client.setTimeout(connectTimeoutSec * 1000);
   int code = ESP_ERR_TIMEOUT;
   if (client.connect(host.c_str(), port, connectTimeoutSec)) {
-    client.print(payload);
+    client.print(payload.c_str());
     client.flush();
     client.stop();
     code = ESP_OK;
@@ -323,8 +325,8 @@ int Mycila::ModemClass::sendTCP(const String& host, uint16_t port, const String&
 }
 
 #ifdef TINY_GSM_MODEM_A7670
-int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const uint16_t connectTimeoutSec) {
-  if (url.isEmpty() || payload.isEmpty())
+int Mycila::ModemClass::httpPOST(const std::string& url, const std::string& payload, const uint16_t connectTimeoutSec) {
+  if (url.empty() || payload.empty())
     return ESP_ERR_INVALID_ARG;
 
   if (!_modem.https_begin())
@@ -334,7 +336,7 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
     return ESP_ERR_INVALID_ARG;
 
   _modem.https_set_timeout(connectTimeoutSec);
-  _modem.https_set_user_agent(_model);
+  _modem.https_set_user_agent(_model.c_str());
   _modem.https_set_content_type("application/json");
   if (_modem.https_post(payload.c_str()) == -1)
     return ESP_ERR_INVALID_STATE;
@@ -344,8 +346,8 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
 #endif
 
 #ifdef TINY_GSM_MODEM_SIM7080
-int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const uint16_t connectTimeoutSec) {
-  if (url.isEmpty() || payload.isEmpty())
+int Mycila::ModemClass::httpPOST(const std::string& url, const std::string& payload, const uint16_t connectTimeoutSec) {
+  if (url.empty() || payload.empty())
     return ESP_ERR_INVALID_ARG;
 
   if (!_modem.isNetworkConnected())
@@ -356,10 +358,10 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
                        HOST,
                        PORT,
                        PATH } state = PROTOCOL;
-  String protocol;
-  String host;
-  String port;
-  String path = "/";
+  std::string protocol;
+  std::string host;
+  std::string port;
+  std::string path = "/";
 
   for (int i = 0; i < url.length(); i++) {
     switch (state) {
@@ -367,12 +369,12 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
         if (url[i] == ':')
           state = URLParseState::SEPERATOR;
         else
-          protocol.concat(url[i]);
+          protocol += url[i];
         break;
       case URLParseState::SEPERATOR:
         if (url[i] != '/') {
           state = HOST;
-          host.concat(url[i]);
+          host += url[i];
         }
         break;
       case URLParseState::HOST:
@@ -381,16 +383,16 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
         else if (url[i] == '/')
           state = PATH;
         else
-          host.concat(url[i]);
+          host += url[i];
         break;
       case URLParseState::PORT:
         if (url[i] == '/')
           state = PATH;
         else
-          port.concat(url[i]);
+          port += url[i];
         break;
       case URLParseState::PATH:
-        path.concat(url[i]);
+        path += url[i];
         break;
       default:
         assert(false);
@@ -398,34 +400,34 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
     }
   }
 
-  protocol.toLowerCase();
+  std::transform(protocol.begin(), protocol.end(), protocol.begin(), ::tolower);
 
-  if (host.isEmpty() || (protocol != "http" && protocol != "https"))
+  if (host.empty() || (protocol != "http" && protocol != "https"))
     return ESP_ERR_INVALID_ARG;
 
   int ret = HTTP_SUCCESS;
 
   if (protocol == "https") {
-    const uint16_t httpsPort = port.isEmpty() ? 443 : port.toInt();
+    const uint16_t httpsPort = port.empty() ? 443 : std::stol(port);
     TinyGsmClientSecure client(_modem);
     client.setTimeout(connectTimeoutSec * 1000);
     if (client.connect(host.c_str(), httpsPort, connectTimeoutSec)) {
-      HttpClient http(client, host, httpsPort);
+      HttpClient http(client, host.c_str(), httpsPort);
       http.setTimeout(connectTimeoutSec * 1000);
-      ret = http.post(path, "application/json", payload);
+      ret = http.post(path.c_str(), "application/json", payload.c_str());
       http.stop();
     } else {
       ret = HTTP_ERROR_CONNECTION_FAILED;
     }
 
   } else if (protocol == "http") {
-    const uint16_t httpPort = port.isEmpty() ? 80 : port.toInt();
+    const uint16_t httpPort = port.empty() ? 80 : std::stol(port);
     TinyGsmClient client(_modem);
     client.setTimeout(connectTimeoutSec * 1000);
     if (client.connect(host.c_str(), httpPort, connectTimeoutSec)) {
-      HttpClient http(client, host, httpPort);
+      HttpClient http(client, host.c_str(), httpPort);
       http.setTimeout(connectTimeoutSec * 1000);
-      ret = http.post(path, "application/json", payload);
+      ret = http.post(path.c_str(), "application/json", payload.c_str());
       http.stop();
     } else {
       ret = HTTP_ERROR_CONNECTION_FAILED;
@@ -453,24 +455,24 @@ int Mycila::ModemClass::httpPOST(const String& url, const String& payload, const
 
 void Mycila::ModemClass::_onRead(const uint8_t* buffer, size_t size) {
   if (size) {
-    _readBuffer.concat((const char*)buffer, size);
-    if (_readBuffer.endsWith("\n")) {
-      size = _readBuffer.endsWith("\r\n") ? _readBuffer.length() - 2 : _readBuffer.length() - 1;
+    _readBuffer.append((const char*)buffer, size);
+    if (Mycila::string::endsWith(_readBuffer, "\n")) {
+      size = Mycila::string::endsWith(_readBuffer, "\r\n") ? _readBuffer.length() - 2 : _readBuffer.length() - 1;
       logger.debug(TAG, "%.*s", size, _readBuffer.c_str());
       _readBuffer.clear();
-      _readBuffer.concat("<< ");
+      _readBuffer += "<< ";
     }
   }
 }
 
 void Mycila::ModemClass::_onWrite(const uint8_t* buffer, size_t size) {
   if (size) {
-    _writeBuffer.concat((const char*)buffer, size);
-    if (_writeBuffer.endsWith("\n")) {
-      size = _writeBuffer.endsWith("\r\n") ? _writeBuffer.length() - 2 : _writeBuffer.length() - 1;
+    _writeBuffer.append((const char*)buffer, size);
+    if (Mycila::string::endsWith(_writeBuffer, "\n")) {
+      size = Mycila::string::endsWith(_writeBuffer, "\r\n") ? _writeBuffer.length() - 2 : _writeBuffer.length() - 1;
       logger.debug(TAG, "%.*s", size, _writeBuffer.c_str());
       _writeBuffer.clear();
-      _writeBuffer.concat(">> ");
+      _writeBuffer += ">> ";
     }
   }
 }
@@ -562,8 +564,8 @@ bool Mycila::ModemClass::_syncTime() {
     setenv("TZ", _timeZoneInfo.c_str(), 1);
     tzset();
 
-    String time = Mycila::Time::getLocalStr();
-    if (!time.isEmpty()) {
+    std::string time = Mycila::Time::getLocalStr();
+    if (!time.empty()) {
       logger.info(TAG, "Time synced from GPS: %s", time.c_str());
       return true;
     }
@@ -586,8 +588,8 @@ bool Mycila::ModemClass::_syncTime() {
     setenv("TZ", _timeZoneInfo.c_str(), 1);
     tzset();
 
-    String time = Mycila::Time::getLocalStr();
-    if (!time.isEmpty()) {
+    std::string time = Mycila::Time::getLocalStr();
+    if (!time.empty()) {
       logger.info(TAG, "Time synced from cellular network: %s", time.c_str());
       return true;
     }
@@ -602,12 +604,12 @@ void Mycila::ModemClass::_syncInfo() {
   _signal = sq >= 0 && sq <= 31 ? map(sq, 0, 31, 0, 100) : 0;
 
   // misc info
-  _iccid = _modem.getSimCCID();
-  _imei = _modem.getIMEI();
-  _imsi = _modem.getIMSI();
-  _localIP = _modem.getLocalIP();
-  _model = _modem.getModemName();
-  _operator = _modem.getOperator();
+  _iccid = _modem.getSimCCID().c_str();
+  _imei = _modem.getIMEI().c_str();
+  _imsi = _modem.getIMSI().c_str();
+  _localIP = _modem.getLocalIP().c_str();
+  _model = _modem.getModemName().c_str();
+  _operator = _modem.getOperator().c_str();
 }
 
 void Mycila::ModemClass::_sync() {
@@ -629,8 +631,8 @@ void Mycila::ModemClass::_dequeueATCommands() {
   if (_commands.size()) {
     for (size_t i = 0; i < _commands.size(); i++) {
       logger.info(TAG, "Execute command: %s", _commands[i].c_str());
-      if (_commands[i].startsWith("AT+"))
-        _modem.sendAT(_commands[i].substring(2).c_str());
+      if (Mycila::string::startsWith(_commands[i], "AT+"))
+        _modem.sendAT(_commands[i].substr(2).c_str());
       else
         _modem.sendAT(_commands[i].c_str());
       delay(5000);

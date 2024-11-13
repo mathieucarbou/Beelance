@@ -16,8 +16,8 @@ Mycila::Logger logger;
 Mycila::Config config;
 
 Mycila::TaskManager hx711TaskManager("hx711");
-Mycila::TaskManager loopTaskManager("loopTask");
-Mycila::TaskManager modemTaskManager("modemTask");
+Mycila::TaskManager loopTaskManager("beelance");
+Mycila::TaskManager modemTaskManager("modem");
 
 Mycila::HX711 hx711;
 Mycila::DS18 temperatureSensor;
@@ -74,8 +74,8 @@ void setup() {
   // stack monitor
   Mycila::TaskMonitor.begin(5);
   Mycila::TaskMonitor.addTask("async_tcp"); // ESPAsyncTCP
-  Mycila::TaskMonitor.addTask("loopTask");  // Arduino
-  Mycila::TaskMonitor.addTask("modemTask"); // Modem
+  Mycila::TaskMonitor.addTask("beelance");  // Beelance
+  Mycila::TaskMonitor.addTask("modem");     // Modem
   Mycila::TaskMonitor.addTask("hx711");     // HX711
 
   // network
@@ -85,13 +85,14 @@ void setup() {
   espConnect.setBlocking(false);
   espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), Mycila::AppInfo.defaultSSID.c_str(), config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
 
-  assert(modemTaskManager.asyncStart(BEELANCE_MODEM_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
-  assert(hx711TaskManager.asyncStart(BEELANCE_HX711_TASK_STACK_SIZE, uxTaskPriorityGet(NULL), xPortGetCoreID()));
+  assert(loopTaskManager.asyncStart(512 * 19, uxTaskPriorityGet(NULL), xPortGetCoreID()));
+  assert(modemTaskManager.asyncStart(512 * 11, uxTaskPriorityGet(NULL), xPortGetCoreID()));
+  assert(hx711TaskManager.asyncStart(512 * 6, uxTaskPriorityGet(NULL), xPortGetCoreID()));
 
   // STARTUP READY!
   logger.info(TAG, "Started %s", Mycila::AppInfo.nameModelVersion.c_str());
 }
 
 void loop() {
-  loopTaskManager.loop();
+  vTaskDelete(NULL);
 }

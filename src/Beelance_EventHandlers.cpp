@@ -6,6 +6,8 @@
 #include <Beelance.h>
 #include <BeelanceWebsite.h>
 
+#include <string>
+
 #define TAG "EVENTS"
 
 void refresh() {
@@ -74,7 +76,7 @@ void Beelance::BeelanceClass::_initEventHandlers() {
 
   config.listen([this](const char* k, const char* newValue) {
     logger.info(TAG, "'%s' => '%s'", k, newValue);
-    const String key = k;
+    const std::string key = k;
 
     if (key == KEY_AP_MODE_ENABLE && (espConnect.getState() == Mycila::ESPConnect::State::AP_STARTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTING || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_TIMEOUT || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_DISCONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_RECONNECTING)) {
       restartTask.resume();
@@ -96,7 +98,7 @@ void Beelance::BeelanceClass::_initEventHandlers() {
       Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.get(KEY_MODEM_BANDS_NB_IOT));
 
     } else if (key == KEY_MODEM_MODE) {
-      String tech = config.get(KEY_MODEM_MODE);
+      std::string tech = config.get(KEY_MODEM_MODE);
       if (tech == "LTE-M") {
         Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
       } else if (tech == "NB-IoT") {

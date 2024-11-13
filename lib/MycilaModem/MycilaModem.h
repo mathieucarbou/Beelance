@@ -8,6 +8,7 @@
 #include <TinyGsmClient.h>
 
 #include <map>
+#include <string>
 #include <vector>
 
 #ifndef MYCILA_MODEM_SERIAL
@@ -75,8 +76,8 @@ namespace Mycila {
 
   typedef struct {
       ModemOperatorState state;
-      String name;  // operator name
-      String code;  // operator code
+      std::string name;  // operator name
+      std::string code;  // operator code
       uint8_t mode; // technology access mode
   } ModemOperatorSearchResult;
 
@@ -110,25 +111,25 @@ namespace Mycila {
       ModemGPSState getGPSState() const { return _gpsState; }
       std::vector<ModemOperatorSearchResult> getDiscoveredOperators() const { return _operators; }
 
-      String getAPN() const { return _apn; }
-      String getTimeZoneInfo() const { return _timeZoneInfo; }
-      String getBands(ModemMode mode) { return mode == MODEM_MODE_AUTO ? "" : _bands[mode]; }
-      String getError() const { return _error; }
-      String getICCID() const { return _iccid; }
-      String getIMEI() const { return _imei; }
-      String getIMSI() const { return _imsi; }
-      String getLocalIP() const { return _localIP; }
-      String getModel() const { return _model; }
-      String getOperator() const { return _operator; }
-      String getPIN() const { return _pin; }
+      const std::string& getAPN() const { return _apn; }
+      const std::string& getTimeZoneInfo() const { return _timeZoneInfo; }
+      std::string getBands(ModemMode mode) { return mode == MODEM_MODE_AUTO ? "" : _bands[mode]; }
+      const std::string& getError() const { return _error; }
+      const std::string& getICCID() const { return _iccid; }
+      const std::string& getIMEI() const { return _imei; }
+      const std::string& getIMSI() const { return _imsi; }
+      const std::string& getLocalIP() const { return _localIP; }
+      const std::string& getModel() const { return _model; }
+      const std::string& getOperator() const { return _operator; }
+      const std::string& getPIN() const { return _pin; }
       // 0-100%
       uint8_t getSignalQuality() const { return _signal; }
 
-      void setAPN(const String& apn) { _apn = apn; }
-      void setTimeZoneInfo(const String& timeZoneInfo) { _timeZoneInfo = timeZoneInfo; }
-      void setBands(ModemMode mode, const String& bands) { _bands[mode] = bands; }
+      void setAPN(const std::string& apn) { _apn = apn; }
+      void setTimeZoneInfo(const std::string& timeZoneInfo) { _timeZoneInfo = timeZoneInfo; }
+      void setBands(ModemMode mode, const std::string& bands) { _bands[mode] = bands; }
       void setDebug(bool debug);
-      void setPIN(const String& pin) { _pin = pin; }
+      void setPIN(const std::string& pin) { _pin = pin; }
       void setPreferredMode(ModemMode mode) { _mode = mode; }
       void setGpsSyncTimeout(uint32_t timeoutSec) { _gpsSyncTimeout = timeoutSec; }
       void setCallback(ModemStateChangeCallback callback) { _callback = callback; }
@@ -140,10 +141,10 @@ namespace Mycila {
       void activateGPS();
 
       // Returns ESP_OK or ESP_ERR_TIMEOUT if connection times out
-      int sendTCP(const String& host, uint16_t port, const String& payload, const uint16_t connectTimeoutSec = MYCILA_MODEM_CONNECT_TIMEOUT);
+      int sendTCP(const std::string& host, uint16_t port, const std::string& payload, const uint16_t connectTimeoutSec = MYCILA_MODEM_CONNECT_TIMEOUT);
 
       // Returns ESP_OK or ESP_ERR_TIMEOUT if connection times out
-      int httpPOST(const String& url, const String& payload, const uint16_t connectTimeoutSec = MYCILA_MODEM_CONNECT_TIMEOUT);
+      int httpPOST(const std::string& url, const std::string& payload, const uint16_t connectTimeoutSec = MYCILA_MODEM_CONNECT_TIMEOUT);
 
     private:
       // model and streams
@@ -152,8 +153,8 @@ namespace Mycila {
 
     private:
       // debug
-      String _readBuffer;
-      String _writeBuffer;
+      std::string _readBuffer;
+      std::string _writeBuffer;
 
     private:
       // GPS and Time
@@ -161,25 +162,25 @@ namespace Mycila {
       ModemGPSState _gpsState = MODEM_GPS_OFF;
       uint32_t _gpsSyncStartTime = 0;
       ModemGPSData _gpsData;
-      String _timeZoneInfo = "UTC0";
+      std::string _timeZoneInfo = "UTC0";
 
     private:
       // Modem info
-      String _iccid;
-      String _imei;
-      String _imsi;
-      String _localIP;
-      String _model;
-      String _operator;
+      std::string _iccid;
+      std::string _imei;
+      std::string _imsi;
+      std::string _localIP;
+      std::string _model;
+      std::string _operator;
       uint8_t _signal;
 
     private:
       // Modem settings
       ModemMode _mode = MODEM_MODE_AUTO;
-      String _apn;
-      String _pin;
+      std::string _apn;
+      std::string _pin;
       uint32_t _gpsSyncTimeout = MYCILA_MODEM_GPS_SYNC_TIMEOUT;
-      std::map<ModemMode, String> _bands = {
+      std::map<ModemMode, std::string> _bands = {
         {MODEM_MODE_LTE_M, "1,2,3,4,5,8,12,13,14,18,19,20,25,26,2 7,28,66,85"},
         {MODEM_MODE_NB_IOT, "1,2,3,4,5,8,12,13,18,19,20,25,26,28,6 6,71,85"},
       };
@@ -196,9 +197,9 @@ namespace Mycila {
       // state machine
       ModemState _state = MODEM_OFF;
       ModemStateChangeCallback _callback = nullptr;
-      String _error;
+      std::string _error;
       uint32_t _lastRefreshTime = 0;
-      std::vector<String> _commands;
+      std::vector<std::string> _commands;
 
     private:
       // utilities

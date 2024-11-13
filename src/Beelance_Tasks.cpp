@@ -4,6 +4,8 @@
  */
 #include <Beelance.h>
 
+#include <string>
+
 #define TAG "BEELANCE"
 
 static const Mycila::TaskPredicate DEBUG_ENABLED = []() {
@@ -20,11 +22,11 @@ Mycila::Task modemLoopTask("Modem.loop()", [](void* params) { Mycila::Modem.loop
 
 Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
   if (Serial.available()) {
-    String msg;
+    std::string msg;
     msg.reserve(128);
     while (Serial.available())
-      msg.concat(static_cast<char>(Serial.read()));
-    if (msg.startsWith("AT+")) {
+      msg += Serial.read();
+    if (Mycila::string::startsWith(msg, "AT+")) {
       Mycila::Modem.enqueueAT(msg.c_str());
     }
   }
@@ -38,12 +40,12 @@ Mycila::Task hx711Task("hx711.read()", [](void* params) { hx711.read(); });
 
 Mycila::Task hx711TareTask("hx711.tare()", Mycila::TaskType::ONCE, [](void* params) {
   hx711.tare();
-  config.set(KEY_HX711_OFFSET, String(hx711.getOffset()).c_str());
-  config.set(KEY_HX711_SCALE, String(hx711.getScale()).c_str());
+  config.set(KEY_HX711_OFFSET, std::to_string(hx711.getOffset()).c_str());
+  config.set(KEY_HX711_SCALE, std::to_string(hx711.getScale()).c_str());
 });
 
 Mycila::Task hx711ScaleTask("hx711.calibrate()", Mycila::TaskType::ONCE, [](void* params) {
-  config.set(KEY_HX711_SCALE, String(hx711.calibrate(calibrationWeight), 6).c_str());
+  config.set(KEY_HX711_SCALE, Mycila::string::to_string(hx711.calibrate(calibrationWeight), 6).c_str());
   calibrationWeight = 0;
 });
 
@@ -75,7 +77,7 @@ Mycila::Task startModemTask("startModemTask", Mycila::TaskType::ONCE, [](void* p
   Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
   Mycila::Modem.setGpsSyncTimeout(config.getLong(KEY_MODEM_GPS_SYNC_TIMEOUT));
   // mode
-  String tech = config.get(KEY_MODEM_MODE);
+  std::string tech = config.get(KEY_MODEM_MODE);
   if (tech == "LTE-M") {
     Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
   } else if (tech == "NB-IoT") {
