@@ -133,7 +133,7 @@ namespace Mycila {
       void setGpsSyncTimeout(uint32_t timeoutSec) { _gpsSyncTimeout = timeoutSec; }
       void setCallback(ModemStateChangeCallback callback) { _callback = callback; }
 
-      void enqueueAT(const String& cmd) { _commands.push_back(cmd); }
+      void enqueueAT(const char* cmd) { _commands.push_back(cmd); }
       void scanForOperators() { _state = MODEM_SEARCHING; }
       void powerOff();
       bool activateData();

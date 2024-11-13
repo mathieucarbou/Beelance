@@ -6,6 +6,8 @@
 
 #include <MycilaWebSerial.h>
 
+#include <string>
+
 #define TAG "WEBSITE"
 
 extern const uint8_t logo_jpeg_gz_start[] asm("_binary__pio_data_logo_jpeg_gz_start");
@@ -52,10 +54,10 @@ void Beelance::WebsiteClass::init() {
   // web console
 
   WebSerial.begin(&webServer, "/console");
-  WebSerial.onMessage([](const String& msg) {
-    if (msg.startsWith("AT+")) {
+  WebSerial.onMessage([](const std::string& msg) {
+    if (msg.rfind("AT+", 0) == 0) {
       logger.info(TAG, "Enqueue AT Command: %s...", msg.c_str());
-      Mycila::Modem.enqueueAT(msg);
+      Mycila::Modem.enqueueAT(msg.c_str());
     }
   });
   logger.forwardTo(&WebSerial);

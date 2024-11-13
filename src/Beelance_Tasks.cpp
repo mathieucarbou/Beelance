@@ -25,7 +25,7 @@ Mycila::Task serialDebugATTask("serialDebugAT", [](void* params) {
     while (Serial.available())
       msg.concat(static_cast<char>(Serial.read()));
     if (msg.startsWith("AT+")) {
-      Mycila::Modem.enqueueAT(msg);
+      Mycila::Modem.enqueueAT(msg.c_str());
     }
   }
 });
