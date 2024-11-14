@@ -124,7 +124,7 @@ bool Beelance::BeelanceClass::sendMeasurements() {
   _saveHistory();
 
   if (!config.isEmpty(KEY_SEND_URL)) {
-    const std::string url = config.get(KEY_SEND_URL);
+    const std::string& url = config.getString(KEY_SEND_URL);
     logger.info(TAG, "Sending measurements to %s...", url.c_str());
     switch (Mycila::Modem.httpPOST(url, payload)) {
       case ESP_OK:
