@@ -6,6 +6,8 @@
 
 #include <Beelance.h>
 
+#include <string>
+
 namespace Beelance {
   class WebsiteClass {
     public:
@@ -97,15 +99,15 @@ namespace Beelance {
       Chart _chartHourlyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Hourly Max");
       Chart _chartDailyTemp = Chart(&dashboard, BAR_CHART, "Temperature (C) - Daily Max");
 
-      String _chartLatestX[BEELANCE_MAX_HISTORY_SIZE];
+      std::string _chartLatestX[BEELANCE_MAX_HISTORY_SIZE];
       float _chartLatestWeightY[BEELANCE_MAX_HISTORY_SIZE];
       float _chartLatestTempY[BEELANCE_MAX_HISTORY_SIZE];
 
-      String _chartHourlyX[BEELANCE_MAX_HISTORY_SIZE];
+      std::string _chartHourlyX[BEELANCE_MAX_HISTORY_SIZE];
       float _chartHourlyWeightY[BEELANCE_MAX_HISTORY_SIZE];
       float _chartHourlyTempY[BEELANCE_MAX_HISTORY_SIZE];
 
-      String _chartDailyX[BEELANCE_MAX_HISTORY_SIZE];
+      std::string _chartDailyX[BEELANCE_MAX_HISTORY_SIZE];
       float _chartDailyWeightY[BEELANCE_MAX_HISTORY_SIZE];
       float _chartDailyTempY[BEELANCE_MAX_HISTORY_SIZE];
 

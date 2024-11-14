@@ -17,13 +17,13 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   Mycila::System::Memory memory;
   Mycila::System::getMemory(memory);
-  _heapMemoryUsageStat.set((Mycila::string::to_string(memory.usage, 2) + " %").c_str());
-  _heapMemoryUsedStat.set((std::to_string(memory.used) + " bytes").c_str());
+  _heapMemoryUsageStat.set((Mycila::string::to_string(memory.usage, 2) + " %"));
+  _heapMemoryUsedStat.set(std::to_string(memory.used) + " bytes");
 
-  _modemModelStat.set(Mycila::Modem.getModel().c_str());
-  _modemICCIDStat.set(Mycila::Modem.getICCID().c_str());
-  _modemIMEIStat.set(Mycila::Modem.getIMEI().c_str());
-  _modemIMSIStat.set(Mycila::Modem.getIMSI().c_str());
+  _modemModelStat.set(Mycila::Modem.getModel());
+  _modemICCIDStat.set(Mycila::Modem.getICCID());
+  _modemIMEIStat.set(Mycila::Modem.getIMEI());
+  _modemIMSIStat.set(Mycila::Modem.getIMSI());
   switch (Mycila::Modem.getMode()) {
     case ::Mycila::ModemMode::MODEM_MODE_LTE_M:
       _modemModePrefStat.set("LTE-M");
@@ -35,23 +35,23 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       _modemModePrefStat.set("Auto");
       break;
   }
-  _modemLTEMBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_LTE_M).c_str());
-  _modemNBIoTBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_NB_IOT).c_str());
-  _modemIpStat.set(Mycila::Modem.getLocalIP().c_str());
+  _modemLTEMBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_LTE_M));
+  _modemNBIoTBandsStat.set(Mycila::Modem.getBands(Mycila::ModemMode::MODEM_MODE_NB_IOT));
+  _modemIpStat.set(Mycila::Modem.getLocalIP());
 
   _apIPStat.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::AP).toString().c_str());
-  _apMACStat.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP).c_str());
+  _apMACStat.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP));
   _wifiIPStat.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::STA).toString().c_str());
-  _wifiMACStat.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA).c_str());
-  _wifiSSIDStat.set(espConnect.getWiFiSSID().c_str());
-  _wifiRSSIStat.set((std::to_string(espConnect.getWiFiRSSI()) + " dBm").c_str());
-  _wifiSignalStat.set((std::to_string(espConnect.getWiFiSignalQuality()) + " %").c_str());
-  _hx711WeightStat.set((std::to_string(static_cast<int>(hx711.getWeight())) + " g").c_str());
-  _hx711TareStat.set((std::to_string(static_cast<int>(hx711.getTare())) + " g").c_str());
-  _hx711OffsetStat.set(std::to_string(hx711.getOffset()).c_str());
-  _hx711ScaleStat.set(Mycila::string::to_string(hx711.getScale(), 6).c_str());
+  _wifiMACStat.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA));
+  _wifiSSIDStat.set(espConnect.getWiFiSSID());
+  _wifiRSSIStat.set(std::to_string(espConnect.getWiFiRSSI()) + " dBm");
+  _wifiSignalStat.set(std::to_string(espConnect.getWiFiSignalQuality()) + " %");
+  _hx711WeightStat.set(std::to_string(static_cast<int>(hx711.getWeight())) + " g");
+  _hx711TareStat.set(std::to_string(static_cast<int>(hx711.getTare())) + " g");
+  _hx711OffsetStat.set(std::to_string(hx711.getOffset()));
+  _hx711ScaleStat.set(Mycila::string::to_string(hx711.getScale(), 6));
 
-  _pmuLowBatShutThreshold.set((std::to_string(Mycila::PMU.readLowBatteryShutdownThreshold()) + " %").c_str());
+  _pmuLowBatShutThreshold.set(std::to_string(Mycila::PMU.readLowBatteryShutdownThreshold()) + " %");
 
   // home
 
@@ -94,7 +94,10 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       break;
     case Mycila::ModemTimeState::MODEM_TIME_SYNCED: {
       std::string time = Mycila::Time::getLocalStr();
-      _time.update(time.empty() ? "Syncing..." : time.c_str(), time.empty() ? DASH_STATUS_WARNING : DASH_STATUS_SUCCESS);
+      if (time.empty())
+        _time.update("Syncing...", DASH_STATUS_WARNING);
+      else
+        _time.update(time, DASH_STATUS_SUCCESS);
       break;
     }
     default:
@@ -115,9 +118,9 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       _altitude.update("Syncing...", DASH_STATUS_WARNING);
       break;
     case Mycila::ModemGPSState::MODEM_GPS_SYNCED:
-      _latitude.update(Mycila::string::to_string(Mycila::Modem.getGPSData().latitude, 6).c_str(), DASH_STATUS_SUCCESS);
-      _longitude.update(Mycila::string::to_string(Mycila::Modem.getGPSData().longitude, 6).c_str(), DASH_STATUS_SUCCESS);
-      _altitude.update((std::to_string(Mycila::Modem.getGPSData().altitude) + " m").c_str(), DASH_STATUS_SUCCESS);
+      _latitude.update(Mycila::string::to_string(Mycila::Modem.getGPSData().latitude, 6), DASH_STATUS_SUCCESS);
+      _longitude.update(Mycila::string::to_string(Mycila::Modem.getGPSData().longitude, 6), DASH_STATUS_SUCCESS);
+      _altitude.update(std::to_string(Mycila::Modem.getGPSData().altitude) + " m", DASH_STATUS_SUCCESS);
       break;
     case Mycila::ModemGPSState::MODEM_GPS_TIMEOUT:
       _latitude.update("Timeout!", DASH_STATUS_DANGER);
@@ -153,14 +156,14 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       _modemState.update("Ready", DASH_STATUS_SUCCESS);
       break;
     case Mycila::ModemState::MODEM_ERROR:
-      _modemState.update(Mycila::Modem.getError().c_str(), DASH_STATUS_DANGER);
+      _modemState.update(Mycila::Modem.getError(), DASH_STATUS_DANGER);
       break;
     default:
       assert(false);
       break;
   }
 
-  _modemAPN.update(Mycila::Modem.getAPN().c_str(), Mycila::Modem.getAPN().empty() ? DASH_STATUS_DANGER : DASH_STATUS_SUCCESS);
+  _modemAPN.update(Mycila::Modem.getAPN(), Mycila::Modem.getAPN().empty() ? DASH_STATUS_DANGER : DASH_STATUS_SUCCESS);
 
   // operator
   switch (Mycila::Modem.getState()) {
@@ -171,7 +174,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
     case Mycila::ModemState::MODEM_WAIT_REGISTRATION:
     case Mycila::ModemState::MODEM_SEARCHING: {
       const Mycila::ModemOperatorSearchResult* candidate = Mycila::Modem.getCandidate();
-      _modemOperator.update(candidate ? (candidate->name + " (" + std::to_string(candidate->mode) + ") ?").c_str() : "", candidate ? DASH_STATUS_WARNING : DASH_STATUS_IDLE);
+      _modemOperator.update(candidate ? candidate->name + " (" + std::to_string(candidate->mode) + ") ?" : std::string(), candidate ? DASH_STATUS_WARNING : DASH_STATUS_IDLE);
       break;
     }
     case Mycila::ModemState::MODEM_GPS:
@@ -179,10 +182,10 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
       if (Mycila::Modem.getOperator().empty())
         _modemOperator.update("", DASH_STATUS_WARNING);
       else
-        _modemOperator.update(Mycila::Modem.getOperator().c_str(), DASH_STATUS_SUCCESS);
+        _modemOperator.update(Mycila::Modem.getOperator(), DASH_STATUS_SUCCESS);
       break;
     case Mycila::ModemState::MODEM_READY:
-      _modemOperator.update(Mycila::Modem.getOperator().c_str(), DASH_STATUS_SUCCESS);
+      _modemOperator.update(Mycila::Modem.getOperator(), DASH_STATUS_SUCCESS);
       break;
     case Mycila::ModemState::MODEM_ERROR:
       _modemOperator.update("", DASH_STATUS_IDLE);
@@ -197,14 +200,14 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   if (Mycila::PMU.isBatteryCharging()) {
     float level = Mycila::PMU.getBatteryLevel();
     if (level > 0) {
-      _power.update((std::string("Bat. charging: ") + Mycila::string::to_string(floor(level), 2)).c_str(), "%");
+      _power.update(std::string("Bat. charging: ") + Mycila::string::to_string(floor(level), 2), "%");
     } else {
       _power.update("Bat. charging...", "");
     }
   } else if (Mycila::PMU.isBatteryDischarging()) {
     float level = Mycila::PMU.getBatteryLevel();
     if (level > 0) {
-      _power.update((std::string("Bat. discharging: ") + Mycila::string::to_string(floor(level), 2)).c_str(), "%");
+      _power.update(std::string("Bat. discharging: ") + Mycila::string::to_string(floor(level), 2), "%");
     } else {
       _power.update("Bat. discharging...", "");
     }
@@ -213,7 +216,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
   }
   _volt.update(Mycila::PMU.getBatteryVoltage());
 
-  _uptime.update(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()).c_str());
+  _uptime.update(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()));
   _restart.update(!restartTask.isPaused());
 
   _sendNow.update(sendTask.isRunning() || (sendTask.isEnabled() && !sendTask.isPaused() && sendTask.isEarlyRunRequested()));
@@ -225,15 +228,15 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
     int idx = 0;
     while (idx < BEELANCE_MAX_HISTORY_SIZE) {
-      _chartLatestX[idx] = emptyString;
+      _chartLatestX[idx] = std::string();
       _chartLatestTempY[idx] = 0;
       _chartLatestWeightY[idx] = 0;
 
-      _chartHourlyX[idx] = emptyString;
+      _chartHourlyX[idx] = std::string();
       _chartHourlyTempY[idx] = 0;
       _chartHourlyWeightY[idx] = 0;
 
-      _chartDailyX[idx] = emptyString;
+      _chartDailyX[idx] = std::string();
       _chartDailyTempY[idx] = 0;
       _chartDailyWeightY[idx] = 0;
 
@@ -243,7 +246,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
     idx = 0;
     for (const auto& entry : Beelance::Beelance.latestHistory) {
       if (idx < BEELANCE_MAX_HISTORY_SIZE) {
-        _chartLatestX[idx] = entry.time.c_str();
+        _chartLatestX[idx] = entry.time;
         _chartLatestTempY[idx] = entry.temperature;
         _chartLatestWeightY[idx] = entry.weight;
         idx++;
@@ -253,7 +256,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
     idx = 0;
     for (const auto& entry : Beelance::Beelance.hourlyHistory) {
       if (idx < BEELANCE_MAX_HISTORY_SIZE) {
-        _chartHourlyX[idx] = entry.time.c_str();
+        _chartHourlyX[idx] = entry.time;
         _chartHourlyTempY[idx] = entry.temperature;
         _chartHourlyWeightY[idx] = entry.weight;
         idx++;
@@ -263,7 +266,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
     idx = 0;
     for (const auto& entry : Beelance::Beelance.dailyHistory) {
       if (idx < BEELANCE_MAX_HISTORY_SIZE) {
-        _chartDailyX[idx] = entry.time.c_str();
+        _chartDailyX[idx] = entry.time;
         _chartDailyTempY[idx] = entry.temperature;
         _chartDailyWeightY[idx] = entry.weight;
         idx++;

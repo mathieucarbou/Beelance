@@ -64,22 +64,22 @@ void Beelance::WebsiteClass::init() {
 
   // app stats
 
-  _firmName.set((Mycila::AppInfo.name.c_str()));
-  _firmVersionStat.set(Mycila::AppInfo.version.c_str());
-  _firmManufacturerStat.set(Mycila::AppInfo.manufacturer.c_str());
+  _firmName.set(Mycila::AppInfo.name);
+  _firmVersionStat.set(Mycila::AppInfo.version);
+  _firmManufacturerStat.set(Mycila::AppInfo.manufacturer);
 
-  _firmFilenameStat.set(Mycila::AppInfo.firmware.c_str());
-  _firmHashStat.set(Mycila::AppInfo.buildHash.c_str());
-  _firmTimeStat.set(Mycila::AppInfo.buildDate.c_str());
+  _firmFilenameStat.set(Mycila::AppInfo.firmware);
+  _firmHashStat.set(Mycila::AppInfo.buildHash);
+  _firmTimeStat.set(Mycila::AppInfo.buildDate);
 
-  _deviceIdStat.set(Mycila::System::getChipIDStr().c_str());
+  _deviceIdStat.set(Mycila::System::getChipIDStr());
   _cpuModelStat.set(ESP.getChipModel());
-  _cpuCoresStat.set(std::to_string(ESP.getChipCores()).c_str());
-  _bootCountStat.set(std::to_string(Mycila::System::getBootCount()).c_str());
+  _cpuCoresStat.set(std::to_string(ESP.getChipCores()));
+  _bootCountStat.set(std::to_string(Mycila::System::getBootCount()));
   _bootReasonStat.set(Mycila::System::getLastRebootReason());
-  _heapMemoryTotalStat.set((std::to_string(ESP.getHeapSize()) + " bytes").c_str());
+  _heapMemoryTotalStat.set(std::to_string(ESP.getHeapSize()) + " bytes");
 
-  _hostnameStat.set(Mycila::AppInfo.defaultHostname.c_str());
+  _hostnameStat.set(Mycila::AppInfo.defaultHostname);
 
   // home callbacks
 
