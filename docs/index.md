@@ -26,6 +26,7 @@
     - [Powering with the internal 3.7V battery](#powering-with-the-internal-37v-battery)
     - [Powering with USB-C power bank](#powering-with-usb-c-power-bank)
     - [Powering with USB-C Solar Panel](#powering-with-usb-c-solar-panel)
+    - [Beelance consumption](#beelance-consumption)
   - [Firmware flash (first time)](#firmware-flash-first-time)
   - [Device Configuration](#device-configuration)
     - [Important information about the Modem](#important-information-about-the-modem)
@@ -198,7 +199,25 @@ Beelance works with a SIM card, so you need to select your carrier:
 The JSON payload sent from Beelance is more or less **250 bytes**.
 
 ```json
-{"ts":1731147105,"bh":"beelance-73fadc","temp":24.56,"wt":0,"lat":0,"long":0,"alt":0,"sim":"8944501905220523406f","op":"Orange F","dev":"73FADC","boot":36,"ver":"main_9203b08_modified","up":103,"pow":"ext","bat":0,"volt":4.23,"eco":false}
+{
+  "ts": 1731147105,
+  "bh": "beelance-73fadc",
+  "temp": 24.56,
+  "wt": 0,
+  "lat": 0,
+  "long": 0,
+  "alt": 0,
+  "sim": "8944501905220523406f",
+  "op": "Orange F",
+  "dev": "73FADC",
+  "boot": 36,
+  "ver": "main_9203b08_modified",
+  "up": 103,
+  "pow": "ext",
+  "bat": 0,
+  "volt": 4.23,
+  "eco": false
+}
 ```
 
 You also need to add the HTTP/HTTPS headers overhead, which can easily be at least **100 bytes**.
@@ -339,6 +358,35 @@ Never power the device with both the on-board solar connector and a usb-c solar 
 
 **This option is not working very well with the LILYGO T-A7670G** because this board does not have a Power Management Unit (PMU) like the `T-SIM7080G-S3`.
 So when the solar panel is not able to produce enough current, the device will simply not start, until the solar panel voltage becomes 0 and then the device will switch on the battery.
+
+### Beelance consumption
+
+Here is the power consumption of the device in 2 modes:
+
+1. **Active mode** (above / left): from when the device starts or wakes up until when it sends the data and goes to deep sleep
+2. **Deep sleep mode** (below / right): when the device is in deep sleep
+
+| [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/power-wakeup.png)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/power-wakeup.png) | [![](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/power-deepsleep.png)](https://raw.githubusercontent.com/mathieucarbou/Beelance/main/docs/assets/images/power-deepsleep.png) |
+
+The device consumption in active mode is on average less than 200mA.
+So a charged battery having a capacity of more than 3000 mAh (3200-3600 mAh) should last about 15 hours if kept in active mode
+
+The device consumption in deep sleep mode is less than 500 uA.
+So a charged battery having a capacity of more than 3000 mAh (3200-3600 mAh) should last about 8 months.
+
+By default, the device will wake up every hour between 5 am to 11 pm, send the data and go back to sleep.
+We will suppose that the device takes 3 minutes to register on the network. get a GPS point and send the data. (which, in reality, is much less).
+
+The device will be in active mode for 3 minutes 16 times a day, which is 48 minutes per day.
+The device will be in deep sleep for 23 hours and 12 minutes per day.
+
+**So the consumption of the device per day should be no more than 220 mAh, which means about 2 weeks of autonomy with a 3000mAh battery.**
+
+**All these numbers are quite theoretical and the real consumption will be different because the heat and cold will affect the battery capacity.**
+
+But coupled with a solar panel, the device should be able to last indefinitely.
+
+Note: the testing was done with the temperature probe attached.
 
 ## Firmware flash (first time)
 
