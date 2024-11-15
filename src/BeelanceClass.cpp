@@ -309,14 +309,14 @@ void Beelance::BeelanceClass::_loadHistory() {
   logger.info(TAG, "Load history...");
 
   JsonDocument doc;
-  JsonObject root = doc.to<JsonObject>();
 
   if (LittleFS.exists(FILE_HISTORY)) {
     File file = LittleFS.open(FILE_HISTORY, "r");
 
     if (file) {
-      deserializeJson(root, file);
+      deserializeJson(doc, file);
       file.close();
+      JsonObject root = doc.as<JsonObject>();
 
       // latestHistory
       latestHistory.clear();
