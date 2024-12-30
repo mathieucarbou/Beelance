@@ -72,7 +72,6 @@ void setup() {
   hx711.begin(config.getLong(KEY_HX711_DATA_PIN), config.getLong(KEY_HX711_CLOCK_PIN));
 
   // stack monitor
-  Mycila::TaskMonitor.begin(5);
   Mycila::TaskMonitor.addTask("async_tcp"); // ESPAsyncTCP
   Mycila::TaskMonitor.addTask("beelance");  // Beelance
   Mycila::TaskMonitor.addTask("modem");     // Modem
