@@ -4,8 +4,6 @@
  */
 #include <BeelanceWebsite.h>
 
-#include <MycilaWebSerial.h>
-
 #include <string>
 
 #define TAG "WEBSITE"
@@ -53,14 +51,14 @@ void Beelance::WebsiteClass::init() {
 
   // web console
 
-  WebSerial.begin(&webServer, "/console");
-  WebSerial.onMessage([](const std::string& msg) {
+  webSerial.begin(&webServer, "/console");
+  webSerial.onMessage([](const std::string& msg) {
     if (Mycila::string::startsWith(msg, "AT+")) {
       logger.info(TAG, "Enqueue AT Command: %s...", msg.c_str());
       Mycila::Modem.enqueueAT(msg.c_str());
     }
   });
-  logger.forwardTo(&WebSerial);
+  logger.forwardTo(&webSerial);
 
   // app stats
 

@@ -31,6 +31,7 @@
 extern AsyncWebServer webServer;
 extern AuthenticationMiddleware authMiddleware;
 extern ESPDash dashboard;
+extern WebSerial webSerial;
 
 extern Mycila::Logger logger;
 extern Mycila::Config config;
