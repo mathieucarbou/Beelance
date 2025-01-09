@@ -29,7 +29,7 @@
 #include <BeelanceMacros.h>
 
 extern AsyncWebServer webServer;
-extern AuthenticationMiddleware authMiddleware;
+extern AsyncAuthenticationMiddleware authMiddleware;
 extern ESPDash dashboard;
 extern WebSerial webSerial;
 
