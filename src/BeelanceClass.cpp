@@ -321,19 +321,19 @@ void Beelance::BeelanceClass::_loadHistory() {
       // latestHistory
       latestHistory.clear();
       JsonArray latest = root["latest"].as<JsonArray>();
-      for (int len = latest.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
+      for (int len = latest.size(), i = std::max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
         latestHistory.push_back({latest[i]["time"].as<std::string>(), latest[i]["temp"].as<float>(), latest[i]["wt"].as<int32_t>()});
 
       // hourlyHistory
       hourlyHistory.clear();
       JsonArray hourly = root["hourly"].as<JsonArray>();
-      for (int len = hourly.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
+      for (int len = hourly.size(), i = std::max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
         hourlyHistory.push_back({hourly[i]["time"].as<std::string>(), hourly[i]["temp"].as<float>(), hourly[i]["wt"].as<int32_t>()});
 
       // dailyHistory
       dailyHistory.clear();
       JsonArray daily = root["daily"].as<JsonArray>();
-      for (int len = daily.size(), i = max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
+      for (int len = daily.size(), i = std::max(0, len - BEELANCE_MAX_HISTORY_SIZE); i < len; i++)
         dailyHistory.push_back({daily[i]["time"].as<std::string>(), daily[i]["temp"].as<float>(), daily[i]["wt"].as<int32_t>()});
 
     } else {
@@ -364,8 +364,8 @@ void Beelance::BeelanceClass::_saveHistory() {
   }
 }
 
-double Beelance::BeelanceClass::_round2(double value) {
-  return static_cast<int32_t>(value * 100 + 0.5) / 100.0;
+float Beelance::BeelanceClass::_round2(float value) {
+  return static_cast<int32_t>(value * 100.0f + 0.5f) / 100.0f;
 }
 
 namespace Beelance {

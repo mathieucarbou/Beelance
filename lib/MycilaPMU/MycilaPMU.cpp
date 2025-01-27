@@ -97,7 +97,7 @@ float Mycila::PMUClass::getBatteryLevel() const {
     return 0;
   // map() equivalent with float
   constexpr float run = MYCILA_PMU_BATTERY_VOLTAGE_MAX - MYCILA_PMU_BATTERY_VOLTAGE_MIN;
-  return run <= 0 ? 0 : min(100.0, ((_batteryVoltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0) / run);
+  return run <= 0 ? 0 : std::min(100.0f, ((_batteryVoltage - MYCILA_PMU_BATTERY_VOLTAGE_MIN) * 100.0f) / run);
 }
 
 bool Mycila::PMUClass::isBatteryCharging() const {
@@ -143,7 +143,7 @@ uint8_t Mycila::PMUClass::readLowBatteryShutdownThreshold() {
 
 float Mycila::PMUClass::read() {
 #ifdef MYCILA_XPOWERS_PMU_ENABLED
-  _batteryVoltage = _pmu.getBattVoltage() / 1000.0;
+  _batteryVoltage = _pmu.getBattVoltage() / 1000.0f;
   //  getBatteryPercent() cannot be used because it requires a full charge and discharge cycle
   // _pmu.getBatteryPercent();
   _pmuBatteryConnected = _pmu.isBatteryConnect();
@@ -153,7 +153,7 @@ float Mycila::PMUClass::read() {
 #ifdef MYCILA_PMU_BATTERY_ADC_PIN
   esp_adc_cal_characteristics_t adc_chars;
   esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-  _batteryVoltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2 / 1000.0;
+  _batteryVoltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2.0f / 1000.0f;
 #endif
   return _batteryVoltage;
 }

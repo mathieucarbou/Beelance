@@ -52,7 +52,7 @@ namespace Beelance {
       void _saveHistory();
 
     private:
-      static double _round2(double v);
+      static float _round2(float v);
 
     public:
       std::vector<Measurement> latestHistory;
