@@ -253,7 +253,7 @@ With the default settings on HTTP, **Beelance will consume about 6300 bytes / da
   - If using a battery, take a UL94V-0 box (fire retardant)
 - [Water Protection PCB Spray](https://www.amazon.fr/dp/B08KJPDPH9) - 30 euros for 400mL
 - Optional but recommended:
-  - Battery (18650): [Li-ion Battery 18650 3.7V 3200-3600mAh](https://www.amazon.fr/gp/product/B09DY1QVDW) - 15 euros for 2 items
+  - Li-ion Battery 18650 3.7V 3200-3600mAh (18650): [here](https://www.amazon.fr/gp/product/B09DY1QVDW) or [here](https://www.amazon.fr/gp/product/B0CFQ6HF2W?th=1) - 15 euros for 2 items
   - Charger: [Li-ion 18650 battery Charger](https://www.amazon.fr/gp/product/B08FDMGKMZ) - 16 euros
   - [Expandable braided sleeving](https://www.amazon.fr/gp/product/B0B3RBS4DX) to protect small wires
   - [Waterproof connectors](https://fr.aliexpress.com/item/1005003084329744.html) - only if you want to go further in the perfection
