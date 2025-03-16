@@ -75,12 +75,6 @@ jobs:
             ~/.cache/pip
             ~/.platformio
 
-      - name: Cache PlatformIO Dependencies
-        uses: actions/cache@v4
-        with:
-          key: ${{ runner.os }}-libdeps
-          path: .pio/libdeps
-
       - name: Python
         uses: actions/setup-python@v5
         with:
