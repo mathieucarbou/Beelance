@@ -83,7 +83,7 @@ void setup() {
   espConnect.end();
   espConnect.setAutoRestart(true);
   espConnect.setBlocking(false);
-  espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), Mycila::AppInfo.defaultSSID.c_str(), config.get(KEY_ADMIN_PASSWORD), {config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
+  espConnect.begin(Mycila::AppInfo.defaultSSID.c_str(), config.get(KEY_ADMIN_PASSWORD), {Mycila::AppInfo.defaultHostname.c_str(), config.get(KEY_WIFI_SSID), config.get(KEY_WIFI_PASSWORD), config.getBool(KEY_AP_MODE_ENABLE)});
 
   assert(loopTaskManager.asyncStart(512 * 19, uxTaskPriorityGet(NULL), xPortGetCoreID()));
   assert(modemTaskManager.asyncStart(512 * 11, uxTaskPriorityGet(NULL), xPortGetCoreID()));
