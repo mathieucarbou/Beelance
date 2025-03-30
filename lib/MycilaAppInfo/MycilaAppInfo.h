@@ -29,7 +29,6 @@ namespace Mycila {
       const std::string buildDate;
       const std::string defaultHostname;
       const std::string defaultMqttClientId;
-      const std::string defaultSSID;
       const bool debug;
       const bool trial;
   };

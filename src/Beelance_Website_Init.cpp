@@ -88,6 +88,7 @@ void Beelance::WebsiteClass::init() {
   });
 
   _safeBoot.attachCallback([this](uint32_t value) {
+    espConnect.saveConfiguration();
     Mycila::System::restartFactory("safeboot");
     _safeBoot.update(true);
     dashboard.refreshCard(&_safeBoot);
