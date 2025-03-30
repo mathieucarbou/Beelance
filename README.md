@@ -428,7 +428,7 @@ On Windows, you can use the official [ESP32 Flash Download Tool](https://www.esp
 
   - `admin_pwd`: The password to access the web interface (optional, but recommended)
   - `bh_name`: A custom name for your beehive
-  - `send_delay`: The time to pause between each data send (in seconds). Default to 1 hour (3600 seconds) and it is not possible to go below 1800 seconds (30 minutes)
+  - `send_delay`: The time to pause between each data send (in seconds). Default to 1 hour (3600 seconds) and it is not possible to go below 20 seconds.
   - `night_start`: Format: `HH:MM`. Defines the start of the night, when no data is sent
   - `night_end`: Format: `HH:MM`. Defines the end of the night, when data is sent periodically
 
