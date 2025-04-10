@@ -48,15 +48,14 @@ void Beelance::BeelanceClass::_initEventHandlers() {
         logger.info(TAG, "Captive Portal started at %s with IP address %s", espConnect.getWiFiSSID().c_str(), espConnect.getIPAddress().toString().c_str());
         break;
       case Mycila::ESPConnect::State::PORTAL_COMPLETE: {
-        bool ap = espConnect.hasConfiguredAPMode();
-        if (ap) {
+        if (espConnect.getConfig().apMode) {
           logger.info(TAG, "Captive Portal: Access Point configured");
           config.setBool(KEY_AP_MODE_ENABLE, true);
         } else {
           logger.info(TAG, "Captive Portal: WiFi configured");
           config.setBool(KEY_AP_MODE_ENABLE, false);
-          config.set(KEY_WIFI_SSID, espConnect.getConfiguredWiFiSSID());
-          config.set(KEY_WIFI_PASSWORD, espConnect.getConfiguredWiFiPassword());
+          config.set(KEY_WIFI_SSID, espConnect.getConfig().wifiSSID);
+          config.set(KEY_WIFI_PASSWORD, espConnect.getConfig().wifiPassword);
         }
         break;
       }
