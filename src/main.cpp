@@ -10,7 +10,7 @@
 AsyncWebServer webServer(80);
 AsyncAuthenticationMiddleware authMiddleware;
 Mycila::ESPConnect espConnect(webServer);
-ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
+ESPDash dashboard(webServer, "/dashboard", false);
 WebSerial webSerial;
 
 Mycila::Logger logger;
