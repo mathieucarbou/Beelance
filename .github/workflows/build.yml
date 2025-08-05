@@ -41,6 +41,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade platformio
+          pip install --upgrade intelhex
           pip install --upgrade rich_click
 
       - name: Get Envs
@@ -86,6 +87,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
           pip install --upgrade cryptography
+          pip install --upgrade intelhex
           pip install --upgrade rich_click
           REF_NAME="${{ github.ref_name }}" pio run -e ${{ matrix.environment }}
           ref="${{ github.ref_name }}"
