@@ -60,7 +60,7 @@ void setup() {
   Mycila::PMU.enableGPS();
 
   // Temperature
-  temperatureSensor.begin(config.getLong(KEY_TEMPERATURE_PIN));
+  temperatureSensor.begin(static_cast<int8_t>(config.getLong(KEY_TEMPERATURE_PIN)));
   if (!temperatureSensor.isEnabled()) {
     Beelance::Website.disableTemperature();
   }
