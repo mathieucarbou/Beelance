@@ -72,12 +72,12 @@ Mycila::Task resetTask("resetTask", Mycila::TaskType::ONCE, [](void* params) {
 });
 
 Mycila::Task startModemTask("startModemTask", Mycila::TaskType::ONCE, [](void* params) {
-  Mycila::Modem.setPIN(config.getString(KEY_MODEM_PIN));
-  Mycila::Modem.setAPN(config.getString(KEY_MODEM_APN));
-  Mycila::Modem.setTimeZoneInfo(config.getString(KEY_TIMEZONE_INFO));
+  Mycila::Modem.setPIN(config.get(KEY_MODEM_PIN));
+  Mycila::Modem.setAPN(config.get(KEY_MODEM_APN));
+  Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
   Mycila::Modem.setGpsSyncTimeout(config.getLong(KEY_MODEM_GPS_SYNC_TIMEOUT));
   // mode
-  const std::string& tech = config.getString(KEY_MODEM_MODE);
+  std::string tech = config.get(KEY_MODEM_MODE);
   if (tech == "LTE-M") {
     Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
   } else if (tech == "NB-IoT") {
@@ -86,8 +86,8 @@ Mycila::Task startModemTask("startModemTask", Mycila::TaskType::ONCE, [](void* p
     Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_AUTO);
   }
   // bands
-  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.getString(KEY_MODEM_BANDS_LTE_M));
-  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.getString(KEY_MODEM_BANDS_NB_IOT));
+  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.get(KEY_MODEM_BANDS_LTE_M));
+  Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.get(KEY_MODEM_BANDS_NB_IOT));
   // start modem
   if (Mycila::Modem.getState() == Mycila::ModemState::MODEM_OFF) {
     logger.info(TAG, "Enable Modem...");

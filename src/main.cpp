@@ -87,7 +87,7 @@ void setup() {
   espConnectConfig.hostname = Mycila::AppInfo.defaultHostname;
   espConnectConfig.apMode = config.getBool(KEY_AP_MODE_ENABLE);
   espConnectConfig.wifiSSID = config.get(KEY_WIFI_SSID);
-  espConnectConfig.wifiPassword = config.getString(KEY_WIFI_PASSWORD);
+  espConnectConfig.wifiPassword = config.get(KEY_WIFI_PASSWORD);
   espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), config.get(KEY_ADMIN_PASSWORD), espConnectConfig);
 
   assert(loopTaskManager.asyncStart(512 * 19, uxTaskPriorityGet(NULL), xPortGetCoreID()));

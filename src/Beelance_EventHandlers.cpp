@@ -73,8 +73,8 @@ void Beelance::BeelanceClass::_initEventHandlers() {
     }
   });
 
-  config.listen([this](const char* k, const std::string& newValue) {
-    logger.info(TAG, "'%s' => '%s'", k, newValue.c_str());
+  config.listen([this](const char* k, const char* newValue) {
+    logger.info(TAG, "'%s' => '%s'", k, newValue);
     const std::string key = k;
 
     if (key == KEY_AP_MODE_ENABLE && (espConnect.getState() == Mycila::ESPConnect::State::AP_STARTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTING || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_TIMEOUT || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_DISCONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_RECONNECTING)) {
@@ -85,19 +85,19 @@ void Beelance::BeelanceClass::_initEventHandlers() {
       esp_log_level_set("*", static_cast<esp_log_level_t>(logger.getLevel()));
 
     } else if (key == KEY_MODEM_APN) {
-      Mycila::Modem.setAPN(config.getString(KEY_MODEM_APN));
+      Mycila::Modem.setAPN(config.get(KEY_MODEM_APN));
 
     } else if (key == KEY_MODEM_PIN) {
-      Mycila::Modem.setPIN(config.getString(KEY_MODEM_PIN));
+      Mycila::Modem.setPIN(config.get(KEY_MODEM_PIN));
 
     } else if (key == KEY_MODEM_BANDS_LTE_M) {
-      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.getString(KEY_MODEM_BANDS_LTE_M));
+      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.get(KEY_MODEM_BANDS_LTE_M));
 
     } else if (key == KEY_MODEM_BANDS_NB_IOT) {
-      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.getString(KEY_MODEM_BANDS_NB_IOT));
+      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.get(KEY_MODEM_BANDS_NB_IOT));
 
     } else if (key == KEY_MODEM_MODE) {
-      const std::string& tech = config.getString(KEY_MODEM_MODE);
+      std::string tech = config.get(KEY_MODEM_MODE);
       if (tech == "LTE-M") {
         Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
       } else if (tech == "NB-IoT") {
@@ -111,7 +111,7 @@ void Beelance::BeelanceClass::_initEventHandlers() {
 
     } else if (key == KEY_TIMEZONE_INFO) {
       logger.info(TAG, "Setting timezone to %s", config.get(KEY_TIMEZONE_INFO));
-      Mycila::Modem.setTimeZoneInfo(config.getString(KEY_TIMEZONE_INFO));
+      Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
       setenv("TZ", config.get(KEY_TIMEZONE_INFO), 1);
       tzset();
 
