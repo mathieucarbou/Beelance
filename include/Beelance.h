@@ -13,6 +13,7 @@
 
 #include <MycilaAppInfo.h>
 #include <MycilaConfig.h>
+#include <MycilaConfigStorageNVS.h>
 #include <MycilaDS18.h>
 #include <MycilaESPConnect.h>
 #include <MycilaHX711.h>

@@ -13,8 +13,6 @@
 void Beelance::BeelanceClass::_initConfig() {
   logger.info(TAG, "Initializing Config System...");
 
-  config.begin("BEELANCE");
-
   config.configure(KEY_ADMIN_PASSWORD);
   config.configure(KEY_AP_MODE_ENABLE, "true");
   config.configure(KEY_BEEHIVE_NAME, Mycila::AppInfo.defaultHostname);
@@ -39,6 +37,8 @@ void Beelance::BeelanceClass::_initConfig() {
   config.configure(KEY_TIMEZONE_INFO, "CET-1CEST,M3.5.0,M10.5.0/3");
   config.configure(KEY_WIFI_PASSWORD);
   config.configure(KEY_WIFI_SSID);
+
+  config.begin("BEELANCE", true);
 
   // init logging
   configureDebugTask.forceRun();

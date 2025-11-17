@@ -14,7 +14,9 @@ ESPDash dashboard(webServer, "/dashboard", false);
 WebSerial webSerial;
 
 Mycila::Logger logger;
-Mycila::Config config;
+
+Mycila::ConfigStorageNVS storage;
+Mycila::Config config(storage);
 
 Mycila::TaskManager hx711TaskManager("hx711");
 Mycila::TaskManager loopTaskManager("beelance");
@@ -86,9 +88,9 @@ void setup() {
   Mycila::ESPConnect::Config espConnectConfig;
   espConnectConfig.hostname = Mycila::AppInfo.defaultHostname;
   espConnectConfig.apMode = config.getBool(KEY_AP_MODE_ENABLE);
-  espConnectConfig.wifiSSID = config.get(KEY_WIFI_SSID);
-  espConnectConfig.wifiPassword = config.get(KEY_WIFI_PASSWORD);
-  espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), config.get(KEY_ADMIN_PASSWORD), espConnectConfig);
+  espConnectConfig.wifiSSID = config.getString(KEY_WIFI_SSID);
+  espConnectConfig.wifiPassword = config.getString(KEY_WIFI_PASSWORD);
+  espConnect.begin(Mycila::AppInfo.defaultHostname.c_str(), config.getString(KEY_ADMIN_PASSWORD), espConnectConfig);
 
   assert(loopTaskManager.asyncStart(512 * 19, uxTaskPriorityGet(NULL), xPortGetCoreID()));
   assert(modemTaskManager.asyncStart(512 * 11, uxTaskPriorityGet(NULL), xPortGetCoreID()));

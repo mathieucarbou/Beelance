@@ -99,7 +99,7 @@ void Beelance::WebsiteClass::init() {
   authMiddleware.setAuthType(AsyncAuthType::AUTH_DIGEST);
   authMiddleware.setRealm("YaSolR");
   authMiddleware.setUsername(BEELANCE_ADMIN_USERNAME);
-  authMiddleware.setPassword(config.get(KEY_ADMIN_PASSWORD));
+  authMiddleware.setPassword(config.getString(KEY_ADMIN_PASSWORD));
   authMiddleware.generateHash();
 
   webServer.addMiddleware(&authMiddleware);
@@ -274,7 +274,7 @@ void Beelance::WebsiteClass::_update(bool skipWebSocketPush) {
 
   // home
 
-  _bhName.setValue(config.get(KEY_BEEHIVE_NAME));
+  _bhName.setValue(config.getString(KEY_BEEHIVE_NAME));
 
   // weight
   if (!hx711.isEnabled()) {

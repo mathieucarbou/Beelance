@@ -54,8 +54,8 @@ void Beelance::BeelanceClass::_initEventHandlers() {
         } else {
           logger.info(TAG, "Captive Portal: WiFi configured");
           config.setBool(KEY_AP_MODE_ENABLE, false);
-          config.set(KEY_WIFI_SSID, espConnect.getConfig().wifiSSID);
-          config.set(KEY_WIFI_PASSWORD, espConnect.getConfig().wifiPassword);
+          config.setString(KEY_WIFI_SSID, espConnect.getConfig().wifiSSID);
+          config.setString(KEY_WIFI_PASSWORD, espConnect.getConfig().wifiPassword);
         }
         break;
       }
@@ -85,19 +85,19 @@ void Beelance::BeelanceClass::_initEventHandlers() {
       esp_log_level_set("*", static_cast<esp_log_level_t>(logger.getLevel()));
 
     } else if (key == KEY_MODEM_APN) {
-      Mycila::Modem.setAPN(config.get(KEY_MODEM_APN));
+      Mycila::Modem.setAPN(config.getString(KEY_MODEM_APN));
 
     } else if (key == KEY_MODEM_PIN) {
-      Mycila::Modem.setPIN(config.get(KEY_MODEM_PIN));
+      Mycila::Modem.setPIN(config.getString(KEY_MODEM_PIN));
 
     } else if (key == KEY_MODEM_BANDS_LTE_M) {
-      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.get(KEY_MODEM_BANDS_LTE_M));
+      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_LTE_M, config.getString(KEY_MODEM_BANDS_LTE_M));
 
     } else if (key == KEY_MODEM_BANDS_NB_IOT) {
-      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.get(KEY_MODEM_BANDS_NB_IOT));
+      Mycila::Modem.setBands(Mycila::ModemMode::MODEM_MODE_NB_IOT, config.getString(KEY_MODEM_BANDS_NB_IOT));
 
     } else if (key == KEY_MODEM_MODE) {
-      std::string tech = config.get(KEY_MODEM_MODE);
+      std::string tech = config.getString(KEY_MODEM_MODE);
       if (tech == "LTE-M") {
         Mycila::Modem.setPreferredMode(Mycila::ModemMode::MODEM_MODE_LTE_M);
       } else if (tech == "NB-IoT") {
@@ -110,9 +110,9 @@ void Beelance::BeelanceClass::_initEventHandlers() {
       Mycila::Modem.setGpsSyncTimeout(config.getLong(KEY_MODEM_GPS_SYNC_TIMEOUT));
 
     } else if (key == KEY_TIMEZONE_INFO) {
-      logger.info(TAG, "Setting timezone to %s", config.get(KEY_TIMEZONE_INFO));
-      Mycila::Modem.setTimeZoneInfo(config.get(KEY_TIMEZONE_INFO));
-      setenv("TZ", config.get(KEY_TIMEZONE_INFO), 1);
+      logger.info(TAG, "Setting timezone to %s", config.getString(KEY_TIMEZONE_INFO));
+      Mycila::Modem.setTimeZoneInfo(config.getString(KEY_TIMEZONE_INFO));
+      setenv("TZ", config.getString(KEY_TIMEZONE_INFO), 1);
       tzset();
 
     } else if (key == KEY_HX711_OFFSET) {
