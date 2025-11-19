@@ -73,8 +73,8 @@ void Beelance::BeelanceClass::_initEventHandlers() {
     }
   });
 
-  config.listen([this](const char* k, const char* newValue) {
-    logger.info(TAG, "'%s' => '%s'", k, newValue);
+  config.listen([this](const char* k, const Mycila::config::Value& newValue) {
+    logger.info(TAG, "'%s' => '%s'", k, Mycila::config::toString(newValue).c_str());
     const std::string key = k;
 
     if (key == KEY_AP_MODE_ENABLE && (espConnect.getState() == Mycila::ESPConnect::State::AP_STARTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTING || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_CONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_TIMEOUT || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_DISCONNECTED || espConnect.getState() == Mycila::ESPConnect::State::NETWORK_RECONNECTING)) {

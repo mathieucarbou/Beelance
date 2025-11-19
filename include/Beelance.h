@@ -13,6 +13,7 @@
 
 #include <MycilaAppInfo.h>
 #include <MycilaConfig.h>
+#include <MycilaConfigV10.h>
 #include <MycilaConfigStorageNVS.h>
 #include <MycilaDS18.h>
 #include <MycilaESPConnect.h>
@@ -35,7 +36,7 @@ extern ESPDash dashboard;
 extern WebSerial webSerial;
 
 extern Mycila::Logger logger;
-extern Mycila::Config config;
+extern Mycila::config::ConfigV10 config;
 extern Mycila::ESPConnect espConnect;
 
 extern Mycila::HX711 hx711;

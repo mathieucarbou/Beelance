@@ -15,8 +15,9 @@ WebSerial webSerial;
 
 Mycila::Logger logger;
 
-Mycila::ConfigStorageNVS storage;
-Mycila::Config config(storage);
+Mycila::config::NVS storage;                 // NVS storage
+Mycila::config::Config configNew(storage);   // the new config system
+Mycila::config::ConfigV10 config(configNew); // wrapper that is emulating the v10 API and way to store the data in strings
 
 Mycila::TaskManager hx711TaskManager("hx711");
 Mycila::TaskManager loopTaskManager("beelance");
