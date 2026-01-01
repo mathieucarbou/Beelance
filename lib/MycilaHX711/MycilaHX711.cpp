@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * Copyright (C) 2023-2025 Mathieu Carbou
+ * Copyright (C) Mathieu Carbou
  */
 #include <MycilaHX711.h>
 #include <MycilaLogger.h>

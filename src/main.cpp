@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * Copyright (C) 2023-2025 Mathieu Carbou
+ * Copyright (C) Mathieu Carbou
  */
 #include <Beelance.h>
 #include <BeelanceWebsite.h>
