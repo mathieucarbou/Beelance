@@ -94,7 +94,7 @@ jobs:
           mv .pio/build/${{ matrix.environment }}/firmware.factory.bin ./${{ needs.pio_envs.outputs.pio_name }}-$ref-${{ matrix.environment }}.FACTORY.bin
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.environment }}
           if-no-files-found: error
