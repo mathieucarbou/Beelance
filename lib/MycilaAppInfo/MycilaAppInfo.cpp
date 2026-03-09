@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * Copyright (C) Mathieu Carbou
+ * Copyright (C) 2023-2026 Mathieu Carbou
  */
 #include <Esp.h>
 #include <MycilaAppInfo.h>
@@ -10,7 +10,7 @@
 #include <string>
 
 #ifndef APP_NAME
-  #define APP_NAME "Beelance"
+  #define APP_NAME "YaSolR"
 #endif
 
 #ifndef APP_MANUFACTURER
@@ -23,17 +23,16 @@
   #else
     #define APP_MODEL "Pro"
   #endif
-#endif
-
-#ifdef APP_MODEL_OSS
+#else
   #define APP_MODEL "OSS"
 #endif
 
 extern const char* __COMPILED_APP_VERSION__;
 extern const char* __COMPILED_BUILD_BRANCH__;
 extern const char* __COMPILED_BUILD_HASH__;
-extern const char* __COMPILED_BUILD_NAME__;
+extern const char* __COMPILED_BUILD_ENV__;
 extern const char* __COMPILED_BUILD_TIMESTAMP__;
+extern const char* __COMPILED_BUILD_BOARD__;
 
 Mycila::AppInfoClass::AppInfoClass() : id(Mycila::System::getChipIDStr()),
                                        name(APP_NAME),
@@ -42,26 +41,30 @@ Mycila::AppInfoClass::AppInfoClass() : id(Mycila::System::getChipIDStr()),
                                        nameModel(name + " " + model),
                                        nameModelVersion(name + " " + model + " " + version),
                                        manufacturer(APP_MANUFACTURER),
-                                       firmware(std::string(APP_NAME) + (std::isdigit(version[0]) ? "-v" : "-") + version.substr(0, version.find("_")) + "-" + __COMPILED_BUILD_NAME__ + ".bin"),
+                                       buildEnv(__COMPILED_BUILD_ENV__),
                                        buildBranch(__COMPILED_BUILD_BRANCH__),
                                        buildHash(__COMPILED_BUILD_HASH__),
                                        buildDate(__COMPILED_BUILD_TIMESTAMP__),
+                                       buildBoard(__COMPILED_BUILD_BOARD__),
                                        defaultHostname(Mycila::string::toLowerCase(name + "-" + id)),
                                        defaultMqttClientId(Mycila::string::toLowerCase(name + "_" + id)),
-                                       debug(firmware.find("debug") != std::string::npos),
-                                       trial(firmware.find("trial") != std::string::npos) {}
+                                       debug(buildEnv.find("debug") != std::string::npos),
+                                       trial(buildEnv.find("trial") != std::string::npos),
+                                       latestVersion(version) {}
 
 void Mycila::AppInfoClass::toJson(const JsonObject& root) const {
+  root["build_board"] = buildBoard;
   root["build_date"] = buildDate;
+  root["build_env"] = buildEnv;
   root["build_hash"] = buildHash;
   root["debug"] = debug;
-  root["firmware"] = firmware;
   root["id"] = id;
   root["manufacturer"] = manufacturer;
   root["model"] = model;
   root["name"] = name;
   root["trial"] = trial;
   root["version"] = version;
+  root["latest_version"] = latestVersion;
 }
 
 namespace Mycila {

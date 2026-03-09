@@ -17,7 +17,6 @@ static dash::StatisticValue<const char*> _firmName(dashboard, "Application: Name
 static dash::StatisticValue<const char*> _firmVersionStat(dashboard, "Application: Version");
 static dash::StatisticValue<const char*> _firmManufacturerStat(dashboard, "Application: Manufacturer");
 
-static dash::StatisticValue<const char*> _firmFilenameStat(dashboard, "Firmware: Filename");
 static dash::StatisticValue<const char*> _firmHashStat(dashboard, "Firmware: Build Hash");
 static dash::StatisticValue<const char*> _firmTimeStat(dashboard, "Firmware: Build Timestamp");
 
@@ -148,7 +147,6 @@ void Beelance::WebsiteClass::init() {
   _firmVersionStat.setValue(Mycila::AppInfo.version.c_str());
   _firmManufacturerStat.setValue(Mycila::AppInfo.manufacturer.c_str());
 
-  _firmFilenameStat.setValue(Mycila::AppInfo.firmware.c_str());
   _firmHashStat.setValue(Mycila::AppInfo.buildHash.c_str());
   _firmTimeStat.setValue(Mycila::AppInfo.buildDate.c_str());
 
