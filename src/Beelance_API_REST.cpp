@@ -99,13 +99,13 @@ void Beelance::BeelanceClass::_initREST() {
   // system
 
   webServer
-    .on("/api/system/restart", HTTP_ANY, [=](AsyncWebServerRequest* request) {
+    .on("/api/system/restart", HTTP_GET | HTTP_POST, [=](AsyncWebServerRequest* request) {
       restartTask.resume();
       request->send(200);
     });
 
   webServer
-    .on("/api/system/reset", HTTP_ANY, [=](AsyncWebServerRequest* request) {
+    .on("/api/system/reset", HTTP_GET | HTTP_POST, [=](AsyncWebServerRequest* request) {
       resetTask.resume();
       request->send(200);
     });
@@ -137,7 +137,7 @@ void Beelance::BeelanceClass::_initREST() {
     });
 
   webServer
-    .on("/api/beelance/history/reset", HTTP_ANY, [this](AsyncWebServerRequest* request) {
+    .on("/api/beelance/history/reset", HTTP_GET | HTTP_POST, [this](AsyncWebServerRequest* request) {
       Beelance::Beelance.clearHistory();
       request->send(200);
     });
