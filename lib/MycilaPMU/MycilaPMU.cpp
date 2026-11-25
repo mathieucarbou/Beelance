@@ -4,8 +4,6 @@
  */
 #include <MycilaPMU.h>
 
-#include <esp_adc_cal.h>
-
 #include <algorithm>
 
 #define TAG "PMU"
@@ -151,9 +149,8 @@ float Mycila::PMUClass::read() {
   _pmuBatteryDischarging = _pmu.isDischarge();
 #endif
 #ifdef MYCILA_PMU_BATTERY_ADC_PIN
-  esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-  _batteryVoltage = esp_adc_cal_raw_to_voltage(analogRead(MYCILA_PMU_BATTERY_ADC_PIN), &adc_chars) * 2.0f / 1000.0f;
+  // analogReadMilliVolts() uses the ADC oneshot driver and eFuse calibration (esp_adc/adc_cali) internally
+  _batteryVoltage = analogReadMilliVolts(MYCILA_PMU_BATTERY_ADC_PIN) * 2.0f / 1000.0f;
 #endif
   return _batteryVoltage;
 }
